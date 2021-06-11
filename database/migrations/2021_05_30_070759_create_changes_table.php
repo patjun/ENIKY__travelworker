@@ -14,14 +14,20 @@ class CreateChangesTable extends Migration
     public function up()
     {
         Schema::create('changes', function (Blueprint $table) {
+
             $table->id();
 
-            $table->unsignedBigInteger('page_id')->nullable();
+            $table->unsignedBigInteger('page_id');
+            $table->foreign('page_id')
+                ->references('id')
+                ->on('pages')
+                ->onDelete('cascade');
 
             $table->date('modification_date');
             $table->tinyText('modification_description');
 
             $table->timestamps();
+
         });
     }
 

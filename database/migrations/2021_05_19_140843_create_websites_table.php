@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePagesTable extends Migration
+class CreateWebsitesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,20 +13,14 @@ class CreatePagesTable extends Migration
      */
     public function up()
     {
-        Schema::create('pages', function (Blueprint $table) {
+        Schema::create('websites', function (Blueprint $table) {
 
             $table->id();
 
-            $table->unsignedBigInteger('website_id');
-            $table->foreign('website_id')
-                ->references('id')
-                ->on('websites')
-                ->onDelete('cascade');
-
+            $table->string('name');
             $table->string('url', 255);
 
             $table->timestamps();
-
 
         });
     }
@@ -38,6 +32,6 @@ class CreatePagesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('pages');
+        Schema::dropIfExists('websites');
     }
 }

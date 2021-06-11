@@ -10,6 +10,14 @@ class Page extends Model
     use HasFactory;
 
     /**
+     * Get the website for this page.
+     */
+    public function website()
+    {
+        return $this->belongsTo(Website::class, 'website_id');
+    }
+
+    /**
      * Get the changes for the page.
      */
     public function changes()
