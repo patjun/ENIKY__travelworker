@@ -2,7 +2,10 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "keywords": [
+        "framework",
+        "laravel"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.0",
@@ -10,6 +13,7 @@
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^9.0",
+        "laravel/nova": "~4.0",
         "laravel/tinker": "^2.5",
         "schulzefelix/laravel-search-console": "^1.8"
     },
@@ -20,6 +24,12 @@
         "mockery/mockery": "^1.4.2",
         "nunomaduro/collision": "^6.1",
         "phpunit/phpunit": "^9.3.3"
+    },
+    "repositories": {
+        "nova": {
+            "type": "composer",
+            "url": "https://nova.laravel.com"
+        }
     },
     "autoload": {
         "psr-4": {
