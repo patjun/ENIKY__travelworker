@@ -9,6 +9,10 @@ class Change extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'modification_date' => 'date:Y-m-d',
+    ];
+
     /**
      * Get the page for this change.
      */
