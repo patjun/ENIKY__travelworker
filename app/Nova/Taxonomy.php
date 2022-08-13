@@ -3,26 +3,36 @@
 namespace App\Nova;
 
 use Illuminate\Http\Request;
-use Laravel\Nova\Fields\HasMany;
+use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
-class Website extends Resource
+class Taxonomy extends Resource
 {
     /**
      * The model the resource corresponds to.
      *
      * @var string
      */
-    public static $model = \App\Models\Website::class;
+    public static $model = \App\Models\Taxonomy::class;
 
     /**
      * The single value that should be used to represent the resource when being displayed.
      *
      * @var string
      */
-    public static $title = 'name';
+    public static $title = 'term_name';
+
+    /**
+     * Get the search result subtitle for the resource.
+     *
+     * @return string
+     */
+    public function subtitle()
+    {
+        return "Webseite: {$this->website->name}";
+    }
 
     /**
      * The columns that should be searched.
@@ -30,7 +40,7 @@ class Website extends Resource
      * @var array
      */
     public static $search = [
-        'name',
+        'term_name',
     ];
 
     /**
@@ -42,10 +52,10 @@ class Website extends Resource
     public function fields(NovaRequest $request)
     {
         return [
-            ID::make()->sortable(),
-            Text::make(__('Webseite'), 'name')->sortable(),
-            Text::make(__('URL'), 'url'),
-            HasMany::make('pages')->hideFromIndex(),
+            ID::make(),
+            Text::make(__('Term'), 'term_name')->sortable(),
+            Text::make(__('Taxonomy'), 'term_taxonomy'),
+            BelongsTo::make('website'),
         ];
     }
 
@@ -90,8 +100,6 @@ class Website extends Resource
      */
     public function actions(NovaRequest $request)
     {
-        return [
-            (new Actions\LoadTerms())->showInline(),
-        ];
+        return [];
     }
 }

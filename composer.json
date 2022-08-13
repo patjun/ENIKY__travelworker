@@ -15,7 +15,9 @@
         "laravel/framework": "^9.0",
         "laravel/nova": "~4.0",
         "laravel/tinker": "^2.5",
-        "schulzefelix/laravel-search-console": "^1.8"
+        "rickwest/laravel-wordpress-api": "^0.1.1",
+        "schulzefelix/laravel-search-console": "^1.8",
+        "spatie/laravel-ray": "^1.30"
     },
     "require-dev": {
         "spatie/laravel-ignition": "^1.0",
