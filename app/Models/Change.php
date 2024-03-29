@@ -9,6 +9,8 @@ class Change extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['page_id', 'modification_date', 'modification_description'];
+
     protected $casts = [
         'modification_date' => 'date:Y-m-d',
     ];

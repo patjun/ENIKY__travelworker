@@ -9,6 +9,8 @@ class Website extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['name'];
+
     /**
      * Get the pages for the website.
      */
