@@ -12,7 +12,6 @@
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^9.0",
-        "laravel/nova": "~4.0",
         "laravel/tinker": "^2.5",
         "rickwest/laravel-wordpress-api": "^0.1.1",
         "schulzefelix/laravel-search-console": "^1.8",
