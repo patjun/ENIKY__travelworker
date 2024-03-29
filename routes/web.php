@@ -15,9 +15,11 @@ use RickWest\WordPress\Facades\WordPress;
 |
 */
 
+/*
 Route::get( '/', function () {
     return view( 'welcome' );
 } );
+*/
 
 Route::get( '/posts', function () {
 
