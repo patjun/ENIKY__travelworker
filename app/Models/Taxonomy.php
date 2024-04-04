@@ -13,7 +13,7 @@ class Taxonomy extends Model
 
     public function website()
     {
-        return $this->belongsTo('App\Models\Website');
+        return $this->belongsTo(\App\Models\Website::class);
     }
 
     public function subcategory()

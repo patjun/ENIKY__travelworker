@@ -11,6 +11,6 @@ class Plan extends Model
 
     public function taxonomy()
     {
-        return $this->belongsTo('App\Models\Taxonomy');
+        return $this->belongsTo(\App\Models\Taxonomy::class);
     }
 }
