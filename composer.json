@@ -12,11 +12,11 @@
         "doctrine/dbal": "^3.5",
         "filament/filament": "^3.0-stable",
         "filament/upgrade": "^3.2",
+        "google/apiclient": "^2.0",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.48",
         "laravel/tinker": "^2.8",
-        "rickwest/laravel-wordpress-api": "^0.1.1",
-        "schulzefelix/laravel-search-console": "^1.8",
+        "rickwest/laravel-wordpress-api": "^1.0",
         "spatie/laravel-ray": "^1.32"
     },
     "require-dev": {
