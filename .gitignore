@@ -86,5 +86,4 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 # testing
-.phpunit.result.cache
 /.phpunit.result.cache
