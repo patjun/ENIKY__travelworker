@@ -3,15 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TaxonomyResource\Pages;
-use App\Filament\Resources\TaxonomyResource\RelationManagers;
 use App\Models\Taxonomy;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class TaxonomyResource extends Resource
 {
@@ -39,9 +36,9 @@ class TaxonomyResource extends Resource
                     ->required()
                     ->numeric(),
                 Forms\Components\Select::make('website_id')
-                   ->label('Website')
-                   ->relationship('website', 'name')
-                   ->required(),
+                    ->label('Website')
+                    ->relationship('website', 'name')
+                    ->required(),
             ]);
     }
 

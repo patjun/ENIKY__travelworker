@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Change extends Model
 {
@@ -18,7 +19,7 @@ class Change extends Model
     /**
      * Get the page for this change.
      */
-    public function page()
+    public function page(): BelongsTo
     {
         return $this->belongsTo(Page::class);
     }
