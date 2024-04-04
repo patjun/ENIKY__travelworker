@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,12 +13,12 @@ class Taxonomy extends Model
 
     protected $guarded = [];
 
-    public function website()
+    public function website(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Website::class);
     }
 
-    public function subcategory()
+    public function subcategory(): HasMany
     {
         return $this->hasMany('Taxonomy', 'parent_term_id');
     }

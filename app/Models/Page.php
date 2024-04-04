@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,7 +16,7 @@ class Page extends Model
     /**
      * Get the website for this page.
      */
-    public function website()
+    public function website(): BelongsTo
     {
         return $this->belongsTo(Website::class, 'website_id');
     }
@@ -22,7 +24,7 @@ class Page extends Model
     /**
      * Get the changes for the page.
      */
-    public function changes()
+    public function changes(): HasMany
     {
         return $this->hasMany(Change::class);
     }
