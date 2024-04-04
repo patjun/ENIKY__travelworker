@@ -9,7 +9,7 @@ class Page extends Model
 {
     use HasFactory;
 
-    protected $fillable= ['website_id', 'url'];
+    protected $fillable = ['website_id', 'url'];
 
     /**
      * Get the website for this page.

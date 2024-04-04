@@ -27,7 +27,6 @@ class CreatePagesTable extends Migration
 
             $table->timestamps();
 
-
         });
     }
 

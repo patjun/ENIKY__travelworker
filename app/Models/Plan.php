@@ -9,7 +9,8 @@ class Plan extends Model
 {
     use HasFactory;
 
-    public function taxonomy() {
+    public function taxonomy()
+    {
         return $this->belongsTo('App\Models\Taxonomy');
     }
 }
