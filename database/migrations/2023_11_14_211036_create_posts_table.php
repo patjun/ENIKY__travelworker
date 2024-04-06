@@ -23,8 +23,8 @@ return new class extends Migration
             $table->string('ping_status', 20)->default('open');
             $table->string('post_password', 255)->default('');
             $table->string('post_name', 200)->default('');
-            $table->text('to_ping')->default('');
-            $table->text('pinged')->default('');
+            $table->text('to_ping');
+            $table->text('pinged');
             $table->dateTime('post_modified')->nullable();
             $table->dateTime('post_modified_gmt')->nullable();
             $table->longText('post_content_filtered');
