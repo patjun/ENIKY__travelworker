@@ -4,14 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class ModifyDescriptionChangesTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::table('changes', function (Blueprint $table) {
             $table->mediumText('modification_description')->change();
@@ -20,13 +18,11 @@ class ModifyDescriptionChangesTable extends Migration
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::table('changes', function (Blueprint $table) {
             $table->tinyText('modification_description')->change();
         });
     }
-}
+};
