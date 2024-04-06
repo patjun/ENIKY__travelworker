@@ -3,6 +3,8 @@
   <component name="LaravelIdeaPersonalSettings">
     <option name="generationStringOptionValues">
       <map>
+        <entry key="newModelSimpleOption:addFillable" value="1" />
+        <entry key="newModelSimpleOption:softDeletes" value="1" />
         <entry key="postGeneration:migration" value="" />
       </map>
     </option>
