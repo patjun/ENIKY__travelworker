@@ -31,4 +31,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'dataforseo' => [
+        'username' => env('DATAFORSEO_USERNAME'),
+        'password' => env('DATAFORSEO_PASSWORD'),
+    ],
+
+
 ];
