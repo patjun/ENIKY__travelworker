@@ -45,12 +45,6 @@ class DFSKeywordForKeywordController extends Controller {
                 'task_id'          => $result['tasks'][0]['id'],
             ]
         );
-        $keyword                   = new Keyword();
-        $keyword->keyword          = $routeKeyword;
-        $keyword->date             = now();
-        $keyword->task_post_output = json_encode( $result );
-        $keyword->task_id          = $result['tasks'][0]['id'];
-        $keyword->save();
 
         return response()->json( $result );
     }

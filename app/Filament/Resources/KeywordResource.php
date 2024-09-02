@@ -74,7 +74,6 @@ class KeywordResource extends Resource {
                                          ->label( 'Anzahl' ),
 
                 Tables\Columns\TextColumn::make( 'post.title' )
-                                         ->searchable()
                                          ->state( function ( Keyword $record ): string {
                                              return $record->post?->title ?? 'No Post';
                                          } ),
