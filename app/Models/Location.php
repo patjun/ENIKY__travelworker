@@ -9,6 +9,13 @@ class Location extends Model {
 	use SoftDeletes;
 
 	protected $fillable = [
-		'name', 'street', 'zip', 'city', 'country', 'latitude', 'longitude'
+		'name', 'street', 'zip', 'city', 'country', 'latitude', 'longitude',
+		'opening_hours', 'entrance_fee', 'rating', 'phone', 'website', 'price_level', 'category', 'place_id'
+	];
+
+	protected $casts = [
+		'opening_hours' => 'array',
+		'rating' => 'decimal:1',
+		'price_level' => 'integer',
 	];
 }
