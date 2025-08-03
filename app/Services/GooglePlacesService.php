@@ -14,6 +14,10 @@ class GooglePlacesService
     public function __construct()
     {
         $this->apiKey = config('services.google.places_api_key');
+        
+        if (empty($this->apiKey)) {
+            Log::warning('Google Places API key is not configured. Please set GOOGLE_PLACES_API_KEY in your environment.');
+        }
     }
 
     /**
@@ -21,6 +25,11 @@ class GooglePlacesService
      */
     public function searchPlaces(string $query): array
     {
+        if (empty($this->apiKey)) {
+            Log::error('Cannot search places: Google Places API key is not configured');
+            return [];
+        }
+
         try {
             $response = Http::get("{$this->baseUrl}/textsearch/json", [
                 'query' => $query,
@@ -55,6 +64,11 @@ class GooglePlacesService
      */
     public function getPlaceDetails(string $placeId): ?array
     {
+        if (empty($this->apiKey)) {
+            Log::error('Cannot get place details: Google Places API key is not configured');
+            return null;
+        }
+
         try {
             $response = Http::get("{$this->baseUrl}/details/json", [
                 'place_id' => $placeId,
@@ -82,6 +96,45 @@ class GooglePlacesService
             Log::error('Google Places API exception', ['error' => $e->getMessage()]);
             return null;
         }
+    }
+
+    /**
+     * Parse formatted address as a fallback when address components are not available
+     */
+    public function parseFormattedAddress(string $formattedAddress): array
+    {
+        // Basic parsing - this is a simple implementation
+        // In a real-world scenario, you might want to use a more sophisticated parser
+        $parts = explode(', ', $formattedAddress);
+        
+        $parsed = [
+            'street' => '',
+            'zip' => '',
+            'city' => '',
+            'country' => ''
+        ];
+
+        if (count($parts) >= 1) {
+            $parsed['street'] = $parts[0];
+        }
+        if (count($parts) >= 2) {
+            $parsed['city'] = $parts[1];
+        }
+        if (count($parts) >= 3) {
+            // Try to extract ZIP from the last parts
+            $lastPart = end($parts);
+            $parsed['country'] = $lastPart;
+            
+            // Look for ZIP code pattern
+            foreach ($parts as $part) {
+                if (preg_match('/\b\d{4,5}\b/', $part, $matches)) {
+                    $parsed['zip'] = $matches[0];
+                    break;
+                }
+            }
+        }
+
+        return $parsed;
     }
 
     /**
@@ -140,8 +193,9 @@ class GooglePlacesService
             $addressData = $this->parseAddressComponents($place);
             $data = array_merge($data, $addressData);
         } elseif (isset($place['formatted_address'])) {
-            // Fallback to formatted address
-            $data['street'] = $place['formatted_address'];
+            // Fallback to formatted address parsing
+            $addressData = $this->parseFormattedAddress($place['formatted_address']);
+            $data = array_merge($data, $addressData);
         }
 
         return $data;

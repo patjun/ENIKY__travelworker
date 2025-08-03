@@ -45,47 +45,62 @@ class LocationResource extends Resource
                                             return;
                                         }
 
-                                        $googlePlaces = new GooglePlacesService();
-                                        $results = $googlePlaces->searchPlaces($query);
-                                        
-                                        if (empty($results)) {
+                                        try {
+                                            $googlePlaces = new GooglePlacesService();
+                                            $results = $googlePlaces->searchPlaces($query);
+                                            
+                                            if (empty($results)) {
+                                                Notification::make()
+                                                    ->title('No places found')
+                                                    ->body('Try a different search term or check your Google Places API configuration.')
+                                                    ->warning()
+                                                    ->send();
+                                                return;
+                                            }
+
+                                            // Use the first result and get detailed information
+                                            $place = $results[0];
+                                            if (isset($place['place_id'])) {
+                                                $detailedPlace = $googlePlaces->getPlaceDetails($place['place_id']);
+                                                if ($detailedPlace) {
+                                                    $place = $detailedPlace;
+                                                }
+                                            }
+
+                                            $locationData = $googlePlaces->extractLocationData($place);
+                                            
+                                            // Set all form fields with the data
+                                            foreach ($locationData as $field => $value) {
+                                                if ($value !== null) {
+                                                    $set($field, $value);
+                                                }
+                                            }
+
+                                            // Special handling for opening hours display
+                                            if (isset($locationData['opening_hours']) && is_array($locationData['opening_hours'])) {
+                                                $set('opening_hours_display', implode("\n", $locationData['opening_hours']));
+                                            }
+
+                                            // Update map
+                                            if ($locationData['latitude'] && $locationData['longitude']) {
+                                                $set('map', [
+                                                    'lat' => $locationData['latitude'],
+                                                    'lng' => $locationData['longitude']
+                                                ]);
+                                            }
+
                                             Notification::make()
-                                                ->title('No places found')
-                                                ->warning()
+                                                ->title('Location data imported successfully')
+                                                ->body("Found: {$locationData['name']}")
+                                                ->success()
                                                 ->send();
-                                            return;
+                                        } catch (\Exception $e) {
+                                            Notification::make()
+                                                ->title('Error importing location data')
+                                                ->body('Please check your Google Places API configuration and try again.')
+                                                ->danger()
+                                                ->send();
                                         }
-
-                                        // Use the first result and get detailed information
-                                        $place = $results[0];
-                                        if (isset($place['place_id'])) {
-                                            $detailedPlace = $googlePlaces->getPlaceDetails($place['place_id']);
-                                            if ($detailedPlace) {
-                                                $place = $detailedPlace;
-                                            }
-                                        }
-
-                                        $locationData = $googlePlaces->extractLocationData($place);
-                                        
-                                        // Set all form fields with the data
-                                        foreach ($locationData as $field => $value) {
-                                            if ($value !== null) {
-                                                $set($field, $value);
-                                            }
-                                        }
-
-                                        // Update map
-                                        if ($locationData['latitude'] && $locationData['longitude']) {
-                                            $set('map', [
-                                                'lat' => $locationData['latitude'],
-                                                'lng' => $locationData['longitude']
-                                            ]);
-                                        }
-
-                                        Notification::make()
-                                            ->title('Location data imported successfully')
-                                            ->success()
-                                            ->send();
                                     })
                             )
                             ->columnSpanFull(),
@@ -148,17 +163,27 @@ class LocationResource extends Resource
 
                 Forms\Components\Section::make('Opening Hours')
                     ->schema([
-                        Forms\Components\Repeater::make('opening_hours')
+                        Forms\Components\Textarea::make('opening_hours_display')
                             ->label('Opening Hours')
-                            ->schema([
-                                Forms\Components\TextInput::make('day')
-                                    ->label('Day & Hours')
-                                    ->placeholder('e.g., Monday: 9:00 AM – 5:00 PM')
-                            ])
-                            ->addActionLabel('Add Day')
-                            ->collapsible()
-                            ->collapsed()
+                            ->placeholder('Opening hours will be populated from Google Places')
+                            ->formatStateUsing(function ($state, $record) {
+                                // For existing records, show the stored opening hours
+                                if ($record && $record->opening_hours) {
+                                    return is_array($record->opening_hours) 
+                                        ? implode("\n", $record->opening_hours)
+                                        : $record->opening_hours;
+                                }
+                                return '';
+                            })
+                            ->afterStateUpdated(function ($state, Set $set) {
+                                // When manually edited, save to the actual opening_hours field
+                                $hours = $state ? explode("\n", $state) : [];
+                                $set('opening_hours', array_filter($hours));
+                            })
+                            ->live()
                             ->columnSpanFull(),
+                        
+                        Forms\Components\Hidden::make('opening_hours'),
                     ]),
 
                 Map::make('map')
