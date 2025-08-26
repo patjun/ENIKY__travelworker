@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\LocationResource\Pages;
 use App\Models\Location;
+use App\Services\DataForSeoService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -43,6 +44,37 @@ class LocationResource extends Resource
                 Forms\Components\TextInput::make('longitude')
                     ->label('Longitude')
                     ->required(),
+                Forms\Components\Section::make('Dataforseo Settings')
+                    ->schema([
+                        Forms\Components\TextInput::make('cid')
+                            ->label('Google CID')
+                            ->helperText('Format: cid:194604053573767737'),
+                        Forms\Components\Select::make('location_code')
+                            ->label('Location Code')
+                            ->options([
+                                2276 => '2276 - Germany',
+                                2840 => '2840 - United States',
+                                2756 => '2756 - Switzerland',
+                                2040 => '2040 - Austria',
+                            ])
+                            ->default(2276)
+                            ->searchable(),
+                        Forms\Components\Select::make('language_code')
+                            ->label('Language Code')
+                            ->options([
+                                'de' => 'Deutsch',
+                                'en' => 'English',
+                                'fr' => 'Français',
+                                'it' => 'Italiano',
+                                'es' => 'Español',
+                            ])
+                            ->default('de'),
+                        Forms\Components\DateTimePicker::make('last_dataforseo_update')
+                            ->label('Last Update')
+                            ->disabled(),
+                    ])
+                    ->collapsible()
+                    ->collapsed(),
                 Map::make('map')
                    ->label('Map')
                    ->columnSpanFull()
@@ -51,17 +83,11 @@ class LocationResource extends Resource
                        $set('longitude', $state['lng']);
                    })
                     ->afterStateHydrated(function ($state, $record, Set $set): void {
-                        // ray()->clearAll();
-                        // ray($state, $record);
-
                         if (!is_null($record)){
-                            // ray('using record');
                             $set('map', ['lat' => $record->latitude, 'lng' => $record->longitude]);
-                        } elseif ($state['lat'] !== 0 && $state['lng'] !== 0) {
-                            // ray('using state');
+                        } elseif (is_array($state) && isset($state['lat']) && isset($state['lng']) && $state['lat'] !== 0 && $state['lng'] !== 0) {
                             $set('map', ['lat' => $state['lat'], 'lng' => $state['lng']]);
                         } else {
-                            // ray('using default');
                             $set('map', ['lat' => 52.520008, 'lng' => 13.404954]);
                         }
                     })
@@ -89,6 +115,16 @@ class LocationResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                      ->searchable(),
+                Tables\Columns\TextColumn::make('city')
+                     ->searchable(),
+                Tables\Columns\TextColumn::make('cid')
+                     ->label('Google CID')
+                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('last_dataforseo_update')
+                     ->label('Last API Update')
+                     ->dateTime()
+                     ->sortable()
+                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                      ->dateTime()
                      ->sortable()
@@ -103,6 +139,28 @@ class LocationResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('fetch_business_data')
+                    ->label('Update Business Data')
+                    ->icon('heroicon-o-arrow-path')
+                    ->action(function (Location $record) {
+                        if (empty($record->cid)) {
+                            return;
+                        }
+
+                        $dataForSeoService = app(DataForSeoService::class);
+                        $result = $dataForSeoService->getMyBusinessInfo(
+                            $record->cid,
+                            $record->location_code ?? 2276,
+                            $record->language_code ?? 'de'
+                        );
+
+                        $record->update([
+                            'business_data' => $result,
+                            'last_dataforseo_update' => now(),
+                        ]);
+                    })
+                    ->requiresConfirmation()
+                    ->visible(fn (Location $record) => !empty($record->cid)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

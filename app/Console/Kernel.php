@@ -21,7 +21,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('location:update-business-data')
+            ->weekly()
+            ->sundays()
+            ->at('02:00')
+            ->withoutOverlapping()
+            ->runInBackground();
     }
 
     /**

@@ -43,4 +43,35 @@ class DataForSeoService
 
         return $response->json();
     }
+
+    public function searchLocations(string $query): array
+    {
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Basic ' . $this->auth,
+        ])->get($this->baseUrl . '/dataforseo_labs/locations', [
+            'limit' => 10,
+            'search' => $query
+        ]);
+
+        return $response->json();
+    }
+
+    public function getMyBusinessInfo(string $cid, int $locationCode = 2276, string $languageCode = 'de'): array
+    {
+        $data = [
+            [
+                'keyword' => "cid:$cid",
+                'location_code' => $locationCode,
+                'language_code' => $languageCode
+            ]
+        ];
+
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Basic ' . $this->auth,
+        ])->post($this->baseUrl . '/business_data/google/my_business_info/live', $data);
+
+        return $response->json();
+    }
 }
