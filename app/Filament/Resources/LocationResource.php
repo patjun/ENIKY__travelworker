@@ -65,31 +65,36 @@ class LocationResource extends Resource
                             ->schema([
                                 Forms\Components\TextInput::make('place_id')
                                     ->label('Google Place ID')
-                                    ->helperText('Format: ChIJN1t_tDeuEmsRUsoyG83frY4'),
+                                    ->helperText('Format: ChIJN1t_tDeuEmsRUsoyG83frY4')
+                                    ->hint(new \Illuminate\Support\HtmlString('<a href="https://developers.google.com/maps/documentation/places/web-service/place-id#find-id" target="_blank" class="text-primary-600 hover:text-primary-500">Find Place ID</a>')),
                                 Forms\Components\TextInput::make('cid')
                                     ->label('Google CID')
                                     ->helperText('Format: 194604053573767737'),
                             ]),
-                        Forms\Components\Select::make('location_code')
-                            ->label('Location Code')
-                            ->options([
-                                2276 => '2276 - Germany',
-                                2840 => '2840 - United States',
-                                2756 => '2756 - Switzerland',
-                                2040 => '2040 - Austria',
-                            ])
-                            ->default(2276)
-                            ->searchable(),
-                        Forms\Components\Select::make('language_code')
-                            ->label('Language Code')
-                            ->options([
-                                'de' => 'Deutsch',
-                                'en' => 'English',
-                                'fr' => 'Français',
-                                'it' => 'Italiano',
-                                'es' => 'Español',
-                            ])
-                            ->default('de'),
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\Select::make('location_code')
+                                    ->label('Location Code')
+                                    ->options([
+                                        2276 => '2276 - Germany',
+                                        2840 => '2840 - United States',
+                                        2756 => '2756 - Switzerland',
+                                        2040 => '2040 - Austria',
+                                        2826 => '2826 - United Kingdom',
+                                    ])
+                                    ->default(2276)
+                                    ->searchable(),
+                                Forms\Components\Select::make('language_code')
+                                    ->label('Language Code')
+                                    ->options([
+                                        'de' => 'Deutsch',
+                                        'en' => 'English',
+                                        'fr' => 'Français',
+                                        'it' => 'Italiano',
+                                        'es' => 'Español',
+                                    ])
+                                    ->default('de'),
+                            ]),
                         Forms\Components\DateTimePicker::make('last_dataforseo_update')
                             ->label('Last Update')
                             ->disabled(),
@@ -175,6 +180,34 @@ class LocationResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('bulk_fetch_business_data')
+                        ->label('Update Business Data')
+                        ->icon('heroicon-o-arrow-path')
+                        ->action(function ($records) {
+                            $validRecords = $records->filter(function ($record) {
+                                return !empty($record->cid) || !empty($record->place_id);
+                            });
+                            
+                            foreach ($validRecords as $record) {
+                                \App\Jobs\UpdateLocationBusinessData::dispatch($record);
+                            }
+                            
+                            $skipped = $records->count() - $validRecords->count();
+                            $message = "Dispatched business data updates for {$validRecords->count()} locations.";
+                            if ($skipped > 0) {
+                                $message .= " Skipped {$skipped} locations without CID or Place ID.";
+                            }
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Business Data Update')
+                                ->body($message)
+                                ->success()
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Update Business Data')
+                        ->modalDescription('This will queue business data updates for all selected locations that have a CID or Place ID.')
+                        ->color('primary'),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
