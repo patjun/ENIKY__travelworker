@@ -68,7 +68,7 @@ class LocationResource extends Resource
                                     ->helperText('Format: ChIJN1t_tDeuEmsRUsoyG83frY4'),
                                 Forms\Components\TextInput::make('cid')
                                     ->label('Google CID')
-                                    ->helperText('Format: cid:194604053573767737'),
+                                    ->helperText('Format: 194604053573767737'),
                             ]),
                         Forms\Components\Select::make('location_code')
                             ->label('Location Code')
@@ -164,25 +164,14 @@ class LocationResource extends Resource
                     ->label('Update Business Data')
                     ->icon('heroicon-o-arrow-path')
                     ->action(function (Location $record) {
-                        if (empty($record->cid)) {
+                        if (empty($record->cid) && empty($record->place_id)) {
                             return;
                         }
 
-                        $dataForSeoService = app(DataForSeoService::class);
-                        $result = $dataForSeoService->getMyBusinessInfo(
-                            $record->cid,
-                            $record->location_code ?? 2276,
-                            $record->language_code ?? 'de',
-                            $record->place_id
-                        );
-
-                        $record->update([
-                            'business_data' => $result,
-                            'last_dataforseo_update' => now(),
-                        ]);
+                        \App\Jobs\UpdateLocationBusinessData::dispatch($record);
                     })
                     ->requiresConfirmation()
-                    ->visible(fn (Location $record) => !empty($record->cid)),
+                    ->visible(fn (Location $record) => !empty($record->cid) || !empty($record->place_id)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

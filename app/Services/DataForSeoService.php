@@ -70,7 +70,27 @@ class DataForSeoService
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Authorization' => 'Basic ' . $this->auth,
-        ])->post($this->baseUrl . '/business_data/google/my_business_info/live', $data);
+        ])->post($this->baseUrl . '/business_data/google/my_business_info/task_post', $data);
+
+        return $response->json();
+    }
+
+    public function myBusinessInfoTasksReady(): array
+    {
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Basic ' . $this->auth,
+        ])->get($this->baseUrl . '/business_data/google/my_business_info/tasks_ready');
+
+        return $response->json();
+    }
+
+    public function myBusinessInfoTaskGet(string $taskId): array
+    {
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Basic ' . $this->auth,
+        ])->get($this->baseUrl . '/business_data/google/my_business_info/task_get/' . $taskId);
 
         return $response->json();
     }
