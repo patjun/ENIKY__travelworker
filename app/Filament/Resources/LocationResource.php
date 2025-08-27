@@ -44,22 +44,7 @@ class LocationResource extends Resource
                 Forms\Components\TextInput::make('longitude')
                     ->label('Longitude')
                     ->required(),
-                Forms\Components\Textarea::make('business_data')
-                    ->label('Business Data (JSON)')
-                    ->formatStateUsing(function ($state) {
-                        if (is_array($state)) {
-                            return json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-                        }
-                        if (is_string($state)) {
-                            $decoded = json_decode($state, true);
-                            return $decoded ? json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $state;
-                        }
-                        return $state;
-                    })
-                    ->disabled()
-                    ->rows(10)
-                    ->columnSpanFull(),
-                Forms\Components\Section::make('Dataforseo Settings')
+                Forms\Components\Section::make('DataForSEOS')
                     ->schema([
                         Forms\Components\Grid::make(2)
                             ->schema([
@@ -98,6 +83,21 @@ class LocationResource extends Resource
                         Forms\Components\DateTimePicker::make('last_dataforseo_update')
                             ->label('Last Update')
                             ->disabled(),
+                        Forms\Components\Textarea::make('business_data')
+                            ->label('Business Data (JSON)')
+                            ->formatStateUsing(function ($state) {
+                                if (is_array($state)) {
+                                    return json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                                }
+                                if (is_string($state)) {
+                                    $decoded = json_decode($state, true);
+                                    return $decoded ? json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $state;
+                                }
+                                return $state;
+                            })
+                            ->disabled()
+                            ->rows(10)
+                            ->columnSpanFull(),
                     ])
                     ->collapsible()
                     ->collapsed(),
