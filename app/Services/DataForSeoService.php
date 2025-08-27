@@ -57,11 +57,11 @@ class DataForSeoService
         return $response->json();
     }
 
-    public function getMyBusinessInfo(string $cid, int $locationCode = 2276, string $languageCode = 'de'): array
+    public function getMyBusinessInfo(string $cid, int $locationCode = 2276, string $languageCode = 'de', ?string $placeId = null): array
     {
         $data = [
             [
-                'keyword' => "cid:$cid",
+                'keyword' => $placeId ? "place_id:$placeId" : "cid:$cid",
                 'location_code' => $locationCode,
                 'language_code' => $languageCode
             ]

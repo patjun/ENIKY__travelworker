@@ -44,11 +44,32 @@ class LocationResource extends Resource
                 Forms\Components\TextInput::make('longitude')
                     ->label('Longitude')
                     ->required(),
+                Forms\Components\Textarea::make('business_data')
+                    ->label('Business Data (JSON)')
+                    ->formatStateUsing(function ($state) {
+                        if (is_array($state)) {
+                            return json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                        }
+                        if (is_string($state)) {
+                            $decoded = json_decode($state, true);
+                            return $decoded ? json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $state;
+                        }
+                        return $state;
+                    })
+                    ->disabled()
+                    ->rows(10)
+                    ->columnSpanFull(),
                 Forms\Components\Section::make('Dataforseo Settings')
                     ->schema([
-                        Forms\Components\TextInput::make('cid')
-                            ->label('Google CID')
-                            ->helperText('Format: cid:194604053573767737'),
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('place_id')
+                                    ->label('Google Place ID')
+                                    ->helperText('Format: ChIJN1t_tDeuEmsRUsoyG83frY4'),
+                                Forms\Components\TextInput::make('cid')
+                                    ->label('Google CID')
+                                    ->helperText('Format: cid:194604053573767737'),
+                            ]),
                         Forms\Components\Select::make('location_code')
                             ->label('Location Code')
                             ->options([
@@ -151,7 +172,8 @@ class LocationResource extends Resource
                         $result = $dataForSeoService->getMyBusinessInfo(
                             $record->cid,
                             $record->location_code ?? 2276,
-                            $record->language_code ?? 'de'
+                            $record->language_code ?? 'de',
+                            $record->place_id
                         );
 
                         $record->update([

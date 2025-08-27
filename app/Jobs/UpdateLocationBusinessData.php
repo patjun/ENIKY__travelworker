@@ -31,7 +31,8 @@ class UpdateLocationBusinessData implements ShouldQueue
             $result = $dataForSeoService->getMyBusinessInfo(
                 $this->location->cid,
                 $this->location->location_code ?? 2276,
-                $this->location->language_code ?? 'de'
+                $this->location->language_code ?? 'de',
+                $this->location->place_id
             );
 
             $this->location->update([
