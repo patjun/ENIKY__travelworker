@@ -57,8 +57,12 @@ class DataForSeoService
         return $response->json();
     }
 
-    public function getMyBusinessInfo(string $cid, int $locationCode = 2276, string $languageCode = 'de', ?string $placeId = null): array
+    public function getMyBusinessInfo(?string $cid, int $locationCode = 2276, string $languageCode = 'de', ?string $placeId = null): array
     {
+        if (empty($cid) && empty($placeId)) {
+            throw new \InvalidArgumentException('Either CID or Place ID must be provided');
+        }
+
         $data = [
             [
                 'keyword' => $placeId ? "place_id:$placeId" : "cid:$cid",
