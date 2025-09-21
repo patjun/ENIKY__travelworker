@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\LocationResource\Pages;
 use App\Models\Location;
-use App\Services\DataForSeoService;
+use App\Jobs\ProcessDataForSeoOrchestrator;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -102,6 +102,17 @@ class LocationResource extends Resource
                      ->label('Task ID')
                      ->searchable()
                      ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('job_status')
+                     ->label('Job Status')
+                     ->badge()
+                     ->color(fn (string $state): string => match ($state) {
+                         'pending' => 'warning',
+                         'processing' => 'info',
+                         'completed' => 'success',
+                         'failed' => 'danger',
+                         default => 'gray',
+                     })
+                     ->toggleable(),
                 Tables\Columns\TextColumn::make('last_dataforseo_update')
                      ->label('Letztes Update')
                      ->dateTime()
@@ -138,8 +149,9 @@ class LocationResource extends Resource
                     ->color('success')
                     ->requiresConfirmation()
                     ->modalHeading('DataForSEO Daten laden')
-                    ->modalDescription('Möchten Sie die DataForSEO Daten für diese Location laden?')
-                    ->modalSubmitActionLabel('Ja, laden')
+                    ->modalDescription('Möchten Sie die DataForSEO Daten für diese Location laden? Der Prozess wird im Hintergrund ausgeführt.')
+                    ->modalSubmitActionLabel('Ja, in Queue einreihen')
+                    ->visible(fn (Location $record) => !in_array($record->job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results']))
                     ->action(function (Location $record) {
                         if (empty($record->place_id)) {
                             Notification::make()
@@ -150,35 +162,16 @@ class LocationResource extends Resource
                             return;
                         }
 
-                        $dataForSeoService = new DataForSeoService();
-                        $result = $dataForSeoService->getBusinessData(
-                            $record->place_id,
-                            $record->language_code ?? 'de',
-                            $record->location_code ?? 2276
-                        );
+                        // Dispatch job to queue
+                        ProcessDataForSeoOrchestrator::dispatch($record);
 
-                        if (isset($result['error'])) {
-                            Notification::make()
-                                ->title('DataForSEO API Fehler')
-                                ->body($result['error'])
-                                ->danger()
-                                ->send();
-                        } else {
-                            $record->update([
-                                'task_post_output' => $result,
-                                'last_dataforseo_update' => now(),
-                            ]);
+                        $record->update(['job_status' => 'pending']);
 
-                            if (isset($result['tasks'][0]['id'])) {
-                                $record->update(['task_id' => $result['tasks'][0]['id']]);
-                            }
-
-                            Notification::make()
-                                ->title('Erfolgreich')
-                                ->body('DataForSEO Daten wurden geladen und gespeichert.')
-                                ->success()
-                                ->send();
-                        }
+                        Notification::make()
+                            ->title('Job gestartet')
+                            ->body('DataForSEO Request wurde in die Queue eingereiht. Der Prozess läuft im Hintergrund.')
+                            ->success()
+                            ->send();
                     }),
             ])
             ->bulkActions([

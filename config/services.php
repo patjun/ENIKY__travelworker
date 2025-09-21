@@ -33,7 +33,7 @@ return [
 
     'dataforseo' => [
         'api_key' => env('DATAFORSEO_API_KEY'),
-        'timeout' => env('DATAFORSEO_TIMEOUT', 30),
+        'waiting_time' => env('DATAFORSEO_WAITING', 180),
         'base_url' => env('DATAFORSEO_BASE_URL', 'https://api.dataforseo.com'),
     ],
 
