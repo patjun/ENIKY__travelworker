@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\LocationResource\Pages;
 use App\Models\Location;
+use App\Services\DataForSeoService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -11,6 +12,7 @@ use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Notifications\Notification;
 use Dotswan\MapPicker\Fields\Map;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -43,6 +45,9 @@ class LocationResource extends Resource
                 Forms\Components\TextInput::make('longitude')
                     ->label('Longitude')
                     ->required(),
+                Forms\Components\TextInput::make('place_id')
+                    ->label('DataForSEO Location ID')
+                    ->helperText('Die Location ID für DataForSEO API Abfragen'),
                 Map::make('map')
                    ->label('Map')
                    ->columnSpanFull()
@@ -89,6 +94,30 @@ class LocationResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                      ->searchable(),
+                Tables\Columns\TextColumn::make('place_id')
+                     ->label('DataForSEO ID')
+                     ->searchable()
+                     ->toggleable(),
+                Tables\Columns\TextColumn::make('task_id')
+                     ->label('Task ID')
+                     ->searchable()
+                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('last_dataforseo_update')
+                     ->label('Letztes Update')
+                     ->dateTime()
+                     ->sortable()
+                     ->toggleable(),
+                Tables\Columns\IconColumn::make('business_data')
+                     ->label('Business Data')
+                     ->boolean()
+                     ->getStateUsing(fn ($record) => !empty($record->business_data))
+                     ->toggleable(),
+                Tables\Columns\TextColumn::make('city')
+                     ->searchable()
+                     ->toggleable(),
+                Tables\Columns\TextColumn::make('country')
+                     ->searchable()
+                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                      ->dateTime()
                      ->sortable()
@@ -103,6 +132,54 @@ class LocationResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('load_dataforseo')
+                    ->label('DataForSEO laden')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('DataForSEO Daten laden')
+                    ->modalDescription('Möchten Sie die DataForSEO Daten für diese Location laden?')
+                    ->modalSubmitActionLabel('Ja, laden')
+                    ->action(function (Location $record) {
+                        if (empty($record->place_id)) {
+                            Notification::make()
+                                ->title('Fehler')
+                                ->body('Bitte geben Sie zuerst eine DataForSEO Location ID ein.')
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+
+                        $dataForSeoService = new DataForSeoService();
+                        $result = $dataForSeoService->getBusinessData(
+                            $record->place_id,
+                            $record->language_code ?? 'de',
+                            $record->location_code ?? 2276
+                        );
+
+                        if (isset($result['error'])) {
+                            Notification::make()
+                                ->title('DataForSEO API Fehler')
+                                ->body($result['error'])
+                                ->danger()
+                                ->send();
+                        } else {
+                            $record->update([
+                                'task_post_output' => $result,
+                                'last_dataforseo_update' => now(),
+                            ]);
+
+                            if (isset($result['tasks'][0]['id'])) {
+                                $record->update(['task_id' => $result['tasks'][0]['id']]);
+                            }
+
+                            Notification::make()
+                                ->title('Erfolgreich')
+                                ->body('DataForSEO Daten wurden geladen und gespeichert.')
+                                ->success()
+                                ->send();
+                        }
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

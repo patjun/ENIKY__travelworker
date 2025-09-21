@@ -31,4 +31,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'dataforseo' => [
+        'api_key' => env('DATAFORSEO_API_KEY'),
+        'timeout' => env('DATAFORSEO_TIMEOUT', 30),
+        'base_url' => env('DATAFORSEO_BASE_URL', 'https://api.dataforseo.com'),
+    ],
+
 ];
