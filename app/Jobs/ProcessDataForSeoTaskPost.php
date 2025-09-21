@@ -29,9 +29,14 @@ class ProcessDataForSeoTaskPost implements ShouldQueue
         $dataForSeoService = new DataForSeoService();
 
         try {
+            // Increment attempt counter
+            $this->location->increment('post_attempts');
             $this->location->update(['job_status' => 'posting_task']);
 
-            Log::info('Starting DataForSEO task_post for location', ['location_id' => $this->location->id]);
+            Log::info('Starting DataForSEO task_post for location', [
+                'location_id' => $this->location->id,
+                'attempt' => $this->location->post_attempts
+            ]);
 
             $taskResult = $dataForSeoService->getBusinessData(
                 $this->location->place_id,
@@ -56,17 +61,10 @@ class ProcessDataForSeoTaskPost implements ShouldQueue
 
             Log::info('Task posted successfully', ['task_id' => $taskId]);
 
-            // Schedule next check without delay - use a command or different approach
-            $this->location->update([
-                'next_check_at' => now()->addSeconds(config('services.dataforseo.waiting_time', 180))
-            ]);
-
-            // Dispatch immediately but the job will check timing internally
-            ProcessDataForSeoTasksReady::dispatch($this->location);
-
         } catch (\Exception $e) {
             Log::error('DataForSEO task_post failed', [
                 'location_id' => $this->location->id,
+                'attempt' => $this->location->post_attempts,
                 'error' => $e->getMessage()
             ]);
 

@@ -13,18 +13,14 @@ class CheckPendingDataForSeoTasks extends Command
 
     public function handle()
     {
-        $pendingLocations = Location::whereIn('job_status', ['task_posted', 'task_not_ready'])
-            ->where(function($query) {
-                $query->whereNull('next_check_at')
-                      ->orWhere('next_check_at', '<=', now());
-            })
-            ->get();
+        $pendingLocations = Location::where('job_status', 'task_posted')->get();
 
-        foreach ($pendingLocations as $location) {
-            $this->info("Dispatching TasksReady check for location {$location->id}");
-            ProcessDataForSeoTasksReady::dispatch($location);
+        if ($pendingLocations->count() > 0) {
+            $this->info("Found {$pendingLocations->count()} locations with posted tasks");
+            $this->info("Dispatching global TasksReady check");
+            ProcessDataForSeoTasksReady::dispatch();
+        } else {
+            $this->info("No pending locations found");
         }
-
-        $this->info("Checked {$pendingLocations->count()} pending locations");
     }
 }

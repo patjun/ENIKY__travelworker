@@ -18,9 +18,8 @@ class ProcessDataForSeoTasksReady implements ShouldQueue
     public int $timeout = 300;
     public int $tries = 3;
 
-    public function __construct(
-        public Location $location
-    ) {
+    public function __construct()
+    {
         //
     }
 
@@ -29,32 +28,7 @@ class ProcessDataForSeoTasksReady implements ShouldQueue
         $dataForSeoService = new DataForSeoService();
 
         try {
-            // Reload location to get latest status
-            $currentLocation = Location::find($this->location->id);
-
-            // Check if another job is already handling this location
-            if (in_array($currentLocation->job_status, ['getting_results', 'completed', 'failed'])) {
-                Log::info('Location already processed or being processed', [
-                    'location_id' => $this->location->id,
-                    'status' => $currentLocation->job_status
-                ]);
-                return;
-            }
-
-            // Check if it's too early to check (respect timing)
-            if ($currentLocation->next_check_at && $currentLocation->next_check_at->isFuture()) {
-                Log::info('Too early to check, skipping', [
-                    'location_id' => $this->location->id,
-                    'next_check_at' => $currentLocation->next_check_at
-                ]);
-
-                // Don't reschedule here - use a command to periodically check
-                return;
-            }
-
-            $currentLocation->update(['job_status' => 'checking_ready']);
-
-            Log::info('Checking tasks_ready for location', ['location_id' => $this->location->id]);
+            Log::info('Starting global tasks_ready check');
 
             $readyTasks = $dataForSeoService->getTasksReady();
 
@@ -64,54 +38,50 @@ class ProcessDataForSeoTasksReady implements ShouldQueue
 
             // Check for rate limiting
             if (isset($readyTasks['tasks'][0]['status_code']) && $readyTasks['tasks'][0]['status_code'] == 40202) {
-                Log::warning('Rate limit exceeded, rescheduling check', ['location_id' => $this->location->id]);
-                $currentLocation->update(['job_status' => 'task_not_ready']);
-
-                $waitingTime = config('services.dataforseo.waiting_time', 180);
-                ProcessDataForSeoTasksReady::dispatch($currentLocation)
-                    ->delay(now()->addSeconds($waitingTime));
-                return;
+                Log::warning('Rate limit exceeded, will retry later');
+                throw new \Exception('Rate limit exceeded');
             }
 
-            $taskId = $currentLocation->task_id;
-            $isReady = false;
-
-            if (isset($readyTasks['tasks'])) {
-                foreach ($readyTasks['tasks'] as $task) {
-                    if ($task['id'] === $taskId) {
-                        $isReady = true;
-                        break;
-                    }
+            $readyTaskIds = [];
+            if (isset($readyTasks['tasks'][0]['result']) && is_array($readyTasks['tasks'][0]['result'])) {
+                foreach ($readyTasks['tasks'][0]['result'] as $task) {
+                    $readyTaskIds[] = $task['id'];
                 }
             }
 
-            $currentLocation->update([
-                'tasks_ready_output' => $readyTasks,
-            ]);
+            Log::info('Found ready tasks', ['count' => count($readyTaskIds), 'task_ids' => $readyTaskIds]);
 
-            if ($isReady) {
-                Log::info('Task is ready', ['task_id' => $taskId]);
-                $currentLocation->update(['job_status' => 'task_ready']);
+            if (empty($readyTaskIds)) {
+                Log::info('No tasks ready for processing');
+                return;
+            }
 
-                ProcessDataForSeoTaskGet::dispatch($currentLocation);
-            } else {
-                Log::info('Task not ready yet, rescheduling check', ['task_id' => $taskId]);
-                $currentLocation->update([
-                    'job_status' => 'task_not_ready',
-                    'next_check_at' => now()->addSeconds(config('services.dataforseo.waiting_time', 180))
+            // Find locations with ready tasks
+            $locationsWithReadyTasks = Location::whereIn('task_id', $readyTaskIds)
+                ->where('job_status', 'task_posted')
+                ->get();
+
+            Log::info('Found locations with ready tasks', ['count' => $locationsWithReadyTasks->count()]);
+
+            foreach ($locationsWithReadyTasks as $location) {
+                Log::info('Processing ready task for location', [
+                    'location_id' => $location->id,
+                    'task_id' => $location->task_id
                 ]);
 
-                // Dispatch without delay - timing is controlled by next_check_at
-                ProcessDataForSeoTasksReady::dispatch($currentLocation);
+                $location->update([
+                    'job_status' => 'task_ready',
+                    'get_attempts' => 0,
+                    'tasks_ready_output' => $readyTasks
+                ]);
+
+                ProcessDataForSeoTaskGet::dispatch($location);
             }
 
         } catch (\Exception $e) {
-            Log::error('DataForSEO tasks_ready check failed', [
-                'location_id' => $this->location->id,
+            Log::error('DataForSEO global tasks_ready check failed', [
                 'error' => $e->getMessage()
             ]);
-
-            $this->location->update(['job_status' => 'failed']);
             throw $e;
         }
     }
