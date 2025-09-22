@@ -12,7 +12,10 @@ class Location extends Model {
 		'name', 'street', 'zip', 'city', 'country', 'latitude', 'longitude',
 		'cid', 'place_id', 'task_id', 'task_post_output', 'task_get_output',
 		'location_code', 'language_code', 'business_data', 'last_dataforseo_update',
-		'job_status', 'post_attempts', 'get_attempts'
+		'job_status', 'post_attempts', 'get_attempts', 'phone', 'website',
+		'description', 'category', 'rating_value', 'rating_votes_count',
+		'opening_hours', 'attributes', 'main_image_url', 'is_claimed',
+		'price_level', 'additional_categories'
 	];
 
 	protected $casts = [
@@ -22,5 +25,9 @@ class Location extends Model {
 		'last_dataforseo_update' => 'datetime',
 		'latitude' => 'decimal:7',
 		'longitude' => 'decimal:7',
+		'opening_hours' => 'array',
+		'attributes' => 'array',
+		'additional_categories' => 'array',
+		'is_claimed' => 'boolean',
 	];
 }
