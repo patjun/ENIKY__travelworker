@@ -57,9 +57,42 @@ class LocationResource extends Resource
                                     ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null)
                             ]),
                         Forms\Components\Tabs\Tab::make('English')
-                            ->label(fn (Get $get) => ($get('name_en') ?? 'Neue Location') . ' - EN')
+                            ->label(fn (Get $get) => ($get('en_name') ?? 'New Location') . ' - EN')
                             ->schema([
-                                // English fields will go here
+                                Forms\Components\TextInput::make('en_name')
+                                    ->label('Name (EN)')
+                                    ->live(),
+                                Forms\Components\TextInput::make('en_street')
+                                    ->label('Street (EN)'),
+                                Forms\Components\TextInput::make('en_city')
+                                    ->label('City (EN)'),
+                                Forms\Components\TextInput::make('en_country')
+                                    ->label('Country (EN)'),
+                                Forms\Components\TextInput::make('en_phone')
+                                    ->label('Phone (EN)'),
+                                Forms\Components\TextInput::make('en_website')
+                                    ->label('Website (EN)'),
+                                Forms\Components\Textarea::make('en_description')
+                                    ->label('Description (EN)')
+                                    ->columnSpanFull(),
+                                Forms\Components\TextInput::make('en_category')
+                                    ->label('Category (EN)'),
+                                Forms\Components\Textarea::make('en_opening_hours')
+                                    ->label('Opening Hours (EN)')
+                                    ->columnSpanFull()
+                                    ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                                Forms\Components\Textarea::make('en_attributes')
+                                    ->label('Attributes (EN)')
+                                    ->columnSpanFull()
+                                    ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                                Forms\Components\TextInput::make('en_main_image_url')
+                                    ->label('Main Image URL (EN)'),
+                                Forms\Components\TextInput::make('en_price_level')
+                                    ->label('Price Level (EN)'),
+                                Forms\Components\Textarea::make('en_additional_categories')
+                                    ->label('Additional Categories (EN)')
+                                    ->columnSpanFull()
+                                    ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
                             ]),
                         ]),
                         Forms\Components\TextInput::make('latitude')
