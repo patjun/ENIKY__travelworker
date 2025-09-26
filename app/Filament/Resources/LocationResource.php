@@ -31,61 +31,77 @@ class LocationResource extends Resource
                 Forms\Components\TextInput::make('place_id')
                     ->label('Google Places ID')
                     ->helperText(new HtmlString('<a href="https://developers.google.com/maps/documentation/places/web-service/place-id?hl=de" target="_blank" rel="noopener">Klick zum Place ID Finder</a>')),
-                Forms\Components\TextInput::make('name')
-                    ->label('Name')
-                    ->default('Neue Location')
-                    ->required(),
-                Forms\Components\TextInput::make('street')
-                    ->label('Street'),
-                Forms\Components\TextInput::make('zip')
-                    ->label('ZIP'),
-                Forms\Components\TextInput::make('city')
-                    ->label('City'),
-                Forms\Components\TextInput::make('country')
-                    ->label('Country'),
-                Forms\Components\TextInput::make('latitude')
-                    ->label('Latitude')
-                    ->required(),
-                Forms\Components\TextInput::make('longitude')
-                    ->label('Longitude')
-                    ->required(),
-                Map::make('map')
-                   ->label('Map')
-                   ->columnSpanFull()
-                   ->afterStateUpdated(function (Get $get, Set $set, string|array|null $old, ?array $state): void {
-                       $set('latitude', $state['lat']);
-                       $set('longitude', $state['lng']);
-                   })
-                    ->afterStateHydrated(function ($state, $record, Set $set): void {
-                        // ray()->clearAll();
-                        // ray($state, $record);
+                Forms\Components\Tabs::make('Languages')
+                    ->columnSpanFull()
+                    ->tabs([
+                        Forms\Components\Tabs\Tab::make('German')
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Name')
+                                    ->default('Neue Location')
+                                    ->required(),
+                                Forms\Components\TextInput::make('street')
+                                    ->label('Street'),
+                                Forms\Components\TextInput::make('zip')
+                                    ->label('ZIP'),
+                                Forms\Components\TextInput::make('city')
+                                    ->label('City'),
+                                Forms\Components\TextInput::make('country')
+                                    ->label('Country'),
+                                Forms\Components\Textarea::make('business_data')
+                                    ->label('Business Data')
+                                    ->disabled()
+                                    ->columnSpanFull()
+                                    ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null)
+                            ]),
+                        Forms\Components\Tabs\Tab::make('English')
+                            ->schema([
+                                // English fields will go here
+                            ]),
+                        ]),
+                        Forms\Components\TextInput::make('latitude')
+                            ->label('Latitude')
+                            ->required(),
+                        Forms\Components\TextInput::make('longitude')
+                            ->label('Longitude')
+                            ->required(),
+                        Map::make('map')
+                            ->label('Map')
+                            ->columnSpanFull()
+                            ->afterStateUpdated(function (Set $set, ?array $state): void {
+                                $set('latitude', $state['lat']);
+                                $set('longitude', $state['lng']);
+                            })
+                            ->afterStateHydrated(function ($state, $record, Set $set): void {
+                                // ray()->clearAll();
+                                // ray($state, $record);
 
-                        if (!is_null($record)){
-                            // ray('using record');
-                            $set('map', ['lat' => $record->latitude, 'lng' => $record->longitude]);
-                        } elseif ($state['lat'] !== 0 && $state['lng'] !== 0) {
-                            // ray('using state');
-                            $set('map', ['lat' => $state['lat'], 'lng' => $state['lng']]);
-                        } else {
-                            // ray('using default');
-                            $set('map', ['lat' => 52.520008, 'lng' => 13.404954]);
-                        }
-                    })
-                   ->liveLocation()
-                   ->showMarker()
-                   ->markerColor("#22c55eff")
-                   ->showFullscreenControl()
-                   ->showZoomControl()
-                   ->draggable()
-                   ->tilesUrl("https://tile.openstreetmap.de/{z}/{x}/{y}.png")
-                   ->zoom(13)
-                   ->detectRetina()
-                   // ->showMyLocationButton()
-                   ->extraTileControl([])
-                   ->extraControl([
-                       'zoomDelta'           => 1,
-                       'zoomSnap'            => 2,
-                   ])
+                                if (!is_null($record)){
+                                    // ray('using record');
+                                    $set('map', ['lat' => $record->latitude, 'lng' => $record->longitude]);
+                                } elseif ($state['lat'] !== 0 && $state['lng'] !== 0) {
+                                    // ray('using state');
+                                    $set('map', ['lat' => $state['lat'], 'lng' => $state['lng']]);
+                                } else {
+                                    // ray('using default');
+                                    $set('map', ['lat' => 52.520008, 'lng' => 13.404954]);
+                                }
+                            })
+                            ->liveLocation()
+                            ->showMarker()
+                            ->markerColor("#22c55eff")
+                            ->showFullscreenControl()
+                            ->showZoomControl()
+                            ->draggable()
+                            ->tilesUrl("https://tile.openstreetmap.de/{z}/{x}/{y}.png")
+                            ->zoom(13)
+                            ->detectRetina()
+                            // ->showMyLocationButton()
+                            ->extraTileControl([])
+                            ->extraControl([
+                                'zoomDelta'           => 1,
+                                'zoomSnap'            => 2,
+                            ]),
             ]);
     }
 
@@ -95,10 +111,6 @@ class LocationResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                      ->searchable(),
-                Tables\Columns\TextColumn::make('place_id')
-                     ->label('DataForSEO ID')
-                     ->searchable()
-                     ->toggleable(),
                 Tables\Columns\TextColumn::make('task_id')
                      ->label('Task ID')
                      ->searchable()
