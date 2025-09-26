@@ -35,11 +35,13 @@ class LocationResource extends Resource
                     ->columnSpanFull()
                     ->tabs([
                         Forms\Components\Tabs\Tab::make('German')
+                            ->label(fn (Get $get) => ($get('name') ?? 'Neue Location') . ' - DE')
                             ->schema([
                                 Forms\Components\TextInput::make('name')
                                     ->label('Name')
                                     ->default('Neue Location')
-                                    ->required(),
+                                    ->required()
+                                    ->live(),
                                 Forms\Components\TextInput::make('street')
                                     ->label('Street'),
                                 Forms\Components\TextInput::make('zip')
@@ -55,6 +57,7 @@ class LocationResource extends Resource
                                     ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null)
                             ]),
                         Forms\Components\Tabs\Tab::make('English')
+                            ->label(fn (Get $get) => ($get('name_en') ?? 'Neue Location') . ' - EN')
                             ->schema([
                                 // English fields will go here
                             ]),
