@@ -16,6 +16,7 @@ use Filament\Notifications\Notification;
 use Dotswan\MapPicker\Fields\Map;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class LocationResource extends Resource
 {
@@ -27,6 +28,9 @@ class LocationResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\TextInput::make('place_id')
+                    ->label('Google Places ID')
+                    ->helperText(new HtmlString('<a href="https://developers.google.com/maps/documentation/places/web-service/place-id?hl=de" target="_blank" rel="noopener">Klick zum Place ID Finder</a>')),
                 Forms\Components\TextInput::make('name')
                     ->label('Name')
                     ->default('Neue Location')
@@ -45,9 +49,6 @@ class LocationResource extends Resource
                 Forms\Components\TextInput::make('longitude')
                     ->label('Longitude')
                     ->required(),
-                Forms\Components\TextInput::make('place_id')
-                    ->label('DataForSEO Location ID')
-                    ->helperText('Die Location ID für DataForSEO API Abfragen'),
                 Map::make('map')
                    ->label('Map')
                    ->columnSpanFull()
