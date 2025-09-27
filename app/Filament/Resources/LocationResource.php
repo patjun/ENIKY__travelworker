@@ -27,118 +27,123 @@ class LocationResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\TextInput::make('place_id')
-                    ->label('Google Places ID')
-                    ->helperText(new HtmlString('<a href="https://developers.google.com/maps/documentation/places/web-service/place-id?hl=de" target="_blank" rel="noopener">Klick zum Place ID Finder</a>')),
-                Forms\Components\Tabs::make('Languages')
-                    ->columnSpanFull()
-                    ->tabs([
-                        Forms\Components\Tabs\Tab::make('German')
-                            ->label(fn (Get $get) => ($get('name') ?? 'Neue Location') . ' - DE')
-                            ->schema([
-                                Forms\Components\TextInput::make('name')
-                                    ->label('Name')
-                                    ->default('Neue Location')
-                                    ->required()
-                                    ->live(),
-                                Forms\Components\TextInput::make('street')
-                                    ->label('Street'),
-                                Forms\Components\TextInput::make('zip')
-                                    ->label('ZIP'),
-                                Forms\Components\TextInput::make('city')
-                                    ->label('City'),
-                                Forms\Components\TextInput::make('country')
-                                    ->label('Country'),
-                                Forms\Components\Textarea::make('business_data')
-                                    ->label('Business Data')
-                                    ->disabled()
-                                    ->columnSpanFull()
-                                    ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null)
-                            ]),
-                        Forms\Components\Tabs\Tab::make('English')
-                            ->label(fn (Get $get) => ($get('en_name') ?? 'New Location') . ' - EN')
-                            ->schema([
-                                Forms\Components\TextInput::make('en_name')
-                                    ->label('Name (EN)')
-                                    ->live(),
-                                Forms\Components\TextInput::make('en_street')
-                                    ->label('Street (EN)'),
-                                Forms\Components\TextInput::make('en_city')
-                                    ->label('City (EN)'),
-                                Forms\Components\TextInput::make('en_country')
-                                    ->label('Country (EN)'),
-                                Forms\Components\TextInput::make('en_phone')
-                                    ->label('Phone (EN)'),
-                                Forms\Components\TextInput::make('en_website')
-                                    ->label('Website (EN)'),
-                                Forms\Components\Textarea::make('en_description')
-                                    ->label('Description (EN)')
-                                    ->columnSpanFull(),
-                                Forms\Components\TextInput::make('en_category')
-                                    ->label('Category (EN)'),
-                                Forms\Components\Textarea::make('en_opening_hours')
-                                    ->label('Opening Hours (EN)')
-                                    ->columnSpanFull()
-                                    ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
-                                Forms\Components\Textarea::make('en_attributes')
-                                    ->label('Attributes (EN)')
-                                    ->columnSpanFull()
-                                    ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
-                                Forms\Components\TextInput::make('en_main_image_url')
-                                    ->label('Main Image URL (EN)'),
-                                Forms\Components\TextInput::make('en_price_level')
-                                    ->label('Price Level (EN)'),
-                                Forms\Components\Textarea::make('en_additional_categories')
-                                    ->label('Additional Categories (EN)')
-                                    ->columnSpanFull()
-                                    ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
-                            ]),
-                        ]),
-                        Forms\Components\TextInput::make('latitude')
-                            ->label('Latitude')
-                            ->required(),
-                        Forms\Components\TextInput::make('longitude')
-                            ->label('Longitude')
-                            ->required(),
-                        Map::make('map')
-                            ->label('Map')
-                            ->columnSpanFull()
-                            ->afterStateUpdated(function (Set $set, ?array $state): void {
-                                $set('latitude', $state['lat']);
-                                $set('longitude', $state['lng']);
-                            })
-                            ->afterStateHydrated(function ($state, $record, Set $set): void {
-                                // ray()->clearAll();
-                                // ray($state, $record);
+            ->schema(static::getFormSchema());
+    }
 
-                                if (!is_null($record)){
-                                    // ray('using record');
-                                    $set('map', ['lat' => $record->latitude, 'lng' => $record->longitude]);
-                                } elseif ($state['lat'] !== 0 && $state['lng'] !== 0) {
-                                    // ray('using state');
-                                    $set('map', ['lat' => $state['lat'], 'lng' => $state['lng']]);
-                                } else {
-                                    // ray('using default');
-                                    $set('map', ['lat' => 52.520008, 'lng' => 13.404954]);
-                                }
-                            })
-                            ->liveLocation()
-                            ->showMarker()
-                            ->markerColor("#22c55eff")
-                            ->showFullscreenControl()
-                            ->showZoomControl()
-                            ->draggable()
-                            ->tilesUrl("https://tile.openstreetmap.de/{z}/{x}/{y}.png")
-                            ->zoom(13)
-                            ->detectRetina()
-                            // ->showMyLocationButton()
-                            ->extraTileControl([])
-                            ->extraControl([
-                                'zoomDelta'           => 1,
-                                'zoomSnap'            => 2,
-                            ]),
-            ]);
+    public static function getFormSchema(): array
+    {
+        return [
+            Forms\Components\TextInput::make('place_id')
+                ->label('Google Places ID')
+                ->helperText(new HtmlString('<a href="https://developers.google.com/maps/documentation/places/web-service/place-id?hl=de" target="_blank" rel="noopener">Klick zum Place ID Finder</a>')),
+            Forms\Components\Tabs::make('Languages')
+                ->columnSpanFull()
+                ->tabs([
+                    Forms\Components\Tabs\Tab::make('German')
+                        ->label(fn (Get $get) => ($get('name') ?? 'Neue Location') . ' - DE')
+                        ->schema([
+                            Forms\Components\TextInput::make('name')
+                                ->label('Name')
+                                ->default('Neue Location')
+                                ->required()
+                                ->live(),
+                            Forms\Components\TextInput::make('street')
+                                ->label('Street'),
+                            Forms\Components\TextInput::make('zip')
+                                ->label('ZIP'),
+                            Forms\Components\TextInput::make('city')
+                                ->label('City'),
+                            Forms\Components\TextInput::make('country')
+                                ->label('Country'),
+                            Forms\Components\Textarea::make('business_data')
+                                ->label('Business Data')
+                                ->disabled()
+                                ->columnSpanFull()
+                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null)
+                        ]),
+                    Forms\Components\Tabs\Tab::make('English')
+                        ->label(fn (Get $get) => ($get('en_name') ?? 'New Location') . ' - EN')
+                        ->schema([
+                            Forms\Components\TextInput::make('en_name')
+                                ->label('Name (EN)')
+                                ->live(),
+                            Forms\Components\TextInput::make('en_street')
+                                ->label('Street (EN)'),
+                            Forms\Components\TextInput::make('en_city')
+                                ->label('City (EN)'),
+                            Forms\Components\TextInput::make('en_country')
+                                ->label('Country (EN)'),
+                            Forms\Components\TextInput::make('en_phone')
+                                ->label('Phone (EN)'),
+                            Forms\Components\TextInput::make('en_website')
+                                ->label('Website (EN)'),
+                            Forms\Components\Textarea::make('en_description')
+                                ->label('Description (EN)')
+                                ->columnSpanFull(),
+                            Forms\Components\TextInput::make('en_category')
+                                ->label('Category (EN)'),
+                            Forms\Components\Textarea::make('en_opening_hours')
+                                ->label('Opening Hours (EN)')
+                                ->columnSpanFull()
+                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                            Forms\Components\Textarea::make('en_attributes')
+                                ->label('Attributes (EN)')
+                                ->columnSpanFull()
+                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                            Forms\Components\TextInput::make('en_main_image_url')
+                                ->label('Main Image URL (EN)'),
+                            Forms\Components\TextInput::make('en_price_level')
+                                ->label('Price Level (EN)'),
+                            Forms\Components\Textarea::make('en_additional_categories')
+                                ->label('Additional Categories (EN)')
+                                ->columnSpanFull()
+                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                        ]),
+                    ]),
+                    Forms\Components\TextInput::make('latitude')
+                        ->label('Latitude')
+                        ->required(),
+                    Forms\Components\TextInput::make('longitude')
+                        ->label('Longitude')
+                        ->required(),
+                    Map::make('map')
+                        ->label('Map')
+                        ->columnSpanFull()
+                        ->afterStateUpdated(function (Set $set, ?array $state): void {
+                            $set('latitude', $state['lat']);
+                            $set('longitude', $state['lng']);
+                        })
+                        ->afterStateHydrated(function ($state, $record, Set $set): void {
+                            // ray()->clearAll();
+                            // ray($state, $record);
+
+                            if (!is_null($record)){
+                                // ray('using record');
+                                $set('map', ['lat' => $record->latitude, 'lng' => $record->longitude]);
+                            } elseif ($state['lat'] !== 0 && $state['lng'] !== 0) {
+                                // ray('using state');
+                                $set('map', ['lat' => $state['lat'], 'lng' => $state['lng']]);
+                            } else {
+                                // ray('using default');
+                                $set('map', ['lat' => 52.520008, 'lng' => 13.404954]);
+                            }
+                        })
+                        ->liveLocation()
+                        ->showMarker()
+                        ->markerColor("#22c55eff")
+                        ->showFullscreenControl()
+                        ->showZoomControl()
+                        ->draggable()
+                        ->tilesUrl("https://tile.openstreetmap.de/{z}/{x}/{y}.png")
+                        ->zoom(13)
+                        ->detectRetina()
+                        // ->showMyLocationButton()
+                        ->extraTileControl([])
+                        ->extraControl([
+                            'zoomDelta'           => 1,
+                            'zoomSnap'            => 2,
+                        ]),
+        ];
     }
 
     public static function table(Table $table): Table
