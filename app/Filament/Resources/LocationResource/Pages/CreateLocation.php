@@ -4,6 +4,7 @@ namespace App\Filament\Resources\LocationResource\Pages;
 
 use App\Filament\Resources\LocationResource;
 use App\Jobs\ProcessDataForSeoOrchestrator;
+use App\Models\Location;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -21,8 +22,20 @@ class CreateLocation extends CreateRecord
                 Forms\Components\TextInput::make('place_id')
                     ->label('Google Places ID')
                     ->helperText(new HtmlString('<a href="https://developers.google.com/maps/documentation/places/web-service/place-id?hl=de" target="_blank" rel="noopener">Klick zum Place ID Finder</a>'))
-                    ->required(),
+                    ->required()
+                    ->unique(Location::class, 'place_id')
+                    ->validationMessages([
+                        'unique' => 'Diese Google Places ID ist bereits vorhanden.',
+                    ]),
             ]);
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction(),
+            $this->getCancelFormAction(),
+        ];
     }
 
     protected function getRedirectUrl(): string
