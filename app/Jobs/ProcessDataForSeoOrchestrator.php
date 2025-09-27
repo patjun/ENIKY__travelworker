@@ -26,11 +26,16 @@ class ProcessDataForSeoOrchestrator implements ShouldQueue
     public function handle(): void
     {
         try {
-            $this->location->update(['job_status' => 'orchestrating']);
+            $this->location->update([
+                'job_status' => 'orchestrating',
+                'en_job_status' => 'orchestrating'
+            ]);
 
-            Log::info('Starting DataForSEO orchestration for location', ['location_id' => $this->location->id]);
+            Log::info('Starting DataForSEO orchestration for location (German + English)', ['location_id' => $this->location->id]);
 
+            // Dispatch both German and English tasks simultaneously
             \App\Jobs\ProcessDataForSeoTaskPost::dispatch($this->location);
+            \App\Jobs\ProcessDataForSeoTaskPostEnglish::dispatch($this->location);
 
         } catch (\Exception $e) {
             Log::error('DataForSEO orchestration failed', [
@@ -38,7 +43,10 @@ class ProcessDataForSeoOrchestrator implements ShouldQueue
                 'error' => $e->getMessage()
             ]);
 
-            $this->location->update(['job_status' => 'failed']);
+            $this->location->update([
+                'job_status' => 'failed',
+                'en_job_status' => 'failed'
+            ]);
             throw $e;
         }
     }

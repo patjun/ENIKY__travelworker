@@ -18,7 +18,7 @@ return new class extends Migration
             $table->json('en_task_get_output')->nullable();
             $table->json('en_business_data')->nullable();
             $table->datetime('en_last_dataforseo_update')->nullable();
-            $table->enum('en_job_status', ['pending', 'orchestrating', 'posting_task', 'task_posted', 'checking_ready', 'getting_results', 'completed', 'failed'])->nullable();
+            $table->enum('en_job_status', ['pending', 'orchestrating', 'posting_task', 'task_posted', 'checking_ready', 'task_ready', 'getting_results', 'completed', 'failed'])->nullable();
             $table->integer('en_post_attempts')->default(0);
             $table->integer('en_get_attempts')->default(0);
         });

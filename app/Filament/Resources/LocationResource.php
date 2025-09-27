@@ -148,29 +148,64 @@ class LocationResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                      ->searchable(),
                 Tables\Columns\TextColumn::make('task_id')
-                     ->label('Task ID')
+                     ->label('Task ID (DE)')
+                     ->searchable()
+                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('en_task_id')
+                     ->label('Task ID (EN)')
                      ->searchable()
                      ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('job_status')
-                     ->label('Job Status')
+                     ->label('Job Status (DE)')
                      ->badge()
                      ->color(fn (string $state): string => match ($state) {
                          'pending' => 'warning',
                          'processing' => 'info',
                          'completed' => 'success',
                          'failed' => 'danger',
+                         'orchestrating' => 'info',
+                         'posting_task' => 'info',
+                         'task_posted' => 'warning',
+                         'task_ready' => 'warning',
+                         'getting_results' => 'info',
+                         default => 'gray',
+                     })
+                     ->toggleable(),
+                Tables\Columns\TextColumn::make('en_job_status')
+                     ->label('Job Status (EN)')
+                     ->badge()
+                     ->color(fn (string $state): string => match ($state) {
+                         'pending' => 'warning',
+                         'processing' => 'info',
+                         'completed' => 'success',
+                         'failed' => 'danger',
+                         'orchestrating' => 'info',
+                         'posting_task' => 'info',
+                         'task_posted' => 'warning',
+                         'task_ready' => 'warning',
+                         'getting_results' => 'info',
                          default => 'gray',
                      })
                      ->toggleable(),
                 Tables\Columns\TextColumn::make('last_dataforseo_update')
-                     ->label('Letztes Update')
+                     ->label('Letztes Update (DE)')
+                     ->dateTime()
+                     ->sortable()
+                     ->toggleable(),
+                Tables\Columns\TextColumn::make('en_last_dataforseo_update')
+                     ->label('Letztes Update (EN)')
                      ->dateTime()
                      ->sortable()
                      ->toggleable(),
                 Tables\Columns\IconColumn::make('business_data')
-                     ->label('Business Data')
+                     ->label('Business Data (DE)')
                      ->boolean()
                      ->getStateUsing(fn ($record) => !empty($record->business_data))
+                     ->toggleable(),
+                Tables\Columns\IconColumn::make('en_business_data')
+                     ->label('Business Data (EN)')
+                     ->boolean()
+                     ->getStateUsing(fn ($record) => !empty($record->en_business_data))
                      ->toggleable(),
                 Tables\Columns\TextColumn::make('city')
                      ->searchable()
@@ -200,7 +235,10 @@ class LocationResource extends Resource
                     ->modalHeading('DataForSEO Daten laden')
                     ->modalDescription('Möchten Sie die DataForSEO Daten für diese Location laden? Der Prozess wird im Hintergrund ausgeführt.')
                     ->modalSubmitActionLabel('Ja, in Queue einreihen')
-                    ->visible(fn (Location $record) => !in_array($record->job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results']))
+                    ->visible(fn (Location $record) =>
+                        !in_array($record->job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready']) &&
+                        !in_array($record->en_job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready'])
+                    )
                     ->action(function (Location $record) {
                         if (empty($record->place_id)) {
                             Notification::make()

@@ -56,15 +56,24 @@ class ProcessDataForSeoTasksReady implements ShouldQueue
                 return;
             }
 
-            // Find locations with ready tasks
+            // Find locations with ready German tasks
             $locationsWithReadyTasks = Location::whereIn('task_id', $readyTaskIds)
                 ->where('job_status', 'task_posted')
                 ->get();
 
-            Log::info('Found locations with ready tasks', ['count' => $locationsWithReadyTasks->count()]);
+            // Find locations with ready English tasks
+            $locationsWithReadyEnglishTasks = Location::whereIn('en_task_id', $readyTaskIds)
+                ->where('en_job_status', 'task_posted')
+                ->get();
 
+            Log::info('Found locations with ready tasks', [
+                'german_count' => $locationsWithReadyTasks->count(),
+                'english_count' => $locationsWithReadyEnglishTasks->count()
+            ]);
+
+            // Process German tasks
             foreach ($locationsWithReadyTasks as $location) {
-                Log::info('Processing ready task for location', [
+                Log::info('Processing ready German task for location', [
                     'location_id' => $location->id,
                     'task_id' => $location->task_id
                 ]);
@@ -76,6 +85,22 @@ class ProcessDataForSeoTasksReady implements ShouldQueue
                 ]);
 
                 ProcessDataForSeoTaskGet::dispatch($location);
+            }
+
+            // Process English tasks
+            foreach ($locationsWithReadyEnglishTasks as $location) {
+                Log::info('Processing ready English task for location', [
+                    'location_id' => $location->id,
+                    'en_task_id' => $location->en_task_id
+                ]);
+
+                $location->update([
+                    'en_job_status' => 'task_ready',
+                    'en_get_attempts' => 0,
+                    'en_tasks_ready_output' => $readyTasks
+                ]);
+
+                ProcessDataForSeoTaskGetEnglish::dispatch($location);
             }
 
         } catch (\Exception $e) {
