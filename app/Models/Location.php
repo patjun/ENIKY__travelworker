@@ -18,7 +18,9 @@ class Location extends Model {
 		'price_level', 'additional_categories',
 		'en_name', 'en_street', 'en_city', 'en_country', 'en_phone', 'en_website',
 		'en_description', 'en_category', 'en_opening_hours', 'en_attributes',
-		'en_main_image_url', 'en_price_level', 'en_additional_categories'
+		'en_main_image_url', 'en_price_level', 'en_additional_categories',
+		'en_task_id', 'en_task_post_output', 'en_task_get_output', 'en_business_data',
+		'en_last_dataforseo_update', 'en_job_status', 'en_post_attempts', 'en_get_attempts'
 	];
 
 	protected $casts = [
@@ -35,5 +37,9 @@ class Location extends Model {
 		'en_opening_hours' => 'array',
 		'en_attributes' => 'array',
 		'en_additional_categories' => 'array',
+		'en_task_post_output' => 'array',
+		'en_task_get_output' => 'array',
+		'en_business_data' => 'array',
+		'en_last_dataforseo_update' => 'datetime',
 	];
 }
