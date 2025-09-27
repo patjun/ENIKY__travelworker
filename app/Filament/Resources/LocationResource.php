@@ -243,6 +243,7 @@ class LocationResource extends Resource
                         ProcessDataForSeoOrchestrator::dispatch($record);
 
                         $record->update(['job_status' => 'pending']);
+                        $record->update(['en_job_status' => 'pending']);
 
                         Notification::make()
                             ->title('Job gestartet')
