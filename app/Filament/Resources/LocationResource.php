@@ -222,7 +222,7 @@ class LocationResource extends Resource
                     ->icon('heroicon-o-arrow-path')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->modalHeading('DataForSEO Daten laden')
+                    ->modalHeading('Update')
                     ->modalDescription('Möchten Sie die DataForSEO Daten für diese Location laden? Der Prozess wird im Hintergrund ausgeführt.')
                     ->modalSubmitActionLabel('Ja, in Queue einreihen')
                     ->visible(fn (Location $record) =>
@@ -254,7 +254,55 @@ class LocationResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('bulk_load_dataforseo')
+                        ->label('Update')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Update für ausgewählte Locations')
+                        ->modalDescription('Möchten Sie die Daten für alle ausgewählten Locations aktualisieren? Der Prozess wird im Hintergrund ausgeführt.')
+                        ->modalSubmitActionLabel('Ja, alle in Queue einreihen')
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            $processed = 0;
+                            $skipped = 0;
+                            $errors = 0;
+
+                            foreach ($records as $record) {
+                                // Check if place_id is empty
+                                if (empty($record->place_id)) {
+                                    $errors++;
+                                    continue;
+                                }
+
+                                // Check if job is already running
+                                if (in_array($record->job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready']) ||
+                                    in_array($record->en_job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready'])) {
+                                    $skipped++;
+                                    continue;
+                                }
+
+                                // Dispatch job to queue
+                                ProcessDataForSeoOrchestrator::dispatch($record);
+                                $record->update(['job_status' => 'pending']);
+                                $record->update(['en_job_status' => 'pending']);
+                                $processed++;
+                            }
+
+                            // Create notification based on results
+                            $message = "Jobs gestartet: {$processed}";
+                            if ($skipped > 0) {
+                                $message .= ", übersprungen (bereits in Bearbeitung): {$skipped}";
+                            }
+                            if ($errors > 0) {
+                                $message .= ", Fehler (keine Place ID): {$errors}";
+                            }
+
+                            Notification::make()
+                                ->title('Bulk DataForSEO Update')
+                                ->body($message)
+                                ->success()
+                                ->send();
+                        }),
                 ]),
             ]);
     }
