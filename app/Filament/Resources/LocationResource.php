@@ -156,7 +156,7 @@ class LocationResource extends Resource
                      ->searchable()
                      ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('job_status')
-                     ->label('Job Status (DE)')
+                     ->label('Status (DE)')
                      ->badge()
                      ->color(fn (string $state): string => match ($state) {
                          'pending' => 'warning',
@@ -172,7 +172,7 @@ class LocationResource extends Resource
                      })
                      ->toggleable(),
                 Tables\Columns\TextColumn::make('en_job_status')
-                     ->label('Job Status (EN)')
+                     ->label('Status (EN)')
                      ->badge()
                      ->color(fn (string $state): string => match ($state) {
                          'pending' => 'warning',
@@ -188,24 +188,14 @@ class LocationResource extends Resource
                      })
                      ->toggleable(),
                 Tables\Columns\TextColumn::make('last_dataforseo_update')
-                     ->label('Letztes Update (DE)')
-                     ->dateTime()
+                     ->label('Updated (DE)')
+                     ->date('d.m.Y')
                      ->sortable()
                      ->toggleable(),
                 Tables\Columns\TextColumn::make('en_last_dataforseo_update')
-                     ->label('Letztes Update (EN)')
-                     ->dateTime()
+                     ->label('Updated (EN)')
+                     ->date('d.m.Y')
                      ->sortable()
-                     ->toggleable(),
-                Tables\Columns\IconColumn::make('business_data')
-                     ->label('Business Data (DE)')
-                     ->boolean()
-                     ->getStateUsing(fn ($record) => !empty($record->business_data))
-                     ->toggleable(),
-                Tables\Columns\IconColumn::make('en_business_data')
-                     ->label('Business Data (EN)')
-                     ->boolean()
-                     ->getStateUsing(fn ($record) => !empty($record->en_business_data))
                      ->toggleable(),
                 Tables\Columns\TextColumn::make('city')
                      ->searchable()
@@ -228,7 +218,7 @@ class LocationResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('load_dataforseo')
-                    ->label('DataForSEO laden')
+                    ->label('Update')
                     ->icon('heroicon-o-arrow-path')
                     ->color('success')
                     ->requiresConfirmation()
