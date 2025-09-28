@@ -479,16 +479,20 @@ class LocationResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('en_name', 'asc')
             ->columns([
                 Tables\Columns\TextColumn::make('en_name')
                      ->searchable()
+                     ->sortable()
                      ->width(300)
                      ->wrap(),
                 Tables\Columns\TextColumn::make('city')
                     ->searchable()
+                    ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('country')
                     ->searchable()
+                    ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('job_status')
                      ->label('Status (DE)')
@@ -550,7 +554,24 @@ class LocationResource extends Resource
                      ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('country')
+                    ->label('Land')
+                    ->options(function () {
+                        return Location::whereNotNull('country')
+                            ->distinct()
+                            ->orderBy('country')
+                            ->pluck('country', 'country')
+                            ->toArray();
+                    }),
+                Tables\Filters\SelectFilter::make('city')
+                    ->label('Stadt')
+                    ->options(function () {
+                        return Location::whereNotNull('city')
+                            ->distinct()
+                            ->orderBy('city')
+                            ->pluck('city', 'city')
+                            ->toArray();
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
