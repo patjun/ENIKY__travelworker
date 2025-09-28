@@ -78,6 +78,10 @@ class LocationResource extends Resource
                                                 ->label('Rating Widget (DE)')
                                                 ->disabled()
                                                 ->rows(6),
+                                            Forms\Components\Textarea::make('accessibility_html')
+                                                ->label('Accessibility Widget (DE)')
+                                                ->disabled()
+                                                ->rows(6),
                                         ]),
                                     Forms\Components\Section::make('Widgets')
                                         ->columnSpan(1)
@@ -253,6 +257,62 @@ class LocationResource extends Resource
                                                       font-size: 12px;
                                                       opacity: 0.9;
                                                     }
+                                                    .accessibility-widget {
+                                                      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                                                      color: white;
+                                                      padding: 20px;
+                                                      border-radius: 12px;
+                                                      font-family: Arial, sans-serif;
+                                                      width: 400px;
+                                                      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                                                      margin-bottom: 20px;
+                                                    }
+                                                    .accessibility-header {
+                                                      text-align: center;
+                                                      margin-bottom: 15px;
+                                                      border-bottom: 2px solid rgba(255,255,255,0.3);
+                                                      padding-bottom: 10px;
+                                                    }
+                                                    .accessibility-title {
+                                                      margin: 0;
+                                                      font-size: 20px;
+                                                      font-weight: bold;
+                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                                                    }
+                                                    .accessibility-features {
+                                                      display: flex;
+                                                      flex-direction: column;
+                                                      gap: 10px;
+                                                    }
+                                                    .accessibility-item {
+                                                      display: flex;
+                                                      align-items: center;
+                                                      gap: 12px;
+                                                      padding: 8px 12px;
+                                                      border-radius: 8px;
+                                                      background: rgba(255,255,255,0.1);
+                                                      backdrop-filter: blur(10px);
+                                                    }
+                                                    .accessibility-status {
+                                                      font-size: 14px;
+                                                      width: 20px;
+                                                      text-align: center;
+                                                      flex-shrink: 0;
+                                                      color: #4CAF50;
+                                                      font-weight: 500;
+                                                    }
+                                                    .accessibility-label {
+                                                      flex: 1;
+                                                      font-size: 14px;
+                                                      font-weight: 500;
+                                                    }
+                                                    .accessibility-available {
+                                                      border-left: 4px solid #4CAF50;
+                                                    }
+                                                    .accessibility-unavailable {
+                                                      border-left: 4px solid #f44336;
+                                                      opacity: 0.8;
+                                                    }
                                                     </style>
                                                 ')),
                                             Forms\Components\Placeholder::make('contact_info_preview')
@@ -271,6 +331,12 @@ class LocationResource extends Resource
                                                 ->label('Opening Hours Widget Preview')
                                                 ->content(fn ($record) => $record && $record->opening_hours_html
                                                     ? new HtmlString($record->opening_hours_html)
+                                                    : 'Widget wird nach dem Speichern generiert'
+                                                ),
+                                            Forms\Components\Placeholder::make('accessibility_preview')
+                                                ->label('Accessibility Widget Preview')
+                                                ->content(fn ($record) => $record && $record->accessibility_html
+                                                    ? new HtmlString($record->accessibility_html)
                                                     : 'Widget wird nach dem Speichern generiert'
                                                 ),
                                         ]),
@@ -328,6 +394,10 @@ class LocationResource extends Resource
                                                 ->rows(8),
                                             Forms\Components\Textarea::make('en_rating_html')
                                                 ->label('Rating Widget (EN)')
+                                                ->disabled()
+                                                ->rows(6),
+                                            Forms\Components\Textarea::make('en_accessibility_html')
+                                                ->label('Accessibility Widget (EN)')
                                                 ->disabled()
                                                 ->rows(6),
                                         ]),
@@ -505,6 +575,62 @@ class LocationResource extends Resource
                                                       font-size: 12px;
                                                       opacity: 0.9;
                                                     }
+                                                    .accessibility-widget {
+                                                      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                                                      color: white;
+                                                      padding: 20px;
+                                                      border-radius: 12px;
+                                                      font-family: Arial, sans-serif;
+                                                      width: 400px;
+                                                      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                                                      margin-bottom: 20px;
+                                                    }
+                                                    .accessibility-header {
+                                                      text-align: center;
+                                                      margin-bottom: 15px;
+                                                      border-bottom: 2px solid rgba(255,255,255,0.3);
+                                                      padding-bottom: 10px;
+                                                    }
+                                                    .accessibility-title {
+                                                      margin: 0;
+                                                      font-size: 20px;
+                                                      font-weight: bold;
+                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                                                    }
+                                                    .accessibility-features {
+                                                      display: flex;
+                                                      flex-direction: column;
+                                                      gap: 10px;
+                                                    }
+                                                    .accessibility-item {
+                                                      display: flex;
+                                                      align-items: center;
+                                                      gap: 12px;
+                                                      padding: 8px 12px;
+                                                      border-radius: 8px;
+                                                      background: rgba(255,255,255,0.1);
+                                                      backdrop-filter: blur(10px);
+                                                    }
+                                                    .accessibility-status {
+                                                      font-size: 14px;
+                                                      width: 20px;
+                                                      text-align: center;
+                                                      flex-shrink: 0;
+                                                      color: #4CAF50;
+                                                      font-weight: 500;
+                                                    }
+                                                    .accessibility-label {
+                                                      flex: 1;
+                                                      font-size: 14px;
+                                                      font-weight: 500;
+                                                    }
+                                                    .accessibility-available {
+                                                      border-left: 4px solid #4CAF50;
+                                                    }
+                                                    .accessibility-unavailable {
+                                                      border-left: 4px solid #f44336;
+                                                      opacity: 0.8;
+                                                    }
                                                     </style>
                                                 ')),
                                             Forms\Components\Placeholder::make('en_contact_info_preview')
@@ -523,6 +649,12 @@ class LocationResource extends Resource
                                                 ->label('Opening Hours Widget Preview')
                                                 ->content(fn ($record) => $record && $record->en_opening_hours_html
                                                     ? new HtmlString($record->en_opening_hours_html)
+                                                    : 'Widget will be generated after saving'
+                                                ),
+                                            Forms\Components\Placeholder::make('en_accessibility_preview')
+                                                ->label('Accessibility Widget Preview')
+                                                ->content(fn ($record) => $record && $record->en_accessibility_html
+                                                    ? new HtmlString($record->en_accessibility_html)
                                                     : 'Widget will be generated after saving'
                                                 ),
                                         ]),

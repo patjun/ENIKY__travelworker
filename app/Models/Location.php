@@ -23,11 +23,11 @@ class Location extends Model {
 		'description', 'category', 'rating_value', 'rating_votes_count',
 		'opening_hours', 'attributes', 'main_image_url', 'is_claimed',
 		'price_level', 'additional_categories', 'opening_hours_html', 'structured_data',
-		'contact_info_html', 'rating_html',
+		'contact_info_html', 'rating_html', 'accessibility_html',
 		'en_name', 'en_street', 'en_city', 'en_country', 'en_phone', 'en_website',
 		'en_description', 'en_category', 'en_opening_hours', 'en_attributes',
 		'en_main_image_url', 'en_price_level', 'en_additional_categories',
-		'en_opening_hours_html', 'en_structured_data', 'en_contact_info_html', 'en_rating_html',
+		'en_opening_hours_html', 'en_structured_data', 'en_contact_info_html', 'en_rating_html', 'en_accessibility_html',
 		'en_task_id', 'en_task_post_output', 'en_task_get_output', 'en_business_data',
 		'en_last_dataforseo_update', 'en_job_status', 'en_post_attempts', 'en_get_attempts'
 	];
@@ -55,10 +55,12 @@ class Location extends Model {
 	public function generateWidgets()
 	{
 		$this->contact_info_html = $this->generateContactInfoHtml('de');
+		$this->accessibility_html = $this->generateAccessibilityHtml('de');
 		$this->rating_html = $this->generateRatingHtml('de');
 		$this->opening_hours_html = $this->generateOpeningHoursHtml('de');
 		$this->structured_data = $this->generateStructuredData('de');
 		$this->en_contact_info_html = $this->generateContactInfoHtml('en');
+		$this->en_accessibility_html = $this->generateAccessibilityHtml('en');
 		$this->en_rating_html = $this->generateRatingHtml('en');
 		$this->en_opening_hours_html = $this->generateOpeningHoursHtml('en');
 		$this->en_structured_data = $this->generateStructuredData('en');
@@ -132,6 +134,91 @@ class Location extends Model {
 		$html .= "</div>";
 
 		return $html;
+	}
+
+	public function generateAccessibilityHtml($language = 'de')
+	{
+		// Get the correct attributes field based on language
+		$attributesData = $language === 'en' ? $this->en_attributes : $this->attributes;
+
+		// Return null if no attributes data
+		if (!$attributesData) {
+			return null;
+		}
+
+		// Extract accessibility features
+		$availableFeatures = $attributesData['available_attributes']['accessibility'] ?? [];
+		$unavailableFeatures = $attributesData['unavailable_attributes']['accessibility'] ?? [];
+
+		// Return null if no accessibility features at all
+		if (empty($availableFeatures) && empty($unavailableFeatures)) {
+			return null;
+		}
+
+		// Set up translations
+		$titleText = $language === 'en' ? 'Accessibility' : 'Barrierefreiheit';
+
+		// Define feature translations
+		$featureTranslations = [
+			'has_wheelchair_accessible_entrance' => [
+				'de' => 'Rollstuhlgerechter Eingang',
+				'en' => 'Wheelchair accessible entrance'
+			],
+			'has_wheelchair_accessible_seating' => [
+				'de' => 'Rollstuhlgerechte Sitzplätze',
+				'en' => 'Wheelchair accessible seating'
+			],
+			'has_wheelchair_accessible_parking' => [
+				'de' => 'Rollstuhlgerechte Parkplätze',
+				'en' => 'Wheelchair accessible parking'
+			],
+			'has_wheelchair_accessible_restroom' => [
+				'de' => 'Rollstuhlgerechte Toiletten',
+				'en' => 'Wheelchair accessible restroom'
+			],
+			'has_hearing_loop' => [
+				'de' => 'Induktionsschleife',
+				'en' => 'Hearing loop'
+			]
+		];
+
+		// Start building HTML
+		$output = '<div class="accessibility-widget">' . "\n";
+		$output .= '  <div class="accessibility-header">' . "\n";
+		$output .= '    <h3 class="accessibility-title">♿ ' . $titleText . '</h3>' . "\n";
+		$output .= '  </div>' . "\n";
+		$output .= '  <div class="accessibility-features">' . "\n";
+
+		// Add available features
+		foreach ($availableFeatures as $featureKey) {
+			if (isset($featureTranslations[$featureKey])) {
+				$feature = $featureTranslations[$featureKey];
+				$label = $feature[$language];
+
+				$output .= '    <div class="accessibility-item accessibility-available">' . "\n";
+				$output .= '      <span class="accessibility-status accessibility-yes">✓</span>' . "\n";
+				$output .= '      <span class="accessibility-label">' . $label . '</span>' . "\n";
+				$output .= '    </div>' . "\n";
+			}
+		}
+
+		// Add unavailable features
+		foreach ($unavailableFeatures as $featureKey) {
+			if (isset($featureTranslations[$featureKey])) {
+				$feature = $featureTranslations[$featureKey];
+				$label = $feature[$language];
+
+				$output .= '    <div class="accessibility-item accessibility-unavailable">' . "\n";
+				$output .= '      <span class="accessibility-status accessibility-no">✗</span>' . "\n";
+				$output .= '      <span class="accessibility-label">' . $label . '</span>' . "\n";
+				$output .= '    </div>' . "\n";
+			}
+		}
+
+		$output .= '  </div>' . "\n";
+		$output .= '</div>';
+
+		return $output;
 	}
 
 	public function generateRatingHtml($language = 'de')
