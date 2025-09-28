@@ -59,7 +59,17 @@ class LocationResource extends Resource
                                 ->label('Business Data')
                                 ->disabled()
                                 ->columnSpanFull()
-                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null)
+                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                            Forms\Components\Textarea::make('opening_hours_html')
+                                ->label('Opening Hours Widget (DE)')
+                                ->columnSpanFull()
+                                ->disabled()
+                                ->rows(8),
+                            Forms\Components\Textarea::make('structured_data')
+                                ->label('Structured Data (DE)')
+                                ->columnSpanFull()
+                                ->disabled()
+                                ->rows(15),
                         ]),
                     Forms\Components\Tabs\Tab::make('English')
                         ->label(fn (Get $get) => ($get('en_name') ?? 'New Location') . ' - EN')
@@ -98,6 +108,16 @@ class LocationResource extends Resource
                                 ->label('Additional Categories (EN)')
                                 ->columnSpanFull()
                                 ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                            Forms\Components\Textarea::make('en_opening_hours_html')
+                                ->label('Opening Hours Widget (EN)')
+                                ->columnSpanFull()
+                                ->disabled()
+                                ->rows(8),
+                            Forms\Components\Textarea::make('en_structured_data')
+                                ->label('Structured Data (EN)')
+                                ->columnSpanFull()
+                                ->disabled()
+                                ->rows(15),
                         ]),
                     ]),
                     Forms\Components\TextInput::make('latitude')
