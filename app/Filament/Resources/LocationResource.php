@@ -462,7 +462,9 @@ class LocationResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                     ->searchable(),
+                     ->searchable()
+                     ->width(300)
+                     ->wrap(),
                 Tables\Columns\TextColumn::make('task_id')
                      ->label('Task ID (DE)')
                      ->searchable()
@@ -471,6 +473,12 @@ class LocationResource extends Resource
                      ->label('Task ID (EN)')
                      ->searchable()
                      ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('city')
+                    ->searchable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('country')
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('job_status')
                      ->label('Status (DE)')
                      ->badge()
@@ -512,12 +520,6 @@ class LocationResource extends Resource
                      ->label('Updated (EN)')
                      ->date('d.m.Y')
                      ->sortable()
-                     ->toggleable(),
-                Tables\Columns\TextColumn::make('city')
-                     ->searchable()
-                     ->toggleable(),
-                Tables\Columns\TextColumn::make('country')
-                     ->searchable()
                      ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                      ->dateTime()
