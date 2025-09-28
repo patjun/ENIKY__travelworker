@@ -472,8 +472,7 @@ class LocationResource extends Resource
                         ->extraControl([
                             'zoomDelta'           => 1,
                             'zoomSnap'            => 2,
-                        ])
-                        ->disabled(),
+                        ]),
         ];
     }
 
@@ -481,18 +480,10 @@ class LocationResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('en_name')
                      ->searchable()
                      ->width(300)
                      ->wrap(),
-                Tables\Columns\TextColumn::make('task_id')
-                     ->label('Task ID (DE)')
-                     ->searchable()
-                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('en_task_id')
-                     ->label('Task ID (EN)')
-                     ->searchable()
-                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('city')
                     ->searchable()
                     ->toggleable(),
@@ -541,6 +532,14 @@ class LocationResource extends Resource
                      ->date('d.m.Y')
                      ->sortable()
                      ->toggleable(),
+                Tables\Columns\TextColumn::make('task_id')
+                     ->label('Task ID (DE)')
+                     ->searchable()
+                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('en_task_id')
+                     ->label('Task ID (EN)')
+                     ->searchable()
+                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                      ->dateTime()
                      ->sortable()
