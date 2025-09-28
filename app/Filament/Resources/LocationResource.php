@@ -252,15 +252,20 @@ class LocationResource extends Resource
                                                 ->label('Name')
                                                 ->default('Neue Location')
                                                 ->required()
-                                                ->live(),
+                                                ->live()
+                                                ->disabled(),
                                             Forms\Components\TextInput::make('street')
-                                                ->label('Street'),
+                                                ->label('Street')
+                                                ->disabled(),
                                             Forms\Components\TextInput::make('zip')
-                                                ->label('ZIP'),
+                                                ->label('ZIP')
+                                                ->disabled(),
                                             Forms\Components\TextInput::make('city')
-                                                ->label('City'),
+                                                ->label('City')
+                                                ->disabled(),
                                             Forms\Components\TextInput::make('country')
-                                                ->label('Country'),
+                                                ->label('Country')
+                                                ->disabled(),
                                             Forms\Components\Textarea::make('business_data')
                                                 ->label('Business Data')
                                                 ->disabled()
@@ -330,35 +335,47 @@ class LocationResource extends Resource
                                         ->schema([
                                             Forms\Components\TextInput::make('en_name')
                                                 ->label('Name (EN)')
-                                                ->live(),
+                                                ->live()
+                                                ->disabled(),
                                             Forms\Components\TextInput::make('en_street')
-                                                ->label('Street (EN)'),
+                                                ->label('Street (EN)')
+                                                ->disabled(),
                                             Forms\Components\TextInput::make('en_city')
-                                                ->label('City (EN)'),
+                                                ->label('City (EN)')
+                                                ->disabled(),
                                             Forms\Components\TextInput::make('en_country')
-                                                ->label('Country (EN)'),
+                                                ->label('Country (EN)')
+                                                ->disabled(),
                                             Forms\Components\TextInput::make('en_phone')
-                                                ->label('Phone (EN)'),
+                                                ->label('Phone (EN)')
+                                                ->disabled(),
                                             Forms\Components\TextInput::make('en_website')
-                                                ->label('Website (EN)'),
+                                                ->label('Website (EN)')
+                                                ->disabled(),
                                             Forms\Components\Textarea::make('en_description')
-                                                ->label('Description (EN)'),
+                                                ->label('Description (EN)')
+                                                ->disabled(),
                                             Forms\Components\TextInput::make('en_category')
-                                                ->label('Category (EN)'),
+                                                ->label('Category (EN)')
+                                                ->disabled(),
                                             Forms\Components\Textarea::make('en_opening_hours')
                                                 ->label('Opening Hours (EN)')
-                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null)
+                                                ->disabled(),
                                             Forms\Components\Textarea::make('en_accessibility')
                                                 ->label('Accessibility Data (EN)')
                                                 ->disabled()
                                                 ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
                                             Forms\Components\TextInput::make('en_main_image_url')
-                                                ->label('Main Image URL (EN)'),
+                                                ->label('Main Image URL (EN)')
+                                                ->disabled(),
                                             Forms\Components\TextInput::make('en_price_level')
-                                                ->label('Price Level (EN)'),
+                                                ->label('Price Level (EN)')
+                                                ->disabled(),
                                             Forms\Components\Textarea::make('en_additional_categories')
                                                 ->label('Additional Categories (EN)')
-                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null)
+                                                ->disabled(),
                                             Forms\Components\Textarea::make('en_opening_hours_html')
                                                 ->label('Opening Hours Widget (EN)')
                                                 ->disabled()
@@ -413,10 +430,12 @@ class LocationResource extends Resource
                     ]),
                     Forms\Components\TextInput::make('latitude')
                         ->label('Latitude')
-                        ->required(),
+                        ->required()
+                        ->disabled(),
                     Forms\Components\TextInput::make('longitude')
                         ->label('Longitude')
-                        ->required(),
+                        ->required()
+                        ->disabled(),
                     Map::make('map')
                         ->label('Map')
                         ->columnSpanFull()
@@ -453,7 +472,8 @@ class LocationResource extends Resource
                         ->extraControl([
                             'zoomDelta'           => 1,
                             'zoomSnap'            => 2,
-                        ]),
+                        ])
+                        ->disabled(),
         ];
     }
 
