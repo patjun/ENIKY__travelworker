@@ -43,7 +43,7 @@ class LocationResource extends Resource
                     .rating-widget,
                     .accessibility-widget,
                     .opening-hours-widget {
-                      padding: 20px;
+                      padding: 15px;
                       border-radius: 16px;
                       font-family: Arial, sans-serif;
                       width: 400px;
@@ -52,22 +52,32 @@ class LocationResource extends Resource
                       border: 1px solid rgba(0,0,0,0.05);
                     }
 
-                    /* Contact Info Widget */
-                    .contact-info-widget {
-                      background: #fff;
-                      color: #374151;
-                    }
-                    .contact-header {
+                    /* Shared header styles for all widgets */
+                    .contact-header,
+                    .opening-hours-header,
+                    .rating-header,
+                    .accessibility-header {
                       text-align: center;
-                      margin-bottom: 20px;
+                      margin-bottom: 15px;
                       border-bottom: 2px solid #186b29;
                       padding-bottom: 15px;
                     }
-                    .contact-name {
+
+                    /* Shared title styles for all widgets */
+                    .contact-name,
+                    .opening-hours-title,
+                    .rating-title,
+                    .accessibility-title {
                       margin: 0;
                       font-size: 1.25rem;
                       font-weight: bold;
                       color: #186b29;
+                    }
+
+                    /* Contact Info Widget */
+                    .contact-info-widget {
+                      background: #fff;
+                      color: #374151;
                     }
                     .contact-details {
                       display: flex;
@@ -112,18 +122,6 @@ class LocationResource extends Resource
                       background: #fff;
                       color: #374151;
                     }
-                    .opening-hours-header {
-                      text-align: center;
-                      border-bottom: 2px solid #186b29;
-                      padding: 12px 0;
-                      margin-bottom: 20px;
-                    }
-                    .opening-hours-title {
-                      margin: 0;
-                      font-size: 1.25rem;
-                      font-weight: bold;
-                      color: #186b29;
-                    }
                     .opening-hours-day {
                       display: flex;
                       justify-content: space-between;
@@ -142,18 +140,6 @@ class LocationResource extends Resource
                     .rating-widget {
                       background: #fff;
                       color: #374151;
-                    }
-                    .rating-header {
-                      text-align: center;
-                      margin-bottom: 15px;
-                      border-bottom: 2px solid #186b29;
-                      padding-bottom: 10px;
-                    }
-                    .rating-title {
-                      margin: 0;
-                      font-size: 1.25rem;
-                      font-weight: bold;
-                      color: #186b29;
                     }
                     .rating-content {
                       display: flex;
@@ -215,18 +201,6 @@ class LocationResource extends Resource
                     .accessibility-widget {
                       background: #fff;
                       color: #374151;
-                    }
-                    .accessibility-header {
-                      text-align: center;
-                      margin-bottom: 15px;
-                      border-bottom: 2px solid #186b29;
-                      padding-bottom: 10px;
-                    }
-                    .accessibility-title {
-                      margin: 0;
-                      font-size: 1.25rem;
-                      font-weight: bold;
-                      color: #186b29;
                     }
                     .accessibility-features {
                       display: flex;
