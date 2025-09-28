@@ -52,22 +52,22 @@ class LocationResource extends Resource
                       border: 1px solid rgba(0,0,0,0.05);
                     }
 
-                    /* Contact Info Widget - Light Pink */
+                    /* Contact Info Widget */
                     .contact-info-widget {
-                      background: linear-gradient(135deg, #fef7f7 0%, #fdf2f8 100%);
+                      background: #fff;
                       color: #374151;
                     }
                     .contact-header {
                       text-align: center;
                       margin-bottom: 20px;
-                      border-bottom: 2px solid #ec008c;
+                      border-bottom: 2px solid #71bf44;
                       padding-bottom: 15px;
                     }
                     .contact-name {
                       margin: 0;
-                      font-size: 24px;
+                      font-size: 1.25rem;
                       font-weight: bold;
-                      color: #84004c;
+                      color: #186b29;
                     }
                     .contact-details {
                       display: flex;
@@ -79,50 +79,49 @@ class LocationResource extends Resource
                       align-items: flex-start;
                       gap: 12px;
                       padding: 12px;
-                      background: rgba(236, 0, 140, 0.05);
+                      background: rgba(113, 191, 68, 0.05);
                       border-radius: 16px;
-                      border-left: 3px solid #ec008c;
                     }
                     .contact-icon {
                       font-size: 20px;
                       width: 24px;
                       text-align: center;
                       flex-shrink: 0;
-                      color: #ec008c;
+                      color: #71bf44;
                     }
                     .contact-info {
                       flex: 1;
                       line-height: 1.4;
+                      font-size: 1rem;
                     }
                     .address-line {
                       margin-bottom: 2px;
                     }
                     .contact-link {
-                      color: #84004c;
+                      color: #186b29;
                       text-decoration: none;
-                      border-bottom: 1px solid rgba(132, 0, 76, 0.3);
+                      border-bottom: 1px solid rgba(24, 107, 41, 0.3);
                       transition: border-bottom-color 0.3s ease;
                     }
                     .contact-link:hover {
-                      border-bottom-color: #84004c;
+                      border-bottom-color: #186b29;
                     }
 
-                    /* Opening Hours Widget - Light Gray */
+                    /* Opening Hours Widget */
                     .opening-hours-widget {
-                      background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+                      background: #fff;
                       color: #374151;
-                      text-transform: uppercase;
                     }
                     .opening-hours-header {
                       text-align: center;
-                      border-top: 3px solid #71bf44;
-                      border-bottom: 3px solid #71bf44;
+                      border-top: 2px solid #71bf44;
+                      border-bottom: 2px solid #71bf44;
                       padding: 12px 0;
                       margin-bottom: 20px;
                     }
                     .opening-hours-title {
                       margin: 0;
-                      font-size: 24px;
+                      font-size: 1.25rem;
                       font-weight: bold;
                       letter-spacing: 2px;
                       color: #186b29;
@@ -131,20 +130,19 @@ class LocationResource extends Resource
                       display: flex;
                       justify-content: space-between;
                       margin-bottom: 8px;
-                      font-size: 18px;
+                      font-size: 1rem;
                       padding: 8px 12px;
                       background: rgba(113, 191, 68, 0.05);
                       border-radius: 16px;
-                      border-left: 3px solid #71bf44;
                     }
                     .opening-hours-day-name {
                       font-weight: bold;
                       color: #186b29;
                     }
 
-                    /* Rating Widget - Light Green */
+                    /* Rating Widget */
                     .rating-widget {
-                      background: linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%);
+                      background: #fff;
                       color: #374151;
                     }
                     .rating-header {
@@ -155,7 +153,7 @@ class LocationResource extends Resource
                     }
                     .rating-title {
                       margin: 0;
-                      font-size: 20px;
+                      font-size: 1.25rem;
                       font-weight: bold;
                       color: #186b29;
                     }
@@ -170,7 +168,7 @@ class LocationResource extends Resource
                       gap: 15px;
                     }
                     .rating-score {
-                      font-size: 48px;
+                      font-size: 3rem;
                       font-weight: bold;
                       color: #186b29;
                     }
@@ -196,7 +194,7 @@ class LocationResource extends Resource
                       color: #d1d5db;
                     }
                     .rating-text {
-                      font-size: 14px;
+                      font-size: 1rem;
                       color: #6b7280;
                     }
                     .rating-reviews {
@@ -206,18 +204,18 @@ class LocationResource extends Resource
                       align-items: flex-end;
                     }
                     .reviews-count {
-                      font-size: 24px;
+                      font-size: 1.5rem;
                       font-weight: bold;
                       color: #186b29;
                     }
                     .reviews-label {
-                      font-size: 12px;
+                      font-size: 1rem;
                       color: #6b7280;
                     }
 
-                    /* Accessibility Widget - Very Light Blue */
+                    /* Accessibility Widget */
                     .accessibility-widget {
-                      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+                      background: #fff;
                       color: #374151;
                     }
                     .accessibility-header {
@@ -228,7 +226,7 @@ class LocationResource extends Resource
                     }
                     .accessibility-title {
                       margin: 0;
-                      font-size: 20px;
+                      font-size: 1.25rem;
                       font-weight: bold;
                       color: #186b29;
                     }
@@ -246,7 +244,7 @@ class LocationResource extends Resource
                       background: rgba(113, 191, 68, 0.05);
                     }
                     .accessibility-status {
-                      font-size: 14px;
+                      font-size: 1rem;
                       width: 20px;
                       text-align: center;
                       flex-shrink: 0;
@@ -255,14 +253,14 @@ class LocationResource extends Resource
                     }
                     .accessibility-label {
                       flex: 1;
-                      font-size: 14px;
+                      font-size: 1rem;
                       font-weight: 500;
                     }
                     .accessibility-available {
-                      border-left: 4px solid #71bf44;
+                      /* border-left removed */
                     }
                     .accessibility-unavailable {
-                      border-left: 4px solid #e5e7eb;
+                      /* border-left removed */
                       opacity: 0.7;
                     }
                     </style>

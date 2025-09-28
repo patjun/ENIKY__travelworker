@@ -185,7 +185,7 @@ class Location extends Model {
 		// Start building HTML
 		$output = '<div class="accessibility-widget">' . "\n";
 		$output .= '  <div class="accessibility-header">' . "\n";
-		$output .= '    <h3 class="accessibility-title">♿ ' . $titleText . '</h3>' . "\n";
+		$output .= '    <h3 class="accessibility-title">' . $titleText . '</h3>' . "\n";
 		$output .= '  </div>' . "\n";
 		$output .= '  <div class="accessibility-features">' . "\n";
 
