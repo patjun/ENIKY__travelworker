@@ -14,8 +14,6 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Notifications\Notification;
 use Dotswan\MapPicker\Fields\Map;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\HtmlString;
 
 class LocationResource extends Resource
@@ -42,82 +40,179 @@ class LocationResource extends Resource
                     Forms\Components\Tabs\Tab::make('German')
                         ->label(fn (Get $get) => ($get('name') ?? 'Neue Location') . ' - DE')
                         ->schema([
-                            Forms\Components\TextInput::make('name')
-                                ->label('Name')
-                                ->default('Neue Location')
-                                ->required()
-                                ->live(),
-                            Forms\Components\TextInput::make('street')
-                                ->label('Street'),
-                            Forms\Components\TextInput::make('zip')
-                                ->label('ZIP'),
-                            Forms\Components\TextInput::make('city')
-                                ->label('City'),
-                            Forms\Components\TextInput::make('country')
-                                ->label('Country'),
-                            Forms\Components\Textarea::make('business_data')
-                                ->label('Business Data')
-                                ->disabled()
-                                ->columnSpanFull()
-                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
-                            Forms\Components\Textarea::make('opening_hours_html')
-                                ->label('Opening Hours Widget (DE)')
-                                ->columnSpanFull()
-                                ->disabled()
-                                ->rows(8),
-                            Forms\Components\Textarea::make('structured_data')
-                                ->label('Structured Data (DE)')
-                                ->columnSpanFull()
-                                ->disabled()
-                                ->rows(15),
+                            Forms\Components\Grid::make(2)
+                                ->schema([
+                                    Forms\Components\Section::make('Grunddaten')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            Forms\Components\TextInput::make('name')
+                                                ->label('Name')
+                                                ->default('Neue Location')
+                                                ->required()
+                                                ->live(),
+                                            Forms\Components\TextInput::make('street')
+                                                ->label('Street'),
+                                            Forms\Components\TextInput::make('zip')
+                                                ->label('ZIP'),
+                                            Forms\Components\TextInput::make('city')
+                                                ->label('City'),
+                                            Forms\Components\TextInput::make('country')
+                                                ->label('Country'),
+                                            Forms\Components\Textarea::make('business_data')
+                                                ->label('Business Data')
+                                                ->disabled()
+                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                                            Forms\Components\Textarea::make('opening_hours_html')
+                                                ->label('Opening Hours Widget (DE)')
+                                                ->disabled()
+                                                ->rows(8),
+                                            Forms\Components\Textarea::make('structured_data')
+                                                ->label('Structured Data (DE)')
+                                                ->disabled()
+                                                ->rows(15),
+                                        ]),
+                                    Forms\Components\Section::make('Widgets')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            Forms\Components\Placeholder::make('widget_styles')
+                                                ->label('')
+                                                ->content(new HtmlString('
+                                                    <style>
+                                                    .opening-hours-widget {
+                                                      background-color: #333;
+                                                      color: white;
+                                                      padding: 20px;
+                                                      font-family: Arial, sans-serif;
+                                                      width: 400px;
+                                                      text-transform: uppercase;
+                                                    }
+                                                    .opening-hours-header {
+                                                      text-align: center;
+                                                      border-top: 3px solid white;
+                                                      border-bottom: 3px solid white;
+                                                      padding: 10px 0;
+                                                      margin-bottom: 20px;
+                                                    }
+                                                    .opening-hours-title {
+                                                      margin: 0;
+                                                      font-size: 24px;
+                                                      font-weight: bold;
+                                                      letter-spacing: 2px;
+                                                    }
+                                                    .opening-hours-day {
+                                                      display: flex;
+                                                      justify-content: space-between;
+                                                      margin-bottom: 8px;
+                                                      font-size: 18px;
+                                                    }
+                                                    .opening-hours-day-name {
+                                                      font-weight: bold;
+                                                    }
+                                                    </style>
+                                                ')),
+                                            Forms\Components\Placeholder::make('opening_hours_preview')
+                                                ->label('Opening Hours Widget Preview')
+                                                ->content(fn ($record) => $record && $record->opening_hours_html
+                                                    ? new HtmlString($record->opening_hours_html)
+                                                    : 'Widget wird nach dem Speichern generiert'
+                                                ),
+                                        ]),
+                                ]),
                         ]),
                     Forms\Components\Tabs\Tab::make('English')
                         ->label(fn (Get $get) => ($get('en_name') ?? 'New Location') . ' - EN')
                         ->schema([
-                            Forms\Components\TextInput::make('en_name')
-                                ->label('Name (EN)')
-                                ->live(),
-                            Forms\Components\TextInput::make('en_street')
-                                ->label('Street (EN)'),
-                            Forms\Components\TextInput::make('en_city')
-                                ->label('City (EN)'),
-                            Forms\Components\TextInput::make('en_country')
-                                ->label('Country (EN)'),
-                            Forms\Components\TextInput::make('en_phone')
-                                ->label('Phone (EN)'),
-                            Forms\Components\TextInput::make('en_website')
-                                ->label('Website (EN)'),
-                            Forms\Components\Textarea::make('en_description')
-                                ->label('Description (EN)')
-                                ->columnSpanFull(),
-                            Forms\Components\TextInput::make('en_category')
-                                ->label('Category (EN)'),
-                            Forms\Components\Textarea::make('en_opening_hours')
-                                ->label('Opening Hours (EN)')
-                                ->columnSpanFull()
-                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
-                            Forms\Components\Textarea::make('en_attributes')
-                                ->label('Attributes (EN)')
-                                ->columnSpanFull()
-                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
-                            Forms\Components\TextInput::make('en_main_image_url')
-                                ->label('Main Image URL (EN)'),
-                            Forms\Components\TextInput::make('en_price_level')
-                                ->label('Price Level (EN)'),
-                            Forms\Components\Textarea::make('en_additional_categories')
-                                ->label('Additional Categories (EN)')
-                                ->columnSpanFull()
-                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
-                            Forms\Components\Textarea::make('en_opening_hours_html')
-                                ->label('Opening Hours Widget (EN)')
-                                ->columnSpanFull()
-                                ->disabled()
-                                ->rows(8),
-                            Forms\Components\Textarea::make('en_structured_data')
-                                ->label('Structured Data (EN)')
-                                ->columnSpanFull()
-                                ->disabled()
-                                ->rows(15),
+                            Forms\Components\Grid::make(2)
+                                ->schema([
+                                    Forms\Components\Section::make('Basic Data')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            Forms\Components\TextInput::make('en_name')
+                                                ->label('Name (EN)')
+                                                ->live(),
+                                            Forms\Components\TextInput::make('en_street')
+                                                ->label('Street (EN)'),
+                                            Forms\Components\TextInput::make('en_city')
+                                                ->label('City (EN)'),
+                                            Forms\Components\TextInput::make('en_country')
+                                                ->label('Country (EN)'),
+                                            Forms\Components\TextInput::make('en_phone')
+                                                ->label('Phone (EN)'),
+                                            Forms\Components\TextInput::make('en_website')
+                                                ->label('Website (EN)'),
+                                            Forms\Components\Textarea::make('en_description')
+                                                ->label('Description (EN)'),
+                                            Forms\Components\TextInput::make('en_category')
+                                                ->label('Category (EN)'),
+                                            Forms\Components\Textarea::make('en_opening_hours')
+                                                ->label('Opening Hours (EN)')
+                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                                            Forms\Components\Textarea::make('en_attributes')
+                                                ->label('Attributes (EN)')
+                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                                            Forms\Components\TextInput::make('en_main_image_url')
+                                                ->label('Main Image URL (EN)'),
+                                            Forms\Components\TextInput::make('en_price_level')
+                                                ->label('Price Level (EN)'),
+                                            Forms\Components\Textarea::make('en_additional_categories')
+                                                ->label('Additional Categories (EN)')
+                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                                            Forms\Components\Textarea::make('en_opening_hours_html')
+                                                ->label('Opening Hours Widget (EN)')
+                                                ->disabled()
+                                                ->rows(8),
+                                            Forms\Components\Textarea::make('en_structured_data')
+                                                ->label('Structured Data (EN)')
+                                                ->disabled()
+                                                ->rows(15),
+                                        ]),
+                                    Forms\Components\Section::make('Widgets')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            Forms\Components\Placeholder::make('en_widget_styles')
+                                                ->label('')
+                                                ->content(new HtmlString('
+                                                    <style>
+                                                    .opening-hours-widget {
+                                                      background-color: #333;
+                                                      color: white;
+                                                      padding: 20px;
+                                                      font-family: Arial, sans-serif;
+                                                      width: 400px;
+                                                      text-transform: uppercase;
+                                                    }
+                                                    .opening-hours-header {
+                                                      text-align: center;
+                                                      border-top: 3px solid white;
+                                                      border-bottom: 3px solid white;
+                                                      padding: 10px 0;
+                                                      margin-bottom: 20px;
+                                                    }
+                                                    .opening-hours-title {
+                                                      margin: 0;
+                                                      font-size: 24px;
+                                                      font-weight: bold;
+                                                      letter-spacing: 2px;
+                                                    }
+                                                    .opening-hours-day {
+                                                      display: flex;
+                                                      justify-content: space-between;
+                                                      margin-bottom: 8px;
+                                                      font-size: 18px;
+                                                    }
+                                                    .opening-hours-day-name {
+                                                      font-weight: bold;
+                                                    }
+                                                    </style>
+                                                ')),
+                                            Forms\Components\Placeholder::make('en_opening_hours_preview')
+                                                ->label('Opening Hours Widget Preview')
+                                                ->content(fn ($record) => $record && $record->en_opening_hours_html
+                                                    ? new HtmlString($record->en_opening_hours_html)
+                                                    : 'Widget will be generated after saving'
+                                                ),
+                                        ]),
+                                ]),
                         ]),
                     ]),
                     Forms\Components\TextInput::make('latitude')
