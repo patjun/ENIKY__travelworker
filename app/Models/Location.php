@@ -23,11 +23,11 @@ class Location extends Model {
 		'description', 'category', 'rating_value', 'rating_votes_count',
 		'opening_hours', 'attributes', 'main_image_url', 'is_claimed',
 		'price_level', 'additional_categories', 'opening_hours_html', 'structured_data',
-		'contact_info_html',
+		'contact_info_html', 'rating_html',
 		'en_name', 'en_street', 'en_city', 'en_country', 'en_phone', 'en_website',
 		'en_description', 'en_category', 'en_opening_hours', 'en_attributes',
 		'en_main_image_url', 'en_price_level', 'en_additional_categories',
-		'en_opening_hours_html', 'en_structured_data', 'en_contact_info_html',
+		'en_opening_hours_html', 'en_structured_data', 'en_contact_info_html', 'en_rating_html',
 		'en_task_id', 'en_task_post_output', 'en_task_get_output', 'en_business_data',
 		'en_last_dataforseo_update', 'en_job_status', 'en_post_attempts', 'en_get_attempts'
 	];
@@ -55,9 +55,11 @@ class Location extends Model {
 	public function generateWidgets()
 	{
 		$this->contact_info_html = $this->generateContactInfoHtml('de');
+		$this->rating_html = $this->generateRatingHtml('de');
 		$this->opening_hours_html = $this->generateOpeningHoursHtml('de');
 		$this->structured_data = $this->generateStructuredData('de');
 		$this->en_contact_info_html = $this->generateContactInfoHtml('en');
+		$this->en_rating_html = $this->generateRatingHtml('en');
 		$this->en_opening_hours_html = $this->generateOpeningHoursHtml('en');
 		$this->en_structured_data = $this->generateStructuredData('en');
 	}
@@ -125,6 +127,66 @@ class Location extends Model {
 			$html .= "      </div>\n";
 			$html .= "    </div>\n";
 		}
+
+		$html .= "  </div>\n";
+		$html .= "</div>";
+
+		return $html;
+	}
+
+	public function generateRatingHtml($language = 'de')
+	{
+		if (!$this->rating_value || !$this->rating_votes_count) {
+			return null;
+		}
+
+		$ratingText = $language === 'en' ? 'Rating' : 'Bewertung';
+		$reviewsText = $language === 'en' ? 'Reviews' : 'Bewertungen';
+		$outOfText = $language === 'en' ? 'out of' : 'von';
+
+		$html = "<div class=\"rating-widget\">\n";
+
+		// Header
+		$html .= "  <div class=\"rating-header\">\n";
+		$html .= "    <h3 class=\"rating-title\">{$ratingText}</h3>\n";
+		$html .= "  </div>\n";
+
+		$html .= "  <div class=\"rating-content\">\n";
+
+		// Main rating display
+		$html .= "    <div class=\"rating-main\">\n";
+		$html .= "      <div class=\"rating-score\">{$this->rating_value}</div>\n";
+		$html .= "      <div class=\"rating-details\">\n";
+
+		// Star display
+		$html .= "        <div class=\"rating-stars\">\n";
+		$fullStars = floor($this->rating_value);
+		$hasHalfStar = ($this->rating_value - $fullStars) >= 0.5;
+
+		for ($i = 1; $i <= 5; $i++) {
+			if ($i <= $fullStars) {
+				$html .= "          <span class=\"star star-full\">★</span>\n";
+			} elseif ($i == $fullStars + 1 && $hasHalfStar) {
+				$html .= "          <span class=\"star star-half\">☆</span>\n";
+			} else {
+				$html .= "          <span class=\"star star-empty\">☆</span>\n";
+			}
+		}
+		$html .= "        </div>\n";
+
+		// Rating text
+		$html .= "        <div class=\"rating-text\">\n";
+		$html .= "          <span class=\"rating-out-of\">{$outOfText} 5</span>\n";
+		$html .= "        </div>\n";
+
+		$html .= "      </div>\n";
+		$html .= "    </div>\n";
+
+		// Review count
+		$html .= "    <div class=\"rating-reviews\">\n";
+		$html .= "      <span class=\"reviews-count\">" . number_format($this->rating_votes_count) . "</span>\n";
+		$html .= "      <span class=\"reviews-label\">{$reviewsText}</span>\n";
+		$html .= "    </div>\n";
 
 		$html .= "  </div>\n";
 		$html .= "</div>";

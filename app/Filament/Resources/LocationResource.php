@@ -74,6 +74,10 @@ class LocationResource extends Resource
                                                 ->label('Contact Info Widget (DE)')
                                                 ->disabled()
                                                 ->rows(8),
+                                            Forms\Components\Textarea::make('rating_html')
+                                                ->label('Rating Widget (DE)')
+                                                ->disabled()
+                                                ->rows(6),
                                         ]),
                                     Forms\Components\Section::make('Widgets')
                                         ->columnSpan(1)
@@ -170,12 +174,97 @@ class LocationResource extends Resource
                                                     .opening-hours-day-name {
                                                       font-weight: bold;
                                                     }
+                                                    .rating-widget {
+                                                      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                                                      color: white;
+                                                      padding: 20px;
+                                                      border-radius: 12px;
+                                                      font-family: Arial, sans-serif;
+                                                      width: 400px;
+                                                      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                                                      margin-bottom: 20px;
+                                                    }
+                                                    .rating-header {
+                                                      text-align: center;
+                                                      margin-bottom: 15px;
+                                                      border-bottom: 2px solid rgba(255,255,255,0.3);
+                                                      padding-bottom: 10px;
+                                                    }
+                                                    .rating-title {
+                                                      margin: 0;
+                                                      font-size: 20px;
+                                                      font-weight: bold;
+                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                                                    }
+                                                    .rating-content {
+                                                      display: flex;
+                                                      justify-content: space-between;
+                                                      align-items: center;
+                                                    }
+                                                    .rating-main {
+                                                      display: flex;
+                                                      align-items: center;
+                                                      gap: 15px;
+                                                    }
+                                                    .rating-score {
+                                                      font-size: 48px;
+                                                      font-weight: bold;
+                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                                                    }
+                                                    .rating-details {
+                                                      display: flex;
+                                                      flex-direction: column;
+                                                      gap: 5px;
+                                                    }
+                                                    .rating-stars {
+                                                      display: flex;
+                                                      gap: 2px;
+                                                    }
+                                                    .star {
+                                                      font-size: 20px;
+                                                    }
+                                                    .star-full {
+                                                      color: #FFD700;
+                                                      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+                                                    }
+                                                    .star-half {
+                                                      color: #FFD700;
+                                                      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+                                                    }
+                                                    .star-empty {
+                                                      color: rgba(255,255,255,0.4);
+                                                    }
+                                                    .rating-text {
+                                                      font-size: 14px;
+                                                      opacity: 0.9;
+                                                    }
+                                                    .rating-reviews {
+                                                      text-align: right;
+                                                      display: flex;
+                                                      flex-direction: column;
+                                                      align-items: flex-end;
+                                                    }
+                                                    .reviews-count {
+                                                      font-size: 24px;
+                                                      font-weight: bold;
+                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                                                    }
+                                                    .reviews-label {
+                                                      font-size: 12px;
+                                                      opacity: 0.9;
+                                                    }
                                                     </style>
                                                 ')),
                                             Forms\Components\Placeholder::make('contact_info_preview')
                                                 ->label('Contact Info Widget Preview')
                                                 ->content(fn ($record) => $record && $record->contact_info_html
                                                     ? new HtmlString($record->contact_info_html)
+                                                    : 'Widget wird nach dem Speichern generiert'
+                                                ),
+                                            Forms\Components\Placeholder::make('rating_preview')
+                                                ->label('Rating Widget Preview')
+                                                ->content(fn ($record) => $record && $record->rating_html
+                                                    ? new HtmlString($record->rating_html)
                                                     : 'Widget wird nach dem Speichern generiert'
                                                 ),
                                             Forms\Components\Placeholder::make('opening_hours_preview')
@@ -237,6 +326,10 @@ class LocationResource extends Resource
                                                 ->label('Contact Info Widget (EN)')
                                                 ->disabled()
                                                 ->rows(8),
+                                            Forms\Components\Textarea::make('en_rating_html')
+                                                ->label('Rating Widget (EN)')
+                                                ->disabled()
+                                                ->rows(6),
                                         ]),
                                     Forms\Components\Section::make('Widgets')
                                         ->columnSpan(1)
@@ -333,12 +426,97 @@ class LocationResource extends Resource
                                                     .opening-hours-day-name {
                                                       font-weight: bold;
                                                     }
+                                                    .rating-widget {
+                                                      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                                                      color: white;
+                                                      padding: 20px;
+                                                      border-radius: 12px;
+                                                      font-family: Arial, sans-serif;
+                                                      width: 400px;
+                                                      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                                                      margin-bottom: 20px;
+                                                    }
+                                                    .rating-header {
+                                                      text-align: center;
+                                                      margin-bottom: 15px;
+                                                      border-bottom: 2px solid rgba(255,255,255,0.3);
+                                                      padding-bottom: 10px;
+                                                    }
+                                                    .rating-title {
+                                                      margin: 0;
+                                                      font-size: 20px;
+                                                      font-weight: bold;
+                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                                                    }
+                                                    .rating-content {
+                                                      display: flex;
+                                                      justify-content: space-between;
+                                                      align-items: center;
+                                                    }
+                                                    .rating-main {
+                                                      display: flex;
+                                                      align-items: center;
+                                                      gap: 15px;
+                                                    }
+                                                    .rating-score {
+                                                      font-size: 48px;
+                                                      font-weight: bold;
+                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                                                    }
+                                                    .rating-details {
+                                                      display: flex;
+                                                      flex-direction: column;
+                                                      gap: 5px;
+                                                    }
+                                                    .rating-stars {
+                                                      display: flex;
+                                                      gap: 2px;
+                                                    }
+                                                    .star {
+                                                      font-size: 20px;
+                                                    }
+                                                    .star-full {
+                                                      color: #FFD700;
+                                                      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+                                                    }
+                                                    .star-half {
+                                                      color: #FFD700;
+                                                      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+                                                    }
+                                                    .star-empty {
+                                                      color: rgba(255,255,255,0.4);
+                                                    }
+                                                    .rating-text {
+                                                      font-size: 14px;
+                                                      opacity: 0.9;
+                                                    }
+                                                    .rating-reviews {
+                                                      text-align: right;
+                                                      display: flex;
+                                                      flex-direction: column;
+                                                      align-items: flex-end;
+                                                    }
+                                                    .reviews-count {
+                                                      font-size: 24px;
+                                                      font-weight: bold;
+                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                                                    }
+                                                    .reviews-label {
+                                                      font-size: 12px;
+                                                      opacity: 0.9;
+                                                    }
                                                     </style>
                                                 ')),
                                             Forms\Components\Placeholder::make('en_contact_info_preview')
                                                 ->label('Contact Info Widget Preview')
                                                 ->content(fn ($record) => $record && $record->en_contact_info_html
                                                     ? new HtmlString($record->en_contact_info_html)
+                                                    : 'Widget will be generated after saving'
+                                                ),
+                                            Forms\Components\Placeholder::make('en_rating_preview')
+                                                ->label('Rating Widget Preview')
+                                                ->content(fn ($record) => $record && $record->en_rating_html
+                                                    ? new HtmlString($record->en_rating_html)
                                                     : 'Widget will be generated after saving'
                                                 ),
                                             Forms\Components\Placeholder::make('en_opening_hours_preview')
