@@ -34,6 +34,239 @@ class LocationResource extends Resource
             Forms\Components\TextInput::make('place_id')
                 ->label('Google Places ID')
                 ->helperText(new HtmlString('<a href="https://developers.google.com/maps/documentation/places/web-service/place-id?hl=de" target="_blank" rel="noopener">Klick zum Place ID Finder</a>')),
+            Forms\Components\Placeholder::make('global_widget_styles')
+                ->label('')
+                ->content(new HtmlString('
+                    <style>
+                    /* Shared widget styles */
+                    .contact-info-widget,
+                    .rating-widget,
+                    .accessibility-widget,
+                    .opening-hours-widget {
+                      padding: 20px;
+                      border-radius: 16px;
+                      font-family: Arial, sans-serif;
+                      width: 400px;
+                      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                      margin-bottom: 20px;
+                      border: 1px solid rgba(0,0,0,0.05);
+                    }
+
+                    /* Contact Info Widget - Light Pink */
+                    .contact-info-widget {
+                      background: linear-gradient(135deg, #fef7f7 0%, #fdf2f8 100%);
+                      color: #374151;
+                    }
+                    .contact-header {
+                      text-align: center;
+                      margin-bottom: 20px;
+                      border-bottom: 2px solid #ec008c;
+                      padding-bottom: 15px;
+                    }
+                    .contact-name {
+                      margin: 0;
+                      font-size: 24px;
+                      font-weight: bold;
+                      color: #84004c;
+                    }
+                    .contact-details {
+                      display: flex;
+                      flex-direction: column;
+                      gap: 15px;
+                    }
+                    .contact-item {
+                      display: flex;
+                      align-items: flex-start;
+                      gap: 12px;
+                      padding: 12px;
+                      background: rgba(236, 0, 140, 0.05);
+                      border-radius: 16px;
+                      border-left: 3px solid #ec008c;
+                    }
+                    .contact-icon {
+                      font-size: 20px;
+                      width: 24px;
+                      text-align: center;
+                      flex-shrink: 0;
+                      color: #ec008c;
+                    }
+                    .contact-info {
+                      flex: 1;
+                      line-height: 1.4;
+                    }
+                    .address-line {
+                      margin-bottom: 2px;
+                    }
+                    .contact-link {
+                      color: #84004c;
+                      text-decoration: none;
+                      border-bottom: 1px solid rgba(132, 0, 76, 0.3);
+                      transition: border-bottom-color 0.3s ease;
+                    }
+                    .contact-link:hover {
+                      border-bottom-color: #84004c;
+                    }
+
+                    /* Opening Hours Widget - Light Gray */
+                    .opening-hours-widget {
+                      background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+                      color: #374151;
+                      text-transform: uppercase;
+                    }
+                    .opening-hours-header {
+                      text-align: center;
+                      border-top: 3px solid #71bf44;
+                      border-bottom: 3px solid #71bf44;
+                      padding: 12px 0;
+                      margin-bottom: 20px;
+                    }
+                    .opening-hours-title {
+                      margin: 0;
+                      font-size: 24px;
+                      font-weight: bold;
+                      letter-spacing: 2px;
+                      color: #186b29;
+                    }
+                    .opening-hours-day {
+                      display: flex;
+                      justify-content: space-between;
+                      margin-bottom: 8px;
+                      font-size: 18px;
+                      padding: 8px 12px;
+                      background: rgba(113, 191, 68, 0.05);
+                      border-radius: 16px;
+                      border-left: 3px solid #71bf44;
+                    }
+                    .opening-hours-day-name {
+                      font-weight: bold;
+                      color: #186b29;
+                    }
+
+                    /* Rating Widget - Light Green */
+                    .rating-widget {
+                      background: linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%);
+                      color: #374151;
+                    }
+                    .rating-header {
+                      text-align: center;
+                      margin-bottom: 15px;
+                      border-bottom: 2px solid #71bf44;
+                      padding-bottom: 10px;
+                    }
+                    .rating-title {
+                      margin: 0;
+                      font-size: 20px;
+                      font-weight: bold;
+                      color: #186b29;
+                    }
+                    .rating-content {
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                    }
+                    .rating-main {
+                      display: flex;
+                      align-items: center;
+                      gap: 15px;
+                    }
+                    .rating-score {
+                      font-size: 48px;
+                      font-weight: bold;
+                      color: #186b29;
+                    }
+                    .rating-details {
+                      display: flex;
+                      flex-direction: column;
+                      gap: 5px;
+                    }
+                    .rating-stars {
+                      display: flex;
+                      gap: 2px;
+                    }
+                    .star {
+                      font-size: 20px;
+                    }
+                    .star-full {
+                      color: #FFA500;
+                    }
+                    .star-half {
+                      color: #FFA500;
+                    }
+                    .star-empty {
+                      color: #d1d5db;
+                    }
+                    .rating-text {
+                      font-size: 14px;
+                      color: #6b7280;
+                    }
+                    .rating-reviews {
+                      text-align: right;
+                      display: flex;
+                      flex-direction: column;
+                      align-items: flex-end;
+                    }
+                    .reviews-count {
+                      font-size: 24px;
+                      font-weight: bold;
+                      color: #186b29;
+                    }
+                    .reviews-label {
+                      font-size: 12px;
+                      color: #6b7280;
+                    }
+
+                    /* Accessibility Widget - Very Light Blue */
+                    .accessibility-widget {
+                      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+                      color: #374151;
+                    }
+                    .accessibility-header {
+                      text-align: center;
+                      margin-bottom: 15px;
+                      border-bottom: 2px solid #186b29;
+                      padding-bottom: 10px;
+                    }
+                    .accessibility-title {
+                      margin: 0;
+                      font-size: 20px;
+                      font-weight: bold;
+                      color: #186b29;
+                    }
+                    .accessibility-features {
+                      display: flex;
+                      flex-direction: column;
+                      gap: 10px;
+                    }
+                    .accessibility-item {
+                      display: flex;
+                      align-items: center;
+                      gap: 12px;
+                      padding: 10px 14px;
+                      border-radius: 16px;
+                      background: rgba(113, 191, 68, 0.05);
+                    }
+                    .accessibility-status {
+                      font-size: 14px;
+                      width: 20px;
+                      text-align: center;
+                      flex-shrink: 0;
+                      color: #71bf44;
+                      font-weight: 500;
+                    }
+                    .accessibility-label {
+                      flex: 1;
+                      font-size: 14px;
+                      font-weight: 500;
+                    }
+                    .accessibility-available {
+                      border-left: 4px solid #71bf44;
+                    }
+                    .accessibility-unavailable {
+                      border-left: 4px solid #e5e7eb;
+                      opacity: 0.7;
+                    }
+                    </style>
+                ')),
             Forms\Components\Tabs::make('Languages')
                 ->columnSpanFull()
                 ->tabs([
@@ -86,235 +319,6 @@ class LocationResource extends Resource
                                     Forms\Components\Section::make('Widgets')
                                         ->columnSpan(1)
                                         ->schema([
-                                            Forms\Components\Placeholder::make('widget_styles')
-                                                ->label('')
-                                                ->content(new HtmlString('
-                                                    <style>
-                                                    .contact-info-widget {
-                                                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                                      color: white;
-                                                      padding: 25px;
-                                                      border-radius: 12px;
-                                                      font-family: Arial, sans-serif;
-                                                      width: 400px;
-                                                      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-                                                      margin-bottom: 20px;
-                                                    }
-                                                    .contact-header {
-                                                      text-align: center;
-                                                      margin-bottom: 20px;
-                                                      border-bottom: 2px solid rgba(255,255,255,0.3);
-                                                      padding-bottom: 15px;
-                                                    }
-                                                    .contact-name {
-                                                      margin: 0;
-                                                      font-size: 24px;
-                                                      font-weight: bold;
-                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                                                    }
-                                                    .contact-details {
-                                                      display: flex;
-                                                      flex-direction: column;
-                                                      gap: 15px;
-                                                    }
-                                                    .contact-item {
-                                                      display: flex;
-                                                      align-items: flex-start;
-                                                      gap: 12px;
-                                                      padding: 10px;
-                                                      background: rgba(255,255,255,0.1);
-                                                      border-radius: 8px;
-                                                      backdrop-filter: blur(10px);
-                                                    }
-                                                    .contact-icon {
-                                                      font-size: 20px;
-                                                      width: 24px;
-                                                      text-align: center;
-                                                      flex-shrink: 0;
-                                                    }
-                                                    .contact-info {
-                                                      flex: 1;
-                                                      line-height: 1.4;
-                                                    }
-                                                    .address-line {
-                                                      margin-bottom: 2px;
-                                                    }
-                                                    .contact-link {
-                                                      color: white;
-                                                      text-decoration: none;
-                                                      border-bottom: 1px solid rgba(255,255,255,0.5);
-                                                      transition: border-bottom-color 0.3s ease;
-                                                    }
-                                                    .contact-link:hover {
-                                                      border-bottom-color: white;
-                                                    }
-                                                    .opening-hours-widget {
-                                                      background-color: #333;
-                                                      color: white;
-                                                      padding: 20px;
-                                                      font-family: Arial, sans-serif;
-                                                      width: 400px;
-                                                      text-transform: uppercase;
-                                                    }
-                                                    .opening-hours-header {
-                                                      text-align: center;
-                                                      border-top: 3px solid white;
-                                                      border-bottom: 3px solid white;
-                                                      padding: 10px 0;
-                                                      margin-bottom: 20px;
-                                                    }
-                                                    .opening-hours-title {
-                                                      margin: 0;
-                                                      font-size: 24px;
-                                                      font-weight: bold;
-                                                      letter-spacing: 2px;
-                                                    }
-                                                    .opening-hours-day {
-                                                      display: flex;
-                                                      justify-content: space-between;
-                                                      margin-bottom: 8px;
-                                                      font-size: 18px;
-                                                    }
-                                                    .opening-hours-day-name {
-                                                      font-weight: bold;
-                                                    }
-                                                    .rating-widget {
-                                                      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-                                                      color: white;
-                                                      padding: 20px;
-                                                      border-radius: 12px;
-                                                      font-family: Arial, sans-serif;
-                                                      width: 400px;
-                                                      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-                                                      margin-bottom: 20px;
-                                                    }
-                                                    .rating-header {
-                                                      text-align: center;
-                                                      margin-bottom: 15px;
-                                                      border-bottom: 2px solid rgba(255,255,255,0.3);
-                                                      padding-bottom: 10px;
-                                                    }
-                                                    .rating-title {
-                                                      margin: 0;
-                                                      font-size: 20px;
-                                                      font-weight: bold;
-                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                                                    }
-                                                    .rating-content {
-                                                      display: flex;
-                                                      justify-content: space-between;
-                                                      align-items: center;
-                                                    }
-                                                    .rating-main {
-                                                      display: flex;
-                                                      align-items: center;
-                                                      gap: 15px;
-                                                    }
-                                                    .rating-score {
-                                                      font-size: 48px;
-                                                      font-weight: bold;
-                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                                                    }
-                                                    .rating-details {
-                                                      display: flex;
-                                                      flex-direction: column;
-                                                      gap: 5px;
-                                                    }
-                                                    .rating-stars {
-                                                      display: flex;
-                                                      gap: 2px;
-                                                    }
-                                                    .star {
-                                                      font-size: 20px;
-                                                    }
-                                                    .star-full {
-                                                      color: #FFD700;
-                                                      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-                                                    }
-                                                    .star-half {
-                                                      color: #FFD700;
-                                                      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-                                                    }
-                                                    .star-empty {
-                                                      color: rgba(255,255,255,0.4);
-                                                    }
-                                                    .rating-text {
-                                                      font-size: 14px;
-                                                      opacity: 0.9;
-                                                    }
-                                                    .rating-reviews {
-                                                      text-align: right;
-                                                      display: flex;
-                                                      flex-direction: column;
-                                                      align-items: flex-end;
-                                                    }
-                                                    .reviews-count {
-                                                      font-size: 24px;
-                                                      font-weight: bold;
-                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                                                    }
-                                                    .reviews-label {
-                                                      font-size: 12px;
-                                                      opacity: 0.9;
-                                                    }
-                                                    .accessibility-widget {
-                                                      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-                                                      color: white;
-                                                      padding: 20px;
-                                                      border-radius: 12px;
-                                                      font-family: Arial, sans-serif;
-                                                      width: 400px;
-                                                      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-                                                      margin-bottom: 20px;
-                                                    }
-                                                    .accessibility-header {
-                                                      text-align: center;
-                                                      margin-bottom: 15px;
-                                                      border-bottom: 2px solid rgba(255,255,255,0.3);
-                                                      padding-bottom: 10px;
-                                                    }
-                                                    .accessibility-title {
-                                                      margin: 0;
-                                                      font-size: 20px;
-                                                      font-weight: bold;
-                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                                                    }
-                                                    .accessibility-features {
-                                                      display: flex;
-                                                      flex-direction: column;
-                                                      gap: 10px;
-                                                    }
-                                                    .accessibility-item {
-                                                      display: flex;
-                                                      align-items: center;
-                                                      gap: 12px;
-                                                      padding: 8px 12px;
-                                                      border-radius: 8px;
-                                                      background: rgba(255,255,255,0.1);
-                                                      backdrop-filter: blur(10px);
-                                                    }
-                                                    .accessibility-status {
-                                                      font-size: 14px;
-                                                      width: 20px;
-                                                      text-align: center;
-                                                      flex-shrink: 0;
-                                                      color: #4CAF50;
-                                                      font-weight: 500;
-                                                    }
-                                                    .accessibility-label {
-                                                      flex: 1;
-                                                      font-size: 14px;
-                                                      font-weight: 500;
-                                                    }
-                                                    .accessibility-available {
-                                                      border-left: 4px solid #4CAF50;
-                                                    }
-                                                    .accessibility-unavailable {
-                                                      border-left: 4px solid #f44336;
-                                                      opacity: 0.8;
-                                                    }
-                                                    </style>
-                                                ')),
                                             Forms\Components\Placeholder::make('contact_info_preview')
                                                 ->label('Contact Info Widget Preview')
                                                 ->content(fn ($record) => $record && $record->contact_info_html
@@ -404,235 +408,6 @@ class LocationResource extends Resource
                                     Forms\Components\Section::make('Widgets')
                                         ->columnSpan(1)
                                         ->schema([
-                                            Forms\Components\Placeholder::make('en_widget_styles')
-                                                ->label('')
-                                                ->content(new HtmlString('
-                                                    <style>
-                                                    .contact-info-widget {
-                                                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                                      color: white;
-                                                      padding: 25px;
-                                                      border-radius: 12px;
-                                                      font-family: Arial, sans-serif;
-                                                      width: 400px;
-                                                      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-                                                      margin-bottom: 20px;
-                                                    }
-                                                    .contact-header {
-                                                      text-align: center;
-                                                      margin-bottom: 20px;
-                                                      border-bottom: 2px solid rgba(255,255,255,0.3);
-                                                      padding-bottom: 15px;
-                                                    }
-                                                    .contact-name {
-                                                      margin: 0;
-                                                      font-size: 24px;
-                                                      font-weight: bold;
-                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                                                    }
-                                                    .contact-details {
-                                                      display: flex;
-                                                      flex-direction: column;
-                                                      gap: 15px;
-                                                    }
-                                                    .contact-item {
-                                                      display: flex;
-                                                      align-items: flex-start;
-                                                      gap: 12px;
-                                                      padding: 10px;
-                                                      background: rgba(255,255,255,0.1);
-                                                      border-radius: 8px;
-                                                      backdrop-filter: blur(10px);
-                                                    }
-                                                    .contact-icon {
-                                                      font-size: 20px;
-                                                      width: 24px;
-                                                      text-align: center;
-                                                      flex-shrink: 0;
-                                                    }
-                                                    .contact-info {
-                                                      flex: 1;
-                                                      line-height: 1.4;
-                                                    }
-                                                    .address-line {
-                                                      margin-bottom: 2px;
-                                                    }
-                                                    .contact-link {
-                                                      color: white;
-                                                      text-decoration: none;
-                                                      border-bottom: 1px solid rgba(255,255,255,0.5);
-                                                      transition: border-bottom-color 0.3s ease;
-                                                    }
-                                                    .contact-link:hover {
-                                                      border-bottom-color: white;
-                                                    }
-                                                    .opening-hours-widget {
-                                                      background-color: #333;
-                                                      color: white;
-                                                      padding: 20px;
-                                                      font-family: Arial, sans-serif;
-                                                      width: 400px;
-                                                      text-transform: uppercase;
-                                                    }
-                                                    .opening-hours-header {
-                                                      text-align: center;
-                                                      border-top: 3px solid white;
-                                                      border-bottom: 3px solid white;
-                                                      padding: 10px 0;
-                                                      margin-bottom: 20px;
-                                                    }
-                                                    .opening-hours-title {
-                                                      margin: 0;
-                                                      font-size: 24px;
-                                                      font-weight: bold;
-                                                      letter-spacing: 2px;
-                                                    }
-                                                    .opening-hours-day {
-                                                      display: flex;
-                                                      justify-content: space-between;
-                                                      margin-bottom: 8px;
-                                                      font-size: 18px;
-                                                    }
-                                                    .opening-hours-day-name {
-                                                      font-weight: bold;
-                                                    }
-                                                    .rating-widget {
-                                                      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-                                                      color: white;
-                                                      padding: 20px;
-                                                      border-radius: 12px;
-                                                      font-family: Arial, sans-serif;
-                                                      width: 400px;
-                                                      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-                                                      margin-bottom: 20px;
-                                                    }
-                                                    .rating-header {
-                                                      text-align: center;
-                                                      margin-bottom: 15px;
-                                                      border-bottom: 2px solid rgba(255,255,255,0.3);
-                                                      padding-bottom: 10px;
-                                                    }
-                                                    .rating-title {
-                                                      margin: 0;
-                                                      font-size: 20px;
-                                                      font-weight: bold;
-                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                                                    }
-                                                    .rating-content {
-                                                      display: flex;
-                                                      justify-content: space-between;
-                                                      align-items: center;
-                                                    }
-                                                    .rating-main {
-                                                      display: flex;
-                                                      align-items: center;
-                                                      gap: 15px;
-                                                    }
-                                                    .rating-score {
-                                                      font-size: 48px;
-                                                      font-weight: bold;
-                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                                                    }
-                                                    .rating-details {
-                                                      display: flex;
-                                                      flex-direction: column;
-                                                      gap: 5px;
-                                                    }
-                                                    .rating-stars {
-                                                      display: flex;
-                                                      gap: 2px;
-                                                    }
-                                                    .star {
-                                                      font-size: 20px;
-                                                    }
-                                                    .star-full {
-                                                      color: #FFD700;
-                                                      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-                                                    }
-                                                    .star-half {
-                                                      color: #FFD700;
-                                                      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-                                                    }
-                                                    .star-empty {
-                                                      color: rgba(255,255,255,0.4);
-                                                    }
-                                                    .rating-text {
-                                                      font-size: 14px;
-                                                      opacity: 0.9;
-                                                    }
-                                                    .rating-reviews {
-                                                      text-align: right;
-                                                      display: flex;
-                                                      flex-direction: column;
-                                                      align-items: flex-end;
-                                                    }
-                                                    .reviews-count {
-                                                      font-size: 24px;
-                                                      font-weight: bold;
-                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                                                    }
-                                                    .reviews-label {
-                                                      font-size: 12px;
-                                                      opacity: 0.9;
-                                                    }
-                                                    .accessibility-widget {
-                                                      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-                                                      color: white;
-                                                      padding: 20px;
-                                                      border-radius: 12px;
-                                                      font-family: Arial, sans-serif;
-                                                      width: 400px;
-                                                      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-                                                      margin-bottom: 20px;
-                                                    }
-                                                    .accessibility-header {
-                                                      text-align: center;
-                                                      margin-bottom: 15px;
-                                                      border-bottom: 2px solid rgba(255,255,255,0.3);
-                                                      padding-bottom: 10px;
-                                                    }
-                                                    .accessibility-title {
-                                                      margin: 0;
-                                                      font-size: 20px;
-                                                      font-weight: bold;
-                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                                                    }
-                                                    .accessibility-features {
-                                                      display: flex;
-                                                      flex-direction: column;
-                                                      gap: 10px;
-                                                    }
-                                                    .accessibility-item {
-                                                      display: flex;
-                                                      align-items: center;
-                                                      gap: 12px;
-                                                      padding: 8px 12px;
-                                                      border-radius: 8px;
-                                                      background: rgba(255,255,255,0.1);
-                                                      backdrop-filter: blur(10px);
-                                                    }
-                                                    .accessibility-status {
-                                                      font-size: 14px;
-                                                      width: 20px;
-                                                      text-align: center;
-                                                      flex-shrink: 0;
-                                                      color: #4CAF50;
-                                                      font-weight: 500;
-                                                    }
-                                                    .accessibility-label {
-                                                      flex: 1;
-                                                      font-size: 14px;
-                                                      font-weight: 500;
-                                                    }
-                                                    .accessibility-available {
-                                                      border-left: 4px solid #4CAF50;
-                                                    }
-                                                    .accessibility-unavailable {
-                                                      border-left: 4px solid #f44336;
-                                                      opacity: 0.8;
-                                                    }
-                                                    </style>
-                                                ')),
                                             Forms\Components\Placeholder::make('en_contact_info_preview')
                                                 ->label('Contact Info Widget Preview')
                                                 ->content(fn ($record) => $record && $record->en_contact_info_html
