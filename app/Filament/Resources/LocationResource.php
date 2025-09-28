@@ -482,10 +482,11 @@ class LocationResource extends Resource
             ->defaultSort('en_name', 'asc')
             ->columns([
                 Tables\Columns\TextColumn::make('en_name')
-                     ->searchable()
-                     ->sortable()
-                     ->width(300)
-                     ->wrap(),
+                    ->label('Name')
+                    ->searchable()
+                    ->sortable()
+                    ->width(300)
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('city')
                     ->searchable()
                     ->sortable()
