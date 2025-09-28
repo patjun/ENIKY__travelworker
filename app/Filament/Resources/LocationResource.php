@@ -70,6 +70,10 @@ class LocationResource extends Resource
                                                 ->label('Structured Data (DE)')
                                                 ->disabled()
                                                 ->rows(15),
+                                            Forms\Components\Textarea::make('contact_info_html')
+                                                ->label('Contact Info Widget (DE)')
+                                                ->disabled()
+                                                ->rows(8),
                                         ]),
                                     Forms\Components\Section::make('Widgets')
                                         ->columnSpan(1)
@@ -78,6 +82,64 @@ class LocationResource extends Resource
                                                 ->label('')
                                                 ->content(new HtmlString('
                                                     <style>
+                                                    .contact-info-widget {
+                                                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                                      color: white;
+                                                      padding: 25px;
+                                                      border-radius: 12px;
+                                                      font-family: Arial, sans-serif;
+                                                      width: 400px;
+                                                      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                                                      margin-bottom: 20px;
+                                                    }
+                                                    .contact-header {
+                                                      text-align: center;
+                                                      margin-bottom: 20px;
+                                                      border-bottom: 2px solid rgba(255,255,255,0.3);
+                                                      padding-bottom: 15px;
+                                                    }
+                                                    .contact-name {
+                                                      margin: 0;
+                                                      font-size: 24px;
+                                                      font-weight: bold;
+                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                                                    }
+                                                    .contact-details {
+                                                      display: flex;
+                                                      flex-direction: column;
+                                                      gap: 15px;
+                                                    }
+                                                    .contact-item {
+                                                      display: flex;
+                                                      align-items: flex-start;
+                                                      gap: 12px;
+                                                      padding: 10px;
+                                                      background: rgba(255,255,255,0.1);
+                                                      border-radius: 8px;
+                                                      backdrop-filter: blur(10px);
+                                                    }
+                                                    .contact-icon {
+                                                      font-size: 20px;
+                                                      width: 24px;
+                                                      text-align: center;
+                                                      flex-shrink: 0;
+                                                    }
+                                                    .contact-info {
+                                                      flex: 1;
+                                                      line-height: 1.4;
+                                                    }
+                                                    .address-line {
+                                                      margin-bottom: 2px;
+                                                    }
+                                                    .contact-link {
+                                                      color: white;
+                                                      text-decoration: none;
+                                                      border-bottom: 1px solid rgba(255,255,255,0.5);
+                                                      transition: border-bottom-color 0.3s ease;
+                                                    }
+                                                    .contact-link:hover {
+                                                      border-bottom-color: white;
+                                                    }
                                                     .opening-hours-widget {
                                                       background-color: #333;
                                                       color: white;
@@ -110,6 +172,12 @@ class LocationResource extends Resource
                                                     }
                                                     </style>
                                                 ')),
+                                            Forms\Components\Placeholder::make('contact_info_preview')
+                                                ->label('Contact Info Widget Preview')
+                                                ->content(fn ($record) => $record && $record->contact_info_html
+                                                    ? new HtmlString($record->contact_info_html)
+                                                    : 'Widget wird nach dem Speichern generiert'
+                                                ),
                                             Forms\Components\Placeholder::make('opening_hours_preview')
                                                 ->label('Opening Hours Widget Preview')
                                                 ->content(fn ($record) => $record && $record->opening_hours_html
@@ -165,6 +233,10 @@ class LocationResource extends Resource
                                                 ->label('Structured Data (EN)')
                                                 ->disabled()
                                                 ->rows(15),
+                                            Forms\Components\Textarea::make('en_contact_info_html')
+                                                ->label('Contact Info Widget (EN)')
+                                                ->disabled()
+                                                ->rows(8),
                                         ]),
                                     Forms\Components\Section::make('Widgets')
                                         ->columnSpan(1)
@@ -173,6 +245,64 @@ class LocationResource extends Resource
                                                 ->label('')
                                                 ->content(new HtmlString('
                                                     <style>
+                                                    .contact-info-widget {
+                                                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                                      color: white;
+                                                      padding: 25px;
+                                                      border-radius: 12px;
+                                                      font-family: Arial, sans-serif;
+                                                      width: 400px;
+                                                      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                                                      margin-bottom: 20px;
+                                                    }
+                                                    .contact-header {
+                                                      text-align: center;
+                                                      margin-bottom: 20px;
+                                                      border-bottom: 2px solid rgba(255,255,255,0.3);
+                                                      padding-bottom: 15px;
+                                                    }
+                                                    .contact-name {
+                                                      margin: 0;
+                                                      font-size: 24px;
+                                                      font-weight: bold;
+                                                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                                                    }
+                                                    .contact-details {
+                                                      display: flex;
+                                                      flex-direction: column;
+                                                      gap: 15px;
+                                                    }
+                                                    .contact-item {
+                                                      display: flex;
+                                                      align-items: flex-start;
+                                                      gap: 12px;
+                                                      padding: 10px;
+                                                      background: rgba(255,255,255,0.1);
+                                                      border-radius: 8px;
+                                                      backdrop-filter: blur(10px);
+                                                    }
+                                                    .contact-icon {
+                                                      font-size: 20px;
+                                                      width: 24px;
+                                                      text-align: center;
+                                                      flex-shrink: 0;
+                                                    }
+                                                    .contact-info {
+                                                      flex: 1;
+                                                      line-height: 1.4;
+                                                    }
+                                                    .address-line {
+                                                      margin-bottom: 2px;
+                                                    }
+                                                    .contact-link {
+                                                      color: white;
+                                                      text-decoration: none;
+                                                      border-bottom: 1px solid rgba(255,255,255,0.5);
+                                                      transition: border-bottom-color 0.3s ease;
+                                                    }
+                                                    .contact-link:hover {
+                                                      border-bottom-color: white;
+                                                    }
                                                     .opening-hours-widget {
                                                       background-color: #333;
                                                       color: white;
@@ -205,6 +335,12 @@ class LocationResource extends Resource
                                                     }
                                                     </style>
                                                 ')),
+                                            Forms\Components\Placeholder::make('en_contact_info_preview')
+                                                ->label('Contact Info Widget Preview')
+                                                ->content(fn ($record) => $record && $record->en_contact_info_html
+                                                    ? new HtmlString($record->en_contact_info_html)
+                                                    : 'Widget will be generated after saving'
+                                                ),
                                             Forms\Components\Placeholder::make('en_opening_hours_preview')
                                                 ->label('Opening Hours Widget Preview')
                                                 ->content(fn ($record) => $record && $record->en_opening_hours_html

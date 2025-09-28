@@ -23,10 +23,11 @@ class Location extends Model {
 		'description', 'category', 'rating_value', 'rating_votes_count',
 		'opening_hours', 'attributes', 'main_image_url', 'is_claimed',
 		'price_level', 'additional_categories', 'opening_hours_html', 'structured_data',
+		'contact_info_html',
 		'en_name', 'en_street', 'en_city', 'en_country', 'en_phone', 'en_website',
 		'en_description', 'en_category', 'en_opening_hours', 'en_attributes',
 		'en_main_image_url', 'en_price_level', 'en_additional_categories',
-		'en_opening_hours_html', 'en_structured_data',
+		'en_opening_hours_html', 'en_structured_data', 'en_contact_info_html',
 		'en_task_id', 'en_task_post_output', 'en_task_get_output', 'en_business_data',
 		'en_last_dataforseo_update', 'en_job_status', 'en_post_attempts', 'en_get_attempts'
 	];
@@ -53,10 +54,82 @@ class Location extends Model {
 
 	public function generateWidgets()
 	{
+		$this->contact_info_html = $this->generateContactInfoHtml('de');
 		$this->opening_hours_html = $this->generateOpeningHoursHtml('de');
 		$this->structured_data = $this->generateStructuredData('de');
+		$this->en_contact_info_html = $this->generateContactInfoHtml('en');
 		$this->en_opening_hours_html = $this->generateOpeningHoursHtml('en');
 		$this->en_structured_data = $this->generateStructuredData('en');
+	}
+
+	public function generateContactInfoHtml($language = 'de')
+	{
+		$name = $language === 'en' ? ($this->en_name ?: $this->name) : $this->name;
+		$street = $language === 'en' ? ($this->en_street ?: $this->street) : $this->street;
+		$city = $language === 'en' ? ($this->en_city ?: $this->city) : $this->city;
+		$country = $language === 'en' ? ($this->en_country ?: $this->country) : $this->country;
+		$phone = $language === 'en' ? ($this->en_phone ?: $this->phone) : $this->phone;
+		$website = $language === 'en' ? ($this->en_website ?: $this->website) : $this->website;
+
+		$html = "<div class=\"contact-info-widget\">\n";
+
+		// Header with business name
+		if ($name) {
+			$html .= "  <div class=\"contact-header\">\n";
+			$html .= "    <h2 class=\"contact-name\">{$name}</h2>\n";
+			$html .= "  </div>\n";
+		}
+
+		$html .= "  <div class=\"contact-details\">\n";
+
+		// Address section
+		if ($street || $city || $country || $this->zip) {
+			$html .= "    <div class=\"contact-item contact-address\">\n";
+			$html .= "      <div class=\"contact-icon\">📍</div>\n";
+			$html .= "      <div class=\"contact-info\">\n";
+
+			$addressParts = [];
+			if ($street) $addressParts[] = $street;
+			if ($this->zip && $city) {
+				$addressParts[] = $this->zip . ' ' . $city;
+			} elseif ($city) {
+				$addressParts[] = $city;
+			}
+			if ($country) $addressParts[] = $country;
+
+			foreach ($addressParts as $part) {
+				$html .= "        <div class=\"address-line\">{$part}</div>\n";
+			}
+
+			$html .= "      </div>\n";
+			$html .= "    </div>\n";
+		}
+
+		// Phone section
+		if ($phone) {
+			$html .= "    <div class=\"contact-item contact-phone\">\n";
+			$html .= "      <div class=\"contact-icon\">📞</div>\n";
+			$html .= "      <div class=\"contact-info\">\n";
+			$html .= "        <a href=\"tel:{$phone}\" class=\"contact-link\">{$phone}</a>\n";
+			$html .= "      </div>\n";
+			$html .= "    </div>\n";
+		}
+
+		// Website section
+		if ($website) {
+			$websiteText = $language === 'en' ? 'Visit Website' : 'Website besuchen';
+			$html .= "    <div class=\"contact-item contact-website\">\n";
+			$html .= "      <div class=\"contact-icon\">🌐</div>\n";
+			$html .= "      <div class=\"contact-info\">\n";
+			$html .= "        <a href=\"{$website}\" target=\"_blank\" rel=\"noopener\" class=\"contact-link\">{$websiteText}</a>\n";
+			$html .= "      </div>\n";
+			$html .= "    </div>\n";
+		}
+
+		$html .= "  </div>\n";
+		$html .= "</div>";
+
+		return $html;
 	}
 
 	public function generateOpeningHoursHtml($language = 'de')
@@ -69,45 +142,54 @@ class Location extends Model {
 
 		$timetable = $openingHours['work_hours']['timetable'];
 		$dayNames = $language === 'en' ? [
-			'monday' => 'MONDAY',
-			'tuesday' => 'TUESDAY',
-			'wednesday' => 'WEDNESDAY',
-			'thursday' => 'THURSDAY',
-			'friday' => 'FRIDAY',
-			'saturday' => 'SATURDAY',
-			'sunday' => 'SUNDAY'
+			'monday' => 'Monday',
+			'tuesday' => 'Tuesday',
+			'wednesday' => 'Wednesday',
+			'thursday' => 'Thursday',
+			'friday' => 'Friday',
+			'saturday' => 'Saturday',
+			'sunday' => 'Sunday'
 		] : [
-			'monday' => 'MONTAG',
-			'tuesday' => 'DIENSTAG',
-			'wednesday' => 'MITTWOCH',
-			'thursday' => 'DONNERSTAG',
-			'friday' => 'FREITAG',
-			'saturday' => 'SAMSTAG',
-			'sunday' => 'SONNTAG'
+			'monday' => 'Montag',
+			'tuesday' => 'Dienstag',
+			'wednesday' => 'Mittwoch',
+			'thursday' => 'Donnerstag',
+			'friday' => 'Freitag',
+			'saturday' => 'Samstag',
+			'sunday' => 'Sonntag'
 		];
 
-		$closedText = $language === 'en' ? 'CLOSED' : 'GESCHLOSSEN';
-		$openingHoursText = $language === 'en' ? 'OPENING HOURS' : 'ÖFFNUNGSZEITEN';
+		$closedText = $language === 'en' ? 'Closed' : 'Geschlossen';
+		$openingHoursText = $language === 'en' ? 'Opening Hours' : 'Öffnungszeiten';
 
-		$html = "<div style=\"background-color: #333; color: white; padding: 20px; font-family: Arial, sans-serif; width: 400px;\">\n";
-		$html .= "  <div style=\"text-align: center; border-top: 3px solid white; border-bottom: 3px solid white; padding: 10px 0; margin-bottom: 20px;\">\n";
-		$html .= "    <h2 style=\"margin: 0; font-size: 24px; font-weight: bold; letter-spacing: 2px;\">{$openingHoursText}</h2>\n";
+		$html = "<div class=\"opening-hours-widget\">\n";
+		$html .= "  <div class=\"opening-hours-header\">\n";
+		$html .= "    <h2 class=\"opening-hours-title\">{$openingHoursText}</h2>\n";
 		$html .= "  </div>\n";
 
 		$dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 		foreach ($dayOrder as $day) {
 			$dayLabel = $dayNames[$day];
-			$html .= "  <div style=\"display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 18px;\">\n";
-			$html .= "    <span style=\"font-weight: bold;\">{$dayLabel}</span>\n";
+			$html .= "  <div class=\"opening-hours-day\">\n";
+			$html .= "    <span class=\"opening-hours-day-name\">{$dayLabel}</span>\n";
 
 			if (isset($timetable[$day]) && !empty($timetable[$day])) {
 				$hours = $timetable[$day][0];
-				$openTime = sprintf('%02d:%02d', $hours['open']['hour'], $hours['open']['minute']);
-				$closeTime = sprintf('%02d:%02d', $hours['close']['hour'], $hours['close']['minute']);
-				$html .= "    <span>{$openTime} - {$closeTime}</span>\n";
+
+				if ($language === 'en') {
+					// 12-hour format for English
+					$openTime = $this->formatTime12Hour($hours['open']['hour'], $hours['open']['minute']);
+					$closeTime = $this->formatTime12Hour($hours['close']['hour'], $hours['close']['minute']);
+				} else {
+					// 24-hour format for German
+					$openTime = sprintf('%02d:%02d', $hours['open']['hour'], $hours['open']['minute']);
+					$closeTime = sprintf('%02d:%02d', $hours['close']['hour'], $hours['close']['minute']);
+				}
+
+				$html .= "    <span class=\"opening-hours-time\">{$openTime} - {$closeTime}</span>\n";
 			} else {
-				$html .= "    <span>{$closedText}</span>\n";
+				$html .= "    <span class=\"opening-hours-closed\">{$closedText}</span>\n";
 			}
 
 			$html .= "  </div>\n";
@@ -233,5 +315,12 @@ class Location extends Model {
 		}
 
 		return $specifications;
+	}
+
+	private function formatTime12Hour($hour, $minute)
+	{
+		$ampm = $hour >= 12 ? 'PM' : 'AM';
+		$displayHour = $hour == 0 ? 12 : ($hour > 12 ? $hour - 12 : $hour);
+		return sprintf('%d:%02d %s', $displayHour, $minute, $ampm);
 	}
 }
