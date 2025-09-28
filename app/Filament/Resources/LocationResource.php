@@ -60,7 +60,7 @@ class LocationResource extends Resource
                     .contact-header {
                       text-align: center;
                       margin-bottom: 20px;
-                      border-bottom: 2px solid #71bf44;
+                      border-bottom: 2px solid #186b29;
                       padding-bottom: 15px;
                     }
                     .contact-name {
@@ -114,8 +114,7 @@ class LocationResource extends Resource
                     }
                     .opening-hours-header {
                       text-align: center;
-                      border-top: 2px solid #71bf44;
-                      border-bottom: 2px solid #71bf44;
+                      border-bottom: 2px solid #186b29;
                       padding: 12px 0;
                       margin-bottom: 20px;
                     }
@@ -123,7 +122,6 @@ class LocationResource extends Resource
                       margin: 0;
                       font-size: 1.25rem;
                       font-weight: bold;
-                      letter-spacing: 2px;
                       color: #186b29;
                     }
                     .opening-hours-day {
@@ -148,7 +146,7 @@ class LocationResource extends Resource
                     .rating-header {
                       text-align: center;
                       margin-bottom: 15px;
-                      border-bottom: 2px solid #71bf44;
+                      border-bottom: 2px solid #186b29;
                       padding-bottom: 10px;
                     }
                     .rating-title {
@@ -293,6 +291,10 @@ class LocationResource extends Resource
                                                 ->label('Business Data')
                                                 ->disabled()
                                                 ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
+                                            Forms\Components\Textarea::make('accessibility')
+                                                ->label('Accessibility Data (DE)')
+                                                ->disabled()
+                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
                                             Forms\Components\Textarea::make('opening_hours_html')
                                                 ->label('Opening Hours Widget (DE)')
                                                 ->disabled()
@@ -372,8 +374,9 @@ class LocationResource extends Resource
                                             Forms\Components\Textarea::make('en_opening_hours')
                                                 ->label('Opening Hours (EN)')
                                                 ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
-                                            Forms\Components\Textarea::make('en_attributes')
-                                                ->label('Attributes (EN)')
+                                            Forms\Components\Textarea::make('en_accessibility')
+                                                ->label('Accessibility Data (EN)')
+                                                ->disabled()
                                                 ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
                                             Forms\Components\TextInput::make('en_main_image_url')
                                                 ->label('Main Image URL (EN)'),
