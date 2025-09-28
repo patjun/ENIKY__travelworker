@@ -583,10 +583,6 @@ class LocationResource extends Resource
                     ->modalHeading('Update')
                     ->modalDescription('Möchten Sie die DataForSEO Daten für diese Location laden? Der Prozess wird im Hintergrund ausgeführt.')
                     ->modalSubmitActionLabel('Ja, in Queue einreihen')
-                    ->visible(fn (Location $record) =>
-                        !in_array($record->job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready']) &&
-                        !in_array($record->en_job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready'])
-                    )
                     ->action(function (Location $record) {
                         if (empty($record->place_id)) {
                             Notification::make()
