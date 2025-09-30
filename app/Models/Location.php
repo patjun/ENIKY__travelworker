@@ -146,6 +146,19 @@ class Location extends Model {
 			return null;
 		}
 
+		// Ensure accessibility data is an array (handle JSON string case)
+		if (is_string($accessibilityData)) {
+			$accessibilityData = json_decode($accessibilityData, true);
+			if (!$accessibilityData) {
+				return null;
+			}
+		}
+
+		// Ensure it's an array type
+		if (!is_array($accessibilityData)) {
+			return null;
+		}
+
 		// Extract accessibility features
 		$availableFeatures = $accessibilityData['available_attributes']['accessibility'] ?? [];
 		$unavailableFeatures = [];
