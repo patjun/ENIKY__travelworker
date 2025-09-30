@@ -134,7 +134,7 @@ class ProcessDataForSeoTaskGet implements ShouldQueue
                 }
 
                 if (isset($businessData['attributes'])) {
-                    $updateData['attributes'] = $businessData['attributes'];
+                    $updateData['accessibility'] = $businessData['attributes'];
                 }
 
                 if (isset($businessData['main_image'])) {
@@ -154,6 +154,10 @@ class ProcessDataForSeoTaskGet implements ShouldQueue
                 }
 
                 $location->update($updateData);
+
+                // Generate widgets after updating location data
+                $location->generateWidgets();
+                $location->save();
 
                 Log::info('DataForSEO data mapped to location fields', [
                     'location_id' => $location->id,

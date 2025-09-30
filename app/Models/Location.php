@@ -8,13 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Location extends Model {
 	use SoftDeletes;
 
-	protected static function booted()
-	{
-		static::saving(function ($location) {
-			$location->generateWidgets();
-		});
-	}
-
 	protected $fillable = [
 		'name', 'street', 'zip', 'city', 'country', 'latitude', 'longitude',
 		'cid', 'place_id', 'task_id', 'task_post_output', 'task_get_output',
@@ -54,6 +47,22 @@ class Location extends Model {
 
 	public function generateWidgets()
 	{
+		// Extract accessibility data from business_data if accessibility columns are empty
+		if (empty($this->accessibility) && !empty($this->business_data)) {
+			$attributes = $this->business_data['items'][0]['attributes'] ?? null;
+			if ($attributes) {
+				$this->accessibility = $attributes;
+			}
+		}
+
+		if (empty($this->en_accessibility) && !empty($this->en_business_data)) {
+			$enAttributes = $this->en_business_data['items'][0]['attributes'] ?? null;
+			if ($enAttributes) {
+				$this->en_accessibility = $enAttributes;
+			}
+		}
+
+		// Generate all widget HTML
 		$this->contact_info_html = $this->generateContactInfoHtml('de');
 		$this->accessibility_html = $this->generateAccessibilityHtml('de');
 		$this->rating_html = $this->generateRatingHtml('de');

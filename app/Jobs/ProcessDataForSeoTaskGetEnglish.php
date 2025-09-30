@@ -108,7 +108,7 @@ class ProcessDataForSeoTaskGetEnglish implements ShouldQueue
                 }
 
                 if (isset($businessData['attributes'])) {
-                    $updateData['en_attributes'] = $businessData['attributes'];
+                    $updateData['en_accessibility'] = $businessData['attributes'];
                 }
 
                 if (isset($businessData['main_image'])) {
@@ -124,6 +124,10 @@ class ProcessDataForSeoTaskGetEnglish implements ShouldQueue
                 }
 
                 $location->update($updateData);
+
+                // Generate widgets after updating location data
+                $location->generateWidgets();
+                $location->save();
 
                 Log::info('English DataForSEO data mapped to location fields', [
                     'location_id' => $location->id,
