@@ -150,12 +150,20 @@ class Location extends Model {
 		if (is_string($accessibilityData)) {
 			$accessibilityData = json_decode($accessibilityData, true);
 			if (!$accessibilityData) {
+				\Log::warning("Location {$this->id}: Failed to decode accessibility JSON for language {$language}");
 				return null;
 			}
 		}
 
 		// Ensure it's an array type
 		if (!is_array($accessibilityData)) {
+			\Log::warning("Location {$this->id}: Accessibility data is not an array for language {$language}, type: " . gettype($accessibilityData));
+			return null;
+		}
+
+		// Check if the expected structure exists
+		if (!isset($accessibilityData['available_attributes'])) {
+			\Log::warning("Location {$this->id}: Missing 'available_attributes' key in accessibility data for language {$language}");
 			return null;
 		}
 
