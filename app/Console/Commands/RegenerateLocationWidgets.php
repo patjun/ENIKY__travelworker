@@ -62,8 +62,30 @@ class RegenerateLocationWidgets extends Command
 
             foreach ($locations as $location) {
                 try {
+                    // Debug: Check raw data before generation
+                    $hasAccessibility = !empty($location->accessibility);
+                    $hasEnAccessibility = !empty($location->en_accessibility);
+
                     $location->generateWidgets();
                     $location->save();
+
+                    // Refresh from database to get actual saved values
+                    $location->refresh();
+
+                    // Check if HTML fields are actually populated after save
+                    $hasAccessibilityHtml = !empty($location->accessibility_html);
+                    $hasEnAccessibilityHtml = !empty($location->en_accessibility_html);
+
+                    // Report any issues
+                    if ($hasAccessibility && !$hasAccessibilityHtml) {
+                        $this->newLine();
+                        $this->warn("Location ID {$location->id} ({$location->name}): Has DE accessibility data but HTML is empty");
+                    }
+                    if ($hasEnAccessibility && !$hasEnAccessibilityHtml) {
+                        $this->newLine();
+                        $this->warn("Location ID {$location->id} ({$location->name}): Has EN accessibility data but HTML is empty");
+                    }
+
                     $successCount++;
                 } catch (\Exception $e) {
                     $errorCount++;

@@ -163,8 +163,14 @@ class Location extends Model {
 
 		// Check if the expected structure exists
 		if (!isset($accessibilityData['available_attributes'])) {
-			\Log::warning("Location {$this->id}: Missing 'available_attributes' key in accessibility data for language {$language}");
+			\Log::warning("Location {$this->id}: Missing 'available_attributes' key in accessibility data for language {$language}. Keys: " . implode(', ', array_keys($accessibilityData)));
 			return null;
+		}
+
+		// Check if accessibility key exists in available_attributes
+		if (!isset($accessibilityData['available_attributes']['accessibility'])) {
+			\Log::info("Location {$this->id}: No 'accessibility' key in available_attributes for language {$language}");
+			// Don't return null yet - might still have unavailable features
 		}
 
 		// Extract accessibility features
