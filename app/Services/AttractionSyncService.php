@@ -22,24 +22,25 @@ class AttractionSyncService
             $wpId = $location->$wpIdField;
 
             if ($wpId) {
-                // Try to update existing attraction
-                try {
+                // WordPress ID exists - only update, never create
+                // First verify the attraction still exists in WordPress
+                $existing = $api->getAttraction($wpId);
+
+                if ($existing) {
+                    // Attraction exists, update it
                     $result = $api->updateAttraction($wpId, $data);
-                } catch (\RuntimeException $e) {
-                    // If 404, create new attraction
-                    if (str_contains($e->getMessage(), '404')) {
-                        Log::info("WordPress attraction not found, creating new one", [
-                            'location_id' => $location->id,
-                            'language' => $language,
-                            'old_wp_id' => $wpId
-                        ]);
-                        $result = $api->createAttraction($data);
-                    } else {
-                        throw $e;
-                    }
+                } else {
+                    // Attraction doesn't exist in WordPress but we have an ID stored
+                    // This means it was deleted in WordPress
+                    Log::channel('wordpress-sync')->warning("WordPress attraction was deleted, skipping sync", [
+                        'location_id' => $location->id,
+                        'language' => $language,
+                        'wp_id' => $wpId
+                    ]);
+                    return false;
                 }
             } else {
-                // Create new attraction
+                // No WordPress ID exists - create new attraction
                 $result = $api->createAttraction($data);
             }
 
