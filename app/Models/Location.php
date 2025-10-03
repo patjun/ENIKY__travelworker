@@ -87,22 +87,22 @@ class Location extends Model {
 		$phone = $language === 'en' ? ($this->en_phone ?: $this->phone) : $this->phone;
 		$website = $language === 'en' ? ($this->en_website ?: $this->website) : $this->website;
 
-		$html = "<div class=\"contact-info-widget\">\n";
+		$html = "<div class=\"widget contact-info\">\n";
 
 		// Header with business name
 		if ($name) {
-			$html .= "  <div class=\"contact-header\">\n";
-			$html .= "    <h2 class=\"contact-name\">{$name}</h2>\n";
+			$html .= "  <div class=\"header\">\n";
+			$html .= "    <h3 class=\"title\">{$name}</h3>\n";
 			$html .= "  </div>\n";
 		}
 
-		$html .= "  <div class=\"contact-details\">\n";
+		$html .= "  <div class=\"contact widget-content\">\n";
 
 		// Address section
 		if ($street || $city || $country || $this->zip) {
-			$html .= "    <div class=\"contact-item contact-address\">\n";
-			$html .= "      <div class=\"contact-icon\">📍</div>\n";
-			$html .= "      <div class=\"contact-info\">\n";
+			$html .= "    <div class=\"item\">\n";
+			$html .= "      <div class=\"icon\">📍</div>\n";
+			$html .= "      <div class=\"info\">\n";
 
 			$addressParts = [];
 			if ($street) $addressParts[] = $street;
@@ -114,7 +114,7 @@ class Location extends Model {
 			if ($country) $addressParts[] = $country;
 
 			foreach ($addressParts as $part) {
-				$html .= "        <div class=\"address-line\">{$part}</div>\n";
+				$html .= "        <div class=\"line\">{$part}</div>\n";
 			}
 
 			$html .= "      </div>\n";
@@ -123,9 +123,9 @@ class Location extends Model {
 
 		// Phone section
 		if ($phone) {
-			$html .= "    <div class=\"contact-item contact-phone\">\n";
-			$html .= "      <div class=\"contact-icon\">📞</div>\n";
-			$html .= "      <div class=\"contact-info\">\n";
+			$html .= "    <div class=\"item\">\n";
+			$html .= "      <div class=\"icon\">📞</div>\n";
+			$html .= "      <div class=\"info\">\n";
 			$html .= "        <a href=\"tel:{$phone}\" class=\"contact-link\">{$phone}</a>\n";
 			$html .= "      </div>\n";
 			$html .= "    </div>\n";
@@ -134,10 +134,10 @@ class Location extends Model {
 		// Website section
 		if ($website) {
 			$websiteText = $language === 'en' ? 'Visit Website' : 'Website besuchen';
-			$html .= "    <div class=\"contact-item contact-website\">\n";
-			$html .= "      <div class=\"contact-icon\">🌐</div>\n";
-			$html .= "      <div class=\"contact-info\">\n";
-			$html .= "        <a href=\"{$website}\" target=\"_blank\" rel=\"noopener\" class=\"contact-link\">{$websiteText}</a>\n";
+			$html .= "    <div class=\"item\">\n";
+			$html .= "      <div class=\"icon\">🌐</div>\n";
+			$html .= "      <div class=\"info\">\n";
+			$html .= "        <a href=\"{$website}\" target=\"_blank\" rel=\"noopener\" class=\"link\">{$websiteText}</a>\n";
 			$html .= "      </div>\n";
 			$html .= "    </div>\n";
 		}
@@ -225,11 +225,11 @@ class Location extends Model {
 		];
 
 		// Start building HTML
-		$output = '<div class="accessibility-widget">' . "\n";
-		$output .= '  <div class="accessibility-header">' . "\n";
-		$output .= '    <h3 class="accessibility-title">' . $titleText . '</h3>' . "\n";
+		$output = '<div class="widget accessibility">' . "\n";
+		$output .= '  <div class="header">' . "\n";
+		$output .= '    <h3 class="title">' . $titleText . '</h3>' . "\n";
 		$output .= '  </div>' . "\n";
-		$output .= '  <div class="accessibility-features">' . "\n";
+		$output .= '  <div class="widget-content accessibility">' . "\n";
 
 		// Add available features
 		foreach ($availableFeatures as $featureKey) {
@@ -237,9 +237,9 @@ class Location extends Model {
 				$feature = $featureTranslations[$featureKey];
 				$label = $feature[$language];
 
-				$output .= '    <div class="accessibility-item accessibility-available">' . "\n";
-				$output .= '      <span class="accessibility-status accessibility-yes">✓</span>' . "\n";
-				$output .= '      <span class="accessibility-label">' . $label . '</span>' . "\n";
+				$output .= '    <div class="item available">' . "\n";
+				$output .= '      <span class="status yes">✓</span>' . "\n";
+				$output .= '      <span class="label">' . $label . '</span>' . "\n";
 				$output .= '    </div>' . "\n";
 			}
 		}
@@ -250,9 +250,9 @@ class Location extends Model {
 				$feature = $featureTranslations[$featureKey];
 				$label = $feature[$language];
 
-				$output .= '    <div class="accessibility-item accessibility-unavailable">' . "\n";
-				$output .= '      <span class="accessibility-status accessibility-no">✗</span>' . "\n";
-				$output .= '      <span class="accessibility-label">' . $label . '</span>' . "\n";
+				$output .= '    <div class="item unavailable">' . "\n";
+				$output .= '      <span class="status no">✗</span>' . "\n";
+				$output .= '      <span class="label">' . $label . '</span>' . "\n";
 				$output .= '    </div>' . "\n";
 			}
 		}
@@ -273,22 +273,22 @@ class Location extends Model {
 		$reviewsText = $language === 'en' ? 'Reviews' : 'Bewertungen';
 		$outOfText = $language === 'en' ? 'out of' : 'von';
 
-		$html = "<div class=\"rating-widget\">\n";
+		$html = "<div class=\"widget rating\">\n";
 
 		// Header
-		$html .= "  <div class=\"rating-header\">\n";
-		$html .= "    <h3 class=\"rating-title\">{$ratingText}</h3>\n";
+		$html .= "  <div class=\"header\">\n";
+		$html .= "    <h3 class=\"title\">{$ratingText}</h3>\n";
 		$html .= "  </div>\n";
 
-		$html .= "  <div class=\"rating-content\">\n";
+		$html .= "  <div class=\"widget-content rating\">\n";
 
 		// Main rating display
-		$html .= "    <div class=\"rating-main\">\n";
-		$html .= "      <div class=\"rating-score\">{$this->rating_value}</div>\n";
-		$html .= "      <div class=\"rating-details\">\n";
+		$html .= "    <div class=\"score\">\n";
+		$html .= "      <div class=\"number\">{$this->rating_value}</div>\n";
+		$html .= "      <div class=\"details\">\n";
 
 		// Star display
-		$html .= "        <div class=\"rating-stars\">\n";
+		$html .= "        <div class=\"stars\">\n";
 		$fullStars = floor($this->rating_value);
 		$hasHalfStar = ($this->rating_value - $fullStars) >= 0.5;
 
@@ -304,17 +304,17 @@ class Location extends Model {
 		$html .= "        </div>\n";
 
 		// Rating text
-		$html .= "        <div class=\"rating-text\">\n";
-		$html .= "          <span class=\"rating-out-of\">{$outOfText} 5</span>\n";
+		$html .= "        <div class=\"text\">\n";
+		$html .= "          <span class=\"out-of\">{$outOfText} 5</span>\n";
 		$html .= "        </div>\n";
 
 		$html .= "      </div>\n";
 		$html .= "    </div>\n";
 
 		// Review count
-		$html .= "    <div class=\"rating-reviews\">\n";
-		$html .= "      <span class=\"reviews-count\">" . number_format($this->rating_votes_count) . "</span>\n";
-		$html .= "      <span class=\"reviews-label\">{$reviewsText}</span>\n";
+		$html .= "    <div class=\"reviews\">\n";
+		$html .= "      <span class=\"count\">" . number_format($this->rating_votes_count) . "</span>\n";
+		$html .= "      <span class=\"label\">{$reviewsText}</span>\n";
 		$html .= "    </div>\n";
 
 		$html .= "  </div>\n";
@@ -353,17 +353,18 @@ class Location extends Model {
 		$closedText = $language === 'en' ? 'Closed' : 'Geschlossen';
 		$openingHoursText = $language === 'en' ? 'Opening Hours' : 'Öffnungszeiten';
 
-		$html = "<div class=\"opening-hours-widget\">\n";
-		$html .= "  <div class=\"opening-hours-header\">\n";
-		$html .= "    <h2 class=\"opening-hours-title\">{$openingHoursText}</h2>\n";
+		$html = "<div class=\"widget\">\n";
+		$html .= "  <div class=\"header\">\n";
+		$html .= "    <h3 class=\"title\">{$openingHoursText}</h3>\n";
 		$html .= "  </div>\n";
 
 		$dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
+		$html .= " <div class=\"opening-hours widget-content\">\n";
 		foreach ($dayOrder as $day) {
 			$dayLabel = $dayNames[$day];
-			$html .= "  <div class=\"opening-hours-day\">\n";
-			$html .= "    <span class=\"opening-hours-day-name\">{$dayLabel}</span>\n";
+			$html .= "    <div class=\"day\">\n";
+			$html .= "    <span class=\"name\">{$dayLabel}</span>\n";
 
 			if (isset($timetable[$day]) && !empty($timetable[$day])) {
 				$hours = $timetable[$day][0];
@@ -378,14 +379,15 @@ class Location extends Model {
 					$closeTime = sprintf('%02d:%02d', $hours['close']['hour'], $hours['close']['minute']);
 				}
 
-				$html .= "    <span class=\"opening-hours-time\">{$openTime} - {$closeTime}</span>\n";
+				$html .= "    <span class=\"time\">{$openTime} - {$closeTime}</span>\n";
 			} else {
-				$html .= "    <span class=\"opening-hours-closed\">{$closedText}</span>\n";
+				$html .= "    <span class=\"closed\">{$closedText}</span>\n";
 			}
 
 			$html .= "  </div>\n";
 		}
 
+		$html .= "  </div>";
 		$html .= "</div>";
 
 		return $html;
