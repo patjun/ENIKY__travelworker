@@ -421,28 +421,12 @@ class Location extends Model {
 			if ($this->zip) $structuredData['address']['postalCode'] = $this->zip;
 		}
 
-		if ($this->latitude && $this->longitude) {
-			$structuredData['geo'] = [
-				'@type' => 'GeoCoordinates',
-				'latitude' => (float) $this->latitude,
-				'longitude' => (float) $this->longitude
-			];
-		}
-
 		if ($phone) {
 			$structuredData['telephone'] = $phone;
 		}
 
 		if ($website) {
 			$structuredData['url'] = $website;
-		}
-
-		if ($description) {
-			$structuredData['description'] = $description;
-		}
-
-		if ($imageUrl) {
-			$structuredData['image'] = [$imageUrl];
 		}
 
 		if ($this->rating_value && $this->rating_votes_count) {
