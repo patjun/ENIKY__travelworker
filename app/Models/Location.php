@@ -22,7 +22,8 @@ class Location extends Model {
 		'en_main_image_url', 'en_price_level', 'en_additional_categories',
 		'en_opening_hours_html', 'en_structured_data', 'en_contact_info_html', 'en_rating_html', 'en_accessibility_html',
 		'en_task_id', 'en_task_post_output', 'en_task_get_output', 'en_business_data',
-		'en_last_dataforseo_update', 'en_job_status', 'en_post_attempts', 'en_get_attempts'
+		'en_last_dataforseo_update', 'en_job_status', 'en_post_attempts', 'en_get_attempts',
+		'wp_de_last_sync', 'wp_de_id', 'wp_en_last_sync', 'wp_en_id'
 	];
 
 	protected $casts = [
@@ -43,6 +44,8 @@ class Location extends Model {
 		'en_task_get_output' => 'array',
 		'en_business_data' => 'array',
 		'en_last_dataforseo_update' => 'datetime',
+		'wp_de_last_sync' => 'datetime',
+		'wp_en_last_sync' => 'datetime',
 	];
 
 	public function generateWidgets()
