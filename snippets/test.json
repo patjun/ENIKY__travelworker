@@ -1,0 +1,1509 @@
+{
+    "items": [
+        {
+            "cid": "14482164939060012193",
+            "url": "https://tv-turm.de/?utm_source=google&utm_medium=organic&utm_campaign=gmb-website&utm_content=website_button",
+            "logo": "https://lh4.googleusercontent.com/-V39dZ6p-3CE/AAAAAAAAAAI/AAAAAAAAAAA/pWzMiSDG7y8/s44-p-k-no-ns-nd/photo.jpg",
+            "type": "google_business_info",
+            "phone": "+4930247575875",
+            "title": "Berliner Fernsehturm",
+            "domain": "tv-turm.de",
+            "rating": {
+                "value": 4.4,
+                "rating_max": null,
+                "rating_type": "Max5",
+                "votes_count": 49696
+            },
+            "address": "Panoramastraße 1A, 10178 Berlin",
+            "snippet": "Panoramastraße 1A, 10178 Berlin",
+            "category": "Historische Sehenswürdigkeit",
+            "latitude": 52.520815,
+            "place_id": "ChIJ6_8UkB9OqEcRoeRJQ0j8-sg",
+            "position": "left",
+            "directory": {
+                "items": [
+                    {
+                        "cid": "11945426821779731731",
+                        "url": null,
+                        "type": "maps_search",
+                        "phone": null,
+                        "title": "Sphere Tim Raue",
+                        "domain": null,
+                        "rating": {
+                            "value": 4.3,
+                            "rating_max": null,
+                            "rating_type": "Max5",
+                            "votes_count": 8080
+                        },
+                        "address": "Alexanderplatz, Panoramastraße 1A, 10178 Berlin",
+                        "snippet": null,
+                        "category": "Deutsches Restaurant",
+                        "latitude": 52.5208204,
+                        "place_id": null,
+                        "longitude": 13.4093677,
+                        "feature_id": "0x416523cffc3f8c67:0xa5c6ae67a29ab513",
+                        "is_claimed": null,
+                        "main_image": "https://lh3.googleusercontent.com/p/AF1QipPcon4HMpj9ukv21q5qoivbkfqBclFXRSOYBt9X=w86-h86-n-k-no",
+                        "rank_group": 1,
+                        "work_hours": {
+                            "work_hours": {
+                                "timetable": {
+                                    "friday": [
+                                        {
+                                            "open": {
+                                                "hour": 9,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 23,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "monday": [
+                                        {
+                                            "open": {
+                                                "hour": 9,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 23,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "sunday": [
+                                        {
+                                            "open": {
+                                                "hour": 9,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 23,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "tuesday": [
+                                        {
+                                            "open": {
+                                                "hour": 9,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 23,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "saturday": [
+                                        {
+                                            "open": {
+                                                "hour": 9,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 23,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "thursday": [
+                                        {
+                                            "open": {
+                                                "hour": 9,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 23,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "wednesday": [
+                                        {
+                                            "open": {
+                                                "hour": 9,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 23,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ]
+                                },
+                                "current_status": "close"
+                            }
+                        },
+                        "price_level": null,
+                        "address_info": {
+                            "zip": null,
+                            "city": null,
+                            "region": null,
+                            "address": null,
+                            "borough": null,
+                            "country_code": null
+                        },
+                        "category_ids": null,
+                        "hotel_rating": null,
+                        "total_photos": null,
+                        "rank_absolute": 1,
+                        "is_directory_item": true,
+                        "rating_distribution": {
+                            "1": 317,
+                            "2": 321,
+                            "3": 612,
+                            "4": 1890,
+                            "5": 4940
+                        },
+                        "local_justifications": null,
+                        "additional_categories": null
+                    },
+                    {
+                        "cid": "10721610518833991441",
+                        "url": null,
+                        "type": "maps_search",
+                        "phone": null,
+                        "title": "ALEX Berlin am Alex",
+                        "domain": null,
+                        "rating": {
+                            "value": 4,
+                            "rating_max": null,
+                            "rating_type": "Max5",
+                            "votes_count": 5115
+                        },
+                        "address": "Panoramastraße 1A, 10178 Berlin",
+                        "snippet": null,
+                        "category": "Restaurant",
+                        "latitude": 52.520767199999995,
+                        "place_id": null,
+                        "longitude": 13.4091254,
+                        "feature_id": "0x47a84e1f864a37f7:0x94cacff61b310f11",
+                        "is_claimed": null,
+                        "main_image": "https://lh3.googleusercontent.com/p/AF1QipPuqIOC6BHTYPEeq9vRRU4XuChBSC5JnWlxOhNg=w86-h86-n-k-no",
+                        "rank_group": 2,
+                        "work_hours": {
+                            "work_hours": {
+                                "timetable": {
+                                    "friday": [
+                                        {
+                                            "open": {
+                                                "hour": 8,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 0,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "monday": [
+                                        {
+                                            "open": {
+                                                "hour": 8,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 23,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "sunday": [
+                                        {
+                                            "open": {
+                                                "hour": 9,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 23,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "tuesday": [
+                                        {
+                                            "open": {
+                                                "hour": 8,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 23,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "saturday": [
+                                        {
+                                            "open": {
+                                                "hour": 8,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 0,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "thursday": [
+                                        {
+                                            "open": {
+                                                "hour": 8,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 23,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "wednesday": [
+                                        {
+                                            "open": {
+                                                "hour": 8,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 23,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ]
+                                },
+                                "current_status": "close"
+                            }
+                        },
+                        "price_level": null,
+                        "address_info": {
+                            "zip": null,
+                            "city": null,
+                            "region": null,
+                            "address": null,
+                            "borough": null,
+                            "country_code": null
+                        },
+                        "category_ids": null,
+                        "hotel_rating": null,
+                        "total_photos": null,
+                        "rank_absolute": 2,
+                        "is_directory_item": true,
+                        "rating_distribution": {
+                            "1": 463,
+                            "2": 264,
+                            "3": 606,
+                            "4": 1319,
+                            "5": 2463
+                        },
+                        "local_justifications": null,
+                        "additional_categories": null
+                    },
+                    {
+                        "cid": "11484525036516574120",
+                        "url": null,
+                        "type": "maps_search",
+                        "phone": null,
+                        "title": "Knutschfleck Berlin Variete Show Restaurant und Party Bar",
+                        "domain": null,
+                        "rating": {
+                            "value": 4,
+                            "rating_max": null,
+                            "rating_type": "Max5",
+                            "votes_count": 3321
+                        },
+                        "address": "Panoramastraße 1 A, 10178 Berlin",
+                        "snippet": null,
+                        "category": "Bar mit Livemusik",
+                        "latitude": 52.52108,
+                        "place_id": null,
+                        "longitude": 13.4085502,
+                        "feature_id": "0x47a84e22e96b8519:0x9f613aac4fa683a8",
+                        "is_claimed": null,
+                        "main_image": "https://lh3.googleusercontent.com/p/AF1QipP8j8cg5tD5ldoCg5dJeBigaTBopp74qz3XU-0w=w86-h86-n-k-no",
+                        "rank_group": 3,
+                        "work_hours": {
+                            "work_hours": {
+                                "timetable": {
+                                    "friday": [
+                                        {
+                                            "open": {
+                                                "hour": 18,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 2,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "monday": null,
+                                    "sunday": [
+                                        {
+                                            "open": {
+                                                "hour": 10,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 15,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "tuesday": null,
+                                    "saturday": [
+                                        {
+                                            "open": {
+                                                "hour": 10,
+                                                "minute": 0
+                                            },
+                                            "close": {
+                                                "hour": 2,
+                                                "minute": 0
+                                            }
+                                        }
+                                    ],
+                                    "thursday": null,
+                                    "wednesday": null
+                                },
+                                "current_status": "close"
+                            }
+                        },
+                        "price_level": null,
+                        "address_info": {
+                            "zip": null,
+                            "city": null,
+                            "region": null,
+                            "address": null,
+                            "borough": null,
+                            "country_code": null
+                        },
+                        "category_ids": null,
+                        "hotel_rating": null,
+                        "total_photos": null,
+                        "rank_absolute": 3,
+                        "is_directory_item": true,
+                        "rating_distribution": {
+                            "1": 428,
+                            "2": 156,
+                            "3": 276,
+                            "4": 605,
+                            "5": 1856
+                        },
+                        "local_justifications": null,
+                        "additional_categories": null
+                    }
+                ],
+                "title": "An diesem Ort"
+            },
+            "longitude": 13.4094191,
+            "work_time": {
+                "work_hours": {
+                    "timetable": {
+                        "friday": [
+                            {
+                                "open": {
+                                    "hour": 9,
+                                    "minute": 0
+                                },
+                                "close": {
+                                    "hour": 23,
+                                    "minute": 0
+                                }
+                            }
+                        ],
+                        "monday": [
+                            {
+                                "open": {
+                                    "hour": 9,
+                                    "minute": 0
+                                },
+                                "close": {
+                                    "hour": 23,
+                                    "minute": 0
+                                }
+                            }
+                        ],
+                        "sunday": [
+                            {
+                                "open": {
+                                    "hour": 9,
+                                    "minute": 0
+                                },
+                                "close": {
+                                    "hour": 23,
+                                    "minute": 0
+                                }
+                            }
+                        ],
+                        "tuesday": [
+                            {
+                                "open": {
+                                    "hour": 9,
+                                    "minute": 0
+                                },
+                                "close": {
+                                    "hour": 23,
+                                    "minute": 0
+                                }
+                            }
+                        ],
+                        "saturday": [
+                            {
+                                "open": {
+                                    "hour": 9,
+                                    "minute": 0
+                                },
+                                "close": {
+                                    "hour": 23,
+                                    "minute": 0
+                                }
+                            }
+                        ],
+                        "thursday": [
+                            {
+                                "open": {
+                                    "hour": 9,
+                                    "minute": 0
+                                },
+                                "close": {
+                                    "hour": 23,
+                                    "minute": 0
+                                }
+                            }
+                        ],
+                        "wednesday": [
+                            {
+                                "open": {
+                                    "hour": 9,
+                                    "minute": 0
+                                },
+                                "close": {
+                                    "hour": 23,
+                                    "minute": 0
+                                }
+                            }
+                        ]
+                    },
+                    "current_status": "open"
+                }
+            },
+            "attributes": {
+                "available_attributes": {
+                    "children": [
+                        "welcomes_children"
+                    ],
+                    "planning": [
+                        "recommend_getting_tickets_ahead"
+                    ],
+                    "accessibility": [
+                        "has_wheelchair_accessible_entrance"
+                    ],
+                    "service_options": [
+                        "has_onsite_services"
+                    ],
+                    "from_the_business": [
+                        "is_owned_by_women"
+                    ]
+                },
+                "unavailable_attributes": {
+                    "accessibility": [
+                        "has_hearing_loop",
+                        "has_wheelchair_accessible_seating",
+                        "has_wheelchair_accessible_parking",
+                        "has_wheelchair_accessible_restroom"
+                    ]
+                }
+            },
+            "feature_id": "0x47a84e1f9014ffeb:0xc8fafc484349e4a1",
+            "is_claimed": true,
+            "main_image": "https://lh3.googleusercontent.com/gps-cs-s/AC9h4nopfFrgvVeb5UzWdw90dmEXjmc6NRq2TMC8ghmy8Zqx5TW5hFOkDoVr-zNXnwx0oXGlj3bXx-EwNY0NX6nF3dMYOz5N78kQrC9ahwLkcpSLC_1viJ4Fi5yzzniaZMhztIgfn2c=w408-h541-k-no",
+            "rank_group": 1,
+            "contact_url": null,
+            "description": "368 m hoher Turm, eröffnet 1969, mit Aussichtsplattform in 203 m Höhe & sich drehendem Restaurant in 207 m.",
+            "price_level": null,
+            "address_info": {
+                "zip": "10178",
+                "city": "Berlin",
+                "region": null,
+                "address": "Panoramastraße 1A",
+                "borough": "Mitte",
+                "country_code": "DE"
+            },
+            "category_ids": [
+                "historical_landmark",
+                "bar",
+                "observation_deck",
+                "restaurant",
+                "tourist_attraction"
+            ],
+            "hotel_rating": null,
+            "place_topics": {
+                "VR": 140,
+                "rotation": 55,
+                "fahrstuhl": 1861,
+                "siegessäule": 32,
+                "warteschlange": 346,
+                "alexanderplatz": 213,
+                "aussichtsplattform": 474,
+                "geschichte berlins": 41,
+                "reichstagsgebäude": 43,
+                "sicherheitskontrolle": 53
+            },
+            "total_photos": 153836,
+            "popular_times": {
+                "popular_times_by_days": {
+                    "friday": [
+                        {
+                            "time": {
+                                "hour": 6,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 7,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 8,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 9,
+                                "minute": 0
+                            },
+                            "popular_index": 28
+                        },
+                        {
+                            "time": {
+                                "hour": 10,
+                                "minute": 0
+                            },
+                            "popular_index": 44
+                        },
+                        {
+                            "time": {
+                                "hour": 11,
+                                "minute": 0
+                            },
+                            "popular_index": 57
+                        },
+                        {
+                            "time": {
+                                "hour": 12,
+                                "minute": 0
+                            },
+                            "popular_index": 64
+                        },
+                        {
+                            "time": {
+                                "hour": 13,
+                                "minute": 0
+                            },
+                            "popular_index": 69
+                        },
+                        {
+                            "time": {
+                                "hour": 14,
+                                "minute": 0
+                            },
+                            "popular_index": 71
+                        },
+                        {
+                            "time": {
+                                "hour": 15,
+                                "minute": 0
+                            },
+                            "popular_index": 73
+                        },
+                        {
+                            "time": {
+                                "hour": 16,
+                                "minute": 0
+                            },
+                            "popular_index": 75
+                        },
+                        {
+                            "time": {
+                                "hour": 17,
+                                "minute": 0
+                            },
+                            "popular_index": 78
+                        },
+                        {
+                            "time": {
+                                "hour": 18,
+                                "minute": 0
+                            },
+                            "popular_index": 80
+                        },
+                        {
+                            "time": {
+                                "hour": 19,
+                                "minute": 0
+                            },
+                            "popular_index": 78
+                        },
+                        {
+                            "time": {
+                                "hour": 20,
+                                "minute": 0
+                            },
+                            "popular_index": 71
+                        },
+                        {
+                            "time": {
+                                "hour": 21,
+                                "minute": 0
+                            },
+                            "popular_index": 61
+                        },
+                        {
+                            "time": {
+                                "hour": 22,
+                                "minute": 0
+                            },
+                            "popular_index": 45
+                        },
+                        {
+                            "time": {
+                                "hour": 23,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        }
+                    ],
+                    "monday": [
+                        {
+                            "time": {
+                                "hour": 6,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 7,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 8,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 9,
+                                "minute": 0
+                            },
+                            "popular_index": 27
+                        },
+                        {
+                            "time": {
+                                "hour": 10,
+                                "minute": 0
+                            },
+                            "popular_index": 43
+                        },
+                        {
+                            "time": {
+                                "hour": 11,
+                                "minute": 0
+                            },
+                            "popular_index": 57
+                        },
+                        {
+                            "time": {
+                                "hour": 12,
+                                "minute": 0
+                            },
+                            "popular_index": 65
+                        },
+                        {
+                            "time": {
+                                "hour": 13,
+                                "minute": 0
+                            },
+                            "popular_index": 69
+                        },
+                        {
+                            "time": {
+                                "hour": 14,
+                                "minute": 0
+                            },
+                            "popular_index": 69
+                        },
+                        {
+                            "time": {
+                                "hour": 15,
+                                "minute": 0
+                            },
+                            "popular_index": 66
+                        },
+                        {
+                            "time": {
+                                "hour": 16,
+                                "minute": 0
+                            },
+                            "popular_index": 65
+                        },
+                        {
+                            "time": {
+                                "hour": 17,
+                                "minute": 0
+                            },
+                            "popular_index": 64
+                        },
+                        {
+                            "time": {
+                                "hour": 18,
+                                "minute": 0
+                            },
+                            "popular_index": 63
+                        },
+                        {
+                            "time": {
+                                "hour": 19,
+                                "minute": 0
+                            },
+                            "popular_index": 59
+                        },
+                        {
+                            "time": {
+                                "hour": 20,
+                                "minute": 0
+                            },
+                            "popular_index": 52
+                        },
+                        {
+                            "time": {
+                                "hour": 21,
+                                "minute": 0
+                            },
+                            "popular_index": 40
+                        },
+                        {
+                            "time": {
+                                "hour": 22,
+                                "minute": 0
+                            },
+                            "popular_index": 26
+                        },
+                        {
+                            "time": {
+                                "hour": 23,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        }
+                    ],
+                    "sunday": [
+                        {
+                            "time": {
+                                "hour": 6,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 7,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 8,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 9,
+                                "minute": 0
+                            },
+                            "popular_index": 31
+                        },
+                        {
+                            "time": {
+                                "hour": 10,
+                                "minute": 0
+                            },
+                            "popular_index": 54
+                        },
+                        {
+                            "time": {
+                                "hour": 11,
+                                "minute": 0
+                            },
+                            "popular_index": 72
+                        },
+                        {
+                            "time": {
+                                "hour": 12,
+                                "minute": 0
+                            },
+                            "popular_index": 81
+                        },
+                        {
+                            "time": {
+                                "hour": 13,
+                                "minute": 0
+                            },
+                            "popular_index": 83
+                        },
+                        {
+                            "time": {
+                                "hour": 14,
+                                "minute": 0
+                            },
+                            "popular_index": 82
+                        },
+                        {
+                            "time": {
+                                "hour": 15,
+                                "minute": 0
+                            },
+                            "popular_index": 79
+                        },
+                        {
+                            "time": {
+                                "hour": 16,
+                                "minute": 0
+                            },
+                            "popular_index": 77
+                        },
+                        {
+                            "time": {
+                                "hour": 17,
+                                "minute": 0
+                            },
+                            "popular_index": 75
+                        },
+                        {
+                            "time": {
+                                "hour": 18,
+                                "minute": 0
+                            },
+                            "popular_index": 71
+                        },
+                        {
+                            "time": {
+                                "hour": 19,
+                                "minute": 0
+                            },
+                            "popular_index": 66
+                        },
+                        {
+                            "time": {
+                                "hour": 20,
+                                "minute": 0
+                            },
+                            "popular_index": 56
+                        },
+                        {
+                            "time": {
+                                "hour": 21,
+                                "minute": 0
+                            },
+                            "popular_index": 45
+                        },
+                        {
+                            "time": {
+                                "hour": 22,
+                                "minute": 0
+                            },
+                            "popular_index": 28
+                        },
+                        {
+                            "time": {
+                                "hour": 23,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        }
+                    ],
+                    "tuesday": [
+                        {
+                            "time": {
+                                "hour": 6,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 7,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 8,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 9,
+                                "minute": 0
+                            },
+                            "popular_index": 27
+                        },
+                        {
+                            "time": {
+                                "hour": 10,
+                                "minute": 0
+                            },
+                            "popular_index": 46
+                        },
+                        {
+                            "time": {
+                                "hour": 11,
+                                "minute": 0
+                            },
+                            "popular_index": 59
+                        },
+                        {
+                            "time": {
+                                "hour": 12,
+                                "minute": 0
+                            },
+                            "popular_index": 66
+                        },
+                        {
+                            "time": {
+                                "hour": 13,
+                                "minute": 0
+                            },
+                            "popular_index": 68
+                        },
+                        {
+                            "time": {
+                                "hour": 14,
+                                "minute": 0
+                            },
+                            "popular_index": 68
+                        },
+                        {
+                            "time": {
+                                "hour": 15,
+                                "minute": 0
+                            },
+                            "popular_index": 67
+                        },
+                        {
+                            "time": {
+                                "hour": 16,
+                                "minute": 0
+                            },
+                            "popular_index": 66
+                        },
+                        {
+                            "time": {
+                                "hour": 17,
+                                "minute": 0
+                            },
+                            "popular_index": 65
+                        },
+                        {
+                            "time": {
+                                "hour": 18,
+                                "minute": 0
+                            },
+                            "popular_index": 63
+                        },
+                        {
+                            "time": {
+                                "hour": 19,
+                                "minute": 0
+                            },
+                            "popular_index": 59
+                        },
+                        {
+                            "time": {
+                                "hour": 20,
+                                "minute": 0
+                            },
+                            "popular_index": 51
+                        },
+                        {
+                            "time": {
+                                "hour": 21,
+                                "minute": 0
+                            },
+                            "popular_index": 38
+                        },
+                        {
+                            "time": {
+                                "hour": 22,
+                                "minute": 0
+                            },
+                            "popular_index": 24
+                        },
+                        {
+                            "time": {
+                                "hour": 23,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        }
+                    ],
+                    "saturday": [
+                        {
+                            "time": {
+                                "hour": 6,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 7,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 8,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 9,
+                                "minute": 0
+                            },
+                            "popular_index": 37
+                        },
+                        {
+                            "time": {
+                                "hour": 10,
+                                "minute": 0
+                            },
+                            "popular_index": 62
+                        },
+                        {
+                            "time": {
+                                "hour": 11,
+                                "minute": 0
+                            },
+                            "popular_index": 83
+                        },
+                        {
+                            "time": {
+                                "hour": 12,
+                                "minute": 0
+                            },
+                            "popular_index": 95
+                        },
+                        {
+                            "time": {
+                                "hour": 13,
+                                "minute": 0
+                            },
+                            "popular_index": 100
+                        },
+                        {
+                            "time": {
+                                "hour": 14,
+                                "minute": 0
+                            },
+                            "popular_index": 99
+                        },
+                        {
+                            "time": {
+                                "hour": 15,
+                                "minute": 0
+                            },
+                            "popular_index": 99
+                        },
+                        {
+                            "time": {
+                                "hour": 16,
+                                "minute": 0
+                            },
+                            "popular_index": 99
+                        },
+                        {
+                            "time": {
+                                "hour": 17,
+                                "minute": 0
+                            },
+                            "popular_index": 98
+                        },
+                        {
+                            "time": {
+                                "hour": 18,
+                                "minute": 0
+                            },
+                            "popular_index": 94
+                        },
+                        {
+                            "time": {
+                                "hour": 19,
+                                "minute": 0
+                            },
+                            "popular_index": 88
+                        },
+                        {
+                            "time": {
+                                "hour": 20,
+                                "minute": 0
+                            },
+                            "popular_index": 80
+                        },
+                        {
+                            "time": {
+                                "hour": 21,
+                                "minute": 0
+                            },
+                            "popular_index": 68
+                        },
+                        {
+                            "time": {
+                                "hour": 22,
+                                "minute": 0
+                            },
+                            "popular_index": 52
+                        },
+                        {
+                            "time": {
+                                "hour": 23,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        }
+                    ],
+                    "thursday": [
+                        {
+                            "time": {
+                                "hour": 6,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 7,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 8,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 9,
+                                "minute": 0
+                            },
+                            "popular_index": 27
+                        },
+                        {
+                            "time": {
+                                "hour": 10,
+                                "minute": 0
+                            },
+                            "popular_index": 45
+                        },
+                        {
+                            "time": {
+                                "hour": 11,
+                                "minute": 0
+                            },
+                            "popular_index": 58
+                        },
+                        {
+                            "time": {
+                                "hour": 12,
+                                "minute": 0
+                            },
+                            "popular_index": 65
+                        },
+                        {
+                            "time": {
+                                "hour": 13,
+                                "minute": 0
+                            },
+                            "popular_index": 67
+                        },
+                        {
+                            "time": {
+                                "hour": 14,
+                                "minute": 0
+                            },
+                            "popular_index": 66
+                        },
+                        {
+                            "time": {
+                                "hour": 15,
+                                "minute": 0
+                            },
+                            "popular_index": 64
+                        },
+                        {
+                            "time": {
+                                "hour": 16,
+                                "minute": 0
+                            },
+                            "popular_index": 61
+                        },
+                        {
+                            "time": {
+                                "hour": 17,
+                                "minute": 0
+                            },
+                            "popular_index": 59
+                        },
+                        {
+                            "time": {
+                                "hour": 18,
+                                "minute": 0
+                            },
+                            "popular_index": 58
+                        },
+                        {
+                            "time": {
+                                "hour": 19,
+                                "minute": 0
+                            },
+                            "popular_index": 56
+                        },
+                        {
+                            "time": {
+                                "hour": 20,
+                                "minute": 0
+                            },
+                            "popular_index": 50
+                        },
+                        {
+                            "time": {
+                                "hour": 21,
+                                "minute": 0
+                            },
+                            "popular_index": 41
+                        },
+                        {
+                            "time": {
+                                "hour": 22,
+                                "minute": 0
+                            },
+                            "popular_index": 27
+                        },
+                        {
+                            "time": {
+                                "hour": 23,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        }
+                    ],
+                    "wednesday": [
+                        {
+                            "time": {
+                                "hour": 6,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 7,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 8,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        },
+                        {
+                            "time": {
+                                "hour": 9,
+                                "minute": 0
+                            },
+                            "popular_index": 30
+                        },
+                        {
+                            "time": {
+                                "hour": 10,
+                                "minute": 0
+                            },
+                            "popular_index": 47
+                        },
+                        {
+                            "time": {
+                                "hour": 11,
+                                "minute": 0
+                            },
+                            "popular_index": 61
+                        },
+                        {
+                            "time": {
+                                "hour": 12,
+                                "minute": 0
+                            },
+                            "popular_index": 69
+                        },
+                        {
+                            "time": {
+                                "hour": 13,
+                                "minute": 0
+                            },
+                            "popular_index": 73
+                        },
+                        {
+                            "time": {
+                                "hour": 14,
+                                "minute": 0
+                            },
+                            "popular_index": 73
+                        },
+                        {
+                            "time": {
+                                "hour": 15,
+                                "minute": 0
+                            },
+                            "popular_index": 69
+                        },
+                        {
+                            "time": {
+                                "hour": 16,
+                                "minute": 0
+                            },
+                            "popular_index": 66
+                        },
+                        {
+                            "time": {
+                                "hour": 17,
+                                "minute": 0
+                            },
+                            "popular_index": 63
+                        },
+                        {
+                            "time": {
+                                "hour": 18,
+                                "minute": 0
+                            },
+                            "popular_index": 61
+                        },
+                        {
+                            "time": {
+                                "hour": 19,
+                                "minute": 0
+                            },
+                            "popular_index": 57
+                        },
+                        {
+                            "time": {
+                                "hour": 20,
+                                "minute": 0
+                            },
+                            "popular_index": 50
+                        },
+                        {
+                            "time": {
+                                "hour": 21,
+                                "minute": 0
+                            },
+                            "popular_index": 38
+                        },
+                        {
+                            "time": {
+                                "hour": 22,
+                                "minute": 0
+                            },
+                            "popular_index": 25
+                        },
+                        {
+                            "time": {
+                                "hour": 23,
+                                "minute": 0
+                            },
+                            "popular_index": 0
+                        }
+                    ]
+                }
+            },
+            "rank_absolute": 1,
+            "original_title": null,
+            "book_online_url": null,
+            "contributor_url": "https://maps.google.com/maps/contrib/106077260009494381250",
+            "is_directory_item": false,
+            "people_also_search": [
+                {
+                    "cid": "15998339177913251782",
+                    "title": "Grunewaldturm",
+                    "rating": {
+                        "value": 4.4,
+                        "rating_max": null,
+                        "rating_type": "Max5",
+                        "votes_count": 3088
+                    },
+                    "feature_id": "0x0:0xde0584b82fbbf7c6"
+                },
+                {
+                    "cid": "5819920703303581234",
+                    "title": "Panoramapunkt Berlin",
+                    "rating": {
+                        "value": 4.6,
+                        "rating_max": null,
+                        "rating_type": "Max5",
+                        "votes_count": 1459
+                    },
+                    "feature_id": "0x0:0x50c4830b5d59fe32"
+                }
+            ],
+            "rating_distribution": {
+                "1": 1270,
+                "2": 1295,
+                "3": 4134,
+                "4": 11891,
+                "5": 31106
+            },
+            "local_business_links": null,
+            "additional_categories": [
+                "Bar",
+                "Aussichtsplattform",
+                "Restaurant",
+                "Sehenswürdigkeit"
+            ],
+            "questions_and_answers_count": 204
+        }
+    ],
+    "keyword": "place_id:ChIJ6_8UkB9OqEcRoeRJQ0j8-sg",
+    "datetime": "2025-09-30 16:02:12 +00:00",
+    "check_url": "https://www.google.de/maps?cid=14482164939060012193&hl=de&gl=DE",
+    "se_domain": "google.de",
+    "item_types": [
+        "google_business_info"
+    ],
+    "items_count": 1,
+    "language_code": "de",
+    "location_code": 2276
+}
