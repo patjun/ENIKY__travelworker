@@ -56,92 +56,27 @@ class ProcessDataForSeoTaskGetEnglish implements ShouldQueue
             $businessData = $results['tasks'][0]['result'][0]['items'][0] ?? null;
 
             if ($businessData) {
-                // Map DataForSEO data to English location fields
+                // Coordinates are language-independent, so we only update job status for English task
                 $updateData = [
-                    'en_task_get_output' => $results,
-                    'en_business_data' => $results['tasks'][0]['result'][0] ?? null,
                     'en_last_dataforseo_update' => now(),
                     'en_job_status' => 'completed'
                 ];
 
-                // Map basic business information to English fields
-                if (isset($businessData['title'])) {
-                    $updateData['en_name'] = $businessData['title'];
-                }
-
-                if (isset($businessData['phone'])) {
-                    $updateData['en_phone'] = $businessData['phone'];
-                }
-
-                if (isset($businessData['url'])) {
-                    $updateData['en_website'] = $businessData['url'];
-                }
-
-                if (isset($businessData['description'])) {
-                    $updateData['en_description'] = $businessData['description'];
-                }
-
-                if (isset($businessData['category'])) {
-                    $updateData['en_category'] = $businessData['category'];
-                }
-
-                // Map address information to English fields
-                if (isset($businessData['address_info'])) {
-                    $addressInfo = $businessData['address_info'];
-
-                    if (isset($addressInfo['address'])) {
-                        $updateData['en_street'] = $addressInfo['address'];
-                    }
-
-                    if (isset($addressInfo['city'])) {
-                        $updateData['en_city'] = $addressInfo['city'];
-                    }
-
-                    if (isset($addressInfo['country_code'])) {
-                        $updateData['en_country'] = $addressInfo['country_code'];
-                    }
-                }
-
-                // Map additional business data to English fields
-                if (isset($businessData['work_time'])) {
-                    $updateData['en_opening_hours'] = $businessData['work_time'];
-                }
-
-                if (isset($businessData['attributes'])) {
-                    $updateData['en_accessibility'] = $businessData['attributes'];
-                }
-
-                if (isset($businessData['main_image'])) {
-                    $updateData['en_main_image_url'] = $businessData['main_image'];
-                }
-
-                if (isset($businessData['price_level'])) {
-                    $updateData['en_price_level'] = $businessData['price_level'];
-                }
-
-                if (isset($businessData['additional_categories'])) {
-                    $updateData['en_additional_categories'] = $businessData['additional_categories'];
-                }
+                // Note: latitude and longitude are already set by the German task
+                // We only track that the English task completed successfully
 
                 $location->update($updateData);
 
-                // Generate widgets after updating location data
-                $location->generateWidgets();
-                $location->save();
-
-                Log::info('English DataForSEO data mapped to location fields', [
-                    'location_id' => $location->id,
-                    'mapped_fields' => array_keys($updateData)
+                Log::info('English DataForSEO task completed (coordinates already set by German task)', [
+                    'location_id' => $location->id
                 ]);
             } else {
                 $location->update([
-                    'en_task_get_output' => $results,
-                    'en_business_data' => $results['tasks'][0]['result'][0] ?? null,
                     'en_last_dataforseo_update' => now(),
                     'en_job_status' => 'completed'
                 ]);
 
-                Log::warning('No English business data found in DataForSEO response', [
+                Log::warning('No business data found in English DataForSEO response', [
                     'location_id' => $location->id
                 ]);
             }
