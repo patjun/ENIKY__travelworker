@@ -182,6 +182,8 @@ class LocationResource extends Resource
                                                 ->live(),
                                             Forms\Components\TextInput::make('en_street')
                                                 ->label('Street (EN)'),
+                                            Forms\Components\TextInput::make('en_zip')
+                                                ->label('ZIP (EN)'),
                                             Forms\Components\TextInput::make('en_city')
                                                 ->label('City (EN)'),
                                             Forms\Components\TextInput::make('en_country')
