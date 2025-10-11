@@ -56,48 +56,19 @@ class LocationResource extends Resource
                                                 ->label('Name')
                                                 ->default('Neue Location')
                                                 ->required()
-                                                ->live()
-                                                ->disabled(),
+                                                ->live(),
                                             Forms\Components\TextInput::make('street')
-                                                ->label('Street')
-                                                ->disabled(),
+                                                ->label('Street'),
                                             Forms\Components\TextInput::make('zip')
-                                                ->label('ZIP')
-                                                ->disabled(),
+                                                ->label('ZIP'),
                                             Forms\Components\TextInput::make('city')
-                                                ->label('City')
-                                                ->disabled(),
+                                                ->label('City'),
                                             Forms\Components\TextInput::make('country')
-                                                ->label('Country')
-                                                ->disabled(),
-                                            Forms\Components\Textarea::make('business_data')
-                                                ->label('Business Data')
-                                                ->disabled()
-                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
-                                            Forms\Components\Textarea::make('accessibility')
-                                                ->label('Accessibility Data (DE)')
-                                                ->disabled()
-                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
-                                            Forms\Components\Textarea::make('opening_hours_html')
-                                                ->label('Opening Hours Widget (DE)')
-                                                ->disabled()
-                                                ->rows(8),
-                                            Forms\Components\Textarea::make('structured_data')
-                                                ->label('Structured Data (DE)')
-                                                ->disabled()
-                                                ->rows(15),
-                                            Forms\Components\Textarea::make('contact_info_html')
-                                                ->label('Contact Info Widget (DE)')
-                                                ->disabled()
-                                                ->rows(8),
-                                            Forms\Components\Textarea::make('rating_html')
-                                                ->label('Rating Widget (DE)')
-                                                ->disabled()
-                                                ->rows(6),
-                                            Forms\Components\Textarea::make('accessibility_html')
-                                                ->label('Accessibility Widget (DE)')
-                                                ->disabled()
-                                                ->rows(6),
+                                                ->label('Country'),
+                                            Forms\Components\TextInput::make('phone')
+                                                ->label('Phone'),
+                                            Forms\Components\TextInput::make('website')
+                                                ->label('Website'),
                                         ]),
                                     Forms\Components\Section::make('Widgets')
                                         ->columnSpan(1)
@@ -139,67 +110,17 @@ class LocationResource extends Resource
                                         ->schema([
                                             Forms\Components\TextInput::make('en_name')
                                                 ->label('Name (EN)')
-                                                ->live()
-                                                ->disabled(),
+                                                ->live(),
                                             Forms\Components\TextInput::make('en_street')
-                                                ->label('Street (EN)')
-                                                ->disabled(),
+                                                ->label('Street (EN)'),
                                             Forms\Components\TextInput::make('en_city')
-                                                ->label('City (EN)')
-                                                ->disabled(),
+                                                ->label('City (EN)'),
                                             Forms\Components\TextInput::make('en_country')
-                                                ->label('Country (EN)')
-                                                ->disabled(),
+                                                ->label('Country (EN)'),
                                             Forms\Components\TextInput::make('en_phone')
-                                                ->label('Phone (EN)')
-                                                ->disabled(),
+                                                ->label('Phone (EN)'),
                                             Forms\Components\TextInput::make('en_website')
-                                                ->label('Website (EN)')
-                                                ->disabled(),
-                                            Forms\Components\Textarea::make('en_description')
-                                                ->label('Description (EN)')
-                                                ->disabled(),
-                                            Forms\Components\TextInput::make('en_category')
-                                                ->label('Category (EN)')
-                                                ->disabled(),
-                                            Forms\Components\Textarea::make('en_opening_hours')
-                                                ->label('Opening Hours (EN)')
-                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null)
-                                                ->disabled(),
-                                            Forms\Components\Textarea::make('en_accessibility')
-                                                ->label('Accessibility Data (EN)')
-                                                ->disabled()
-                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null),
-                                            Forms\Components\TextInput::make('en_main_image_url')
-                                                ->label('Main Image URL (EN)')
-                                                ->disabled(),
-                                            Forms\Components\TextInput::make('en_price_level')
-                                                ->label('Price Level (EN)')
-                                                ->disabled(),
-                                            Forms\Components\Textarea::make('en_additional_categories')
-                                                ->label('Additional Categories (EN)')
-                                                ->formatStateUsing(fn ($state) => $state ? json_encode($state, JSON_PRETTY_PRINT) : null)
-                                                ->disabled(),
-                                            Forms\Components\Textarea::make('en_opening_hours_html')
-                                                ->label('Opening Hours Widget (EN)')
-                                                ->disabled()
-                                                ->rows(8),
-                                            Forms\Components\Textarea::make('en_structured_data')
-                                                ->label('Structured Data (EN)')
-                                                ->disabled()
-                                                ->rows(15),
-                                            Forms\Components\Textarea::make('en_contact_info_html')
-                                                ->label('Contact Info Widget (EN)')
-                                                ->disabled()
-                                                ->rows(8),
-                                            Forms\Components\Textarea::make('en_rating_html')
-                                                ->label('Rating Widget (EN)')
-                                                ->disabled()
-                                                ->rows(6),
-                                            Forms\Components\Textarea::make('en_accessibility_html')
-                                                ->label('Accessibility Widget (EN)')
-                                                ->disabled()
-                                                ->rows(6),
+                                                ->label('Website (EN)'),
                                         ]),
                                     Forms\Components\Section::make('Widgets')
                                         ->columnSpan(1)
