@@ -17,7 +17,7 @@ class Location extends Model {
 		'description', 'category', 'rating_value', 'rating_votes_count',
 		'opening_hours', 'accessibility', 'main_image_url', 'is_claimed',
 		'price_level', 'additional_categories', 'opening_hours_html', 'structured_data',
-		'contact_info_html', 'rating_html', 'accessibility_html',
+		'contact_info_html', 'rating_html', 'accessibility_html', 'manual_opening_hours',
 		'en_name', 'en_street', 'en_city', 'en_country', 'en_phone', 'en_email', 'en_website',
 		'en_website_opening_hours', 'en_website_pricing',
 		'en_description', 'en_category', 'en_opening_hours', 'en_accessibility',
@@ -39,6 +39,7 @@ class Location extends Model {
 		'accessibility' => 'array',
 		'additional_categories' => 'array',
 		'is_claimed' => 'boolean',
+		'manual_opening_hours' => 'array',
 		'en_opening_hours' => 'array',
 		'en_accessibility' => 'array',
 		'en_additional_categories' => 'array',
@@ -52,6 +53,13 @@ class Location extends Model {
 
 	public function generateWidgets()
 	{
+		// Transform manual opening hours to timetable format if available
+		if (!empty($this->manual_opening_hours)) {
+			$timetable = $this->transformManualOpeningHoursToTimetable($this->manual_opening_hours);
+			$this->opening_hours = ['work_hours' => ['timetable' => $timetable]];
+			$this->en_opening_hours = ['work_hours' => ['timetable' => $timetable]];
+		}
+
 		// Extract accessibility data from business_data if accessibility columns are empty
 		if (empty($this->accessibility) && !empty($this->business_data)) {
 			$attributes = $this->business_data['items'][0]['attributes'] ?? null;
@@ -519,5 +527,50 @@ class Location extends Model {
 		$ampm = $hour >= 12 ? 'PM' : 'AM';
 		$displayHour = $hour == 0 ? 12 : ($hour > 12 ? $hour - 12 : $hour);
 		return sprintf('%d:%02d %s', $displayHour, $minute, $ampm);
+	}
+
+	private function transformManualOpeningHoursToTimetable(array $manualHours): array
+	{
+		$timetable = [
+			'monday' => [],
+			'tuesday' => [],
+			'wednesday' => [],
+			'thursday' => [],
+			'friday' => [],
+			'saturday' => [],
+			'sunday' => []
+		];
+
+		foreach ($manualHours as $slot) {
+			if (empty($slot['days']) || empty($slot['open_time']) || empty($slot['close_time'])) {
+				continue;
+			}
+
+			// Parse open time
+			$openParts = explode(':', $slot['open_time']);
+			$openHour = (int) $openParts[0];
+			$openMinute = (int) ($openParts[1] ?? 0);
+
+			// Parse close time
+			$closeParts = explode(':', $slot['close_time']);
+			$closeHour = (int) $closeParts[0];
+			$closeMinute = (int) ($closeParts[1] ?? 0);
+
+			// Add this time slot to each selected day
+			foreach ($slot['days'] as $day) {
+				$timetable[$day][] = [
+					'open' => [
+						'hour' => $openHour,
+						'minute' => $openMinute
+					],
+					'close' => [
+						'hour' => $closeHour,
+						'minute' => $closeMinute
+					]
+				];
+			}
+		}
+
+		return $timetable;
 	}
 }

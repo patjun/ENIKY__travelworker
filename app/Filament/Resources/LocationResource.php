@@ -52,6 +52,46 @@ class LocationResource extends Resource
                 ->numeric()
                 ->minValue(0)
                 ->step(1),
+            Forms\Components\Section::make('Opening Hours')
+                ->description('Define opening hours that will be used for both German and English versions')
+                ->collapsible()
+                ->collapsed()
+                ->columnSpanFull()
+                ->schema([
+                    Forms\Components\Repeater::make('manual_opening_hours')
+                        ->label('Time Slots')
+                        ->schema([
+                            Forms\Components\Select::make('days')
+                                ->label('Days')
+                                ->multiple()
+                                ->options([
+                                    'monday' => 'Monday / Montag',
+                                    'tuesday' => 'Tuesday / Dienstag',
+                                    'wednesday' => 'Wednesday / Mittwoch',
+                                    'thursday' => 'Thursday / Donnerstag',
+                                    'friday' => 'Friday / Freitag',
+                                    'saturday' => 'Saturday / Samstag',
+                                    'sunday' => 'Sunday / Sonntag',
+                                ])
+                                ->required()
+                                ->columnSpan(1),
+                            Forms\Components\TimePicker::make('open_time')
+                                ->label('Opening Time')
+                                ->seconds(false)
+                                ->required()
+                                ->columnSpan(1),
+                            Forms\Components\TimePicker::make('close_time')
+                                ->label('Closing Time')
+                                ->seconds(false)
+                                ->required()
+                                ->columnSpan(1),
+                        ])
+                        ->columns(3)
+                        ->defaultItems(0)
+                        ->addActionLabel('Add Time Slot')
+                        ->reorderable()
+                        ->collapsible()
+                ]),
             Forms\Components\Tabs::make('Languages')
                 ->columnSpanFull()
                 ->tabs([
