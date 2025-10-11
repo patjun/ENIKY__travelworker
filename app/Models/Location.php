@@ -364,27 +364,33 @@ class Location extends Model {
 		foreach ($dayOrder as $day) {
 			$dayLabel = $dayNames[$day];
 			$html .= "    <div class=\"day\">\n";
-			$html .= "    <span class=\"name\">{$dayLabel}</span>\n";
 
 			if (isset($timetable[$day]) && !empty($timetable[$day])) {
-				$hours = $timetable[$day][0];
+				foreach ($timetable[$day] as $index => $hours) {
+					if ($language === 'en') {
+						// 12-hour format for English
+						$openTime = $this->formatTime12Hour($hours['open']['hour'], $hours['open']['minute']);
+						$closeTime = $this->formatTime12Hour($hours['close']['hour'], $hours['close']['minute']);
+					} else {
+						// 24-hour format for German
+						$openTime = sprintf('%02d:%02d', $hours['open']['hour'], $hours['open']['minute']);
+						$closeTime = sprintf('%02d:%02d', $hours['close']['hour'], $hours['close']['minute']);
+					}
 
-				if ($language === 'en') {
-					// 12-hour format for English
-					$openTime = $this->formatTime12Hour($hours['open']['hour'], $hours['open']['minute']);
-					$closeTime = $this->formatTime12Hour($hours['close']['hour'], $hours['close']['minute']);
-				} else {
-					// 24-hour format for German
-					$openTime = sprintf('%02d:%02d', $hours['open']['hour'], $hours['open']['minute']);
-					$closeTime = sprintf('%02d:%02d', $hours['close']['hour'], $hours['close']['minute']);
+					if ($index === 0) {
+						$html .= "      <div class=\"timeline first\"><span class=\"name\">{$dayLabel}</span>\n";
+						$html .= "      <span class=\"time\">{$openTime} - {$closeTime}</span></div>\n";
+					} else {
+						$html .= "      <div class=\"timeline\"><span class=\"name\"></span>\n";
+						$html .= "      <span class=\"time\">{$openTime} - {$closeTime}</span></div>\n";
+					}
 				}
-
-				$html .= "    <span class=\"time\">{$openTime} - {$closeTime}</span>\n";
 			} else {
-				$html .= "    <span class=\"closed\">{$closedText}</span>\n";
+				$html .= "      <div class=\"timeline\"><span class=\"name\">{$dayLabel}</span>\n";
+				$html .= "      <span class=\"closed\">{$closedText}</span></div>\n";
 			}
 
-			$html .= "  </div>\n";
+			$html .= "    </div>\n";
 		}
 
 		$html .= "  </div>";
