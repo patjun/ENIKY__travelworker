@@ -499,6 +499,20 @@ class Location extends Model {
 			}
 		}
 
+		// Sort each day's time slots by opening time
+		foreach ($timetable as $day => $slots) {
+			if (!empty($slots)) {
+				usort($timetable[$day], function($a, $b) {
+					// Compare hours first
+					if ($a['open']['hour'] !== $b['open']['hour']) {
+						return $a['open']['hour'] - $b['open']['hour'];
+					}
+					// If hours are equal, compare minutes
+					return $a['open']['minute'] - $b['open']['minute'];
+				});
+			}
+		}
+
 		return $timetable;
 	}
 }
