@@ -67,8 +67,18 @@ class LocationResource extends Resource
                                                 ->label('Country'),
                                             Forms\Components\TextInput::make('phone')
                                                 ->label('Phone'),
+                                            Forms\Components\TextInput::make('email')
+                                                ->label('Email')
+                                                ->email(),
                                             Forms\Components\TextInput::make('website')
-                                                ->label('Website'),
+                                                ->label('Website')
+                                                ->url(),
+                                            Forms\Components\TextInput::make('website_opening_hours')
+                                                ->label('Website Opening Hours')
+                                                ->url(),
+                                            Forms\Components\TextInput::make('website_pricing')
+                                                ->label('Website Pricing')
+                                                ->url(),
                                         ]),
                                     Forms\Components\Section::make('Widgets')
                                         ->columnSpan(1)
@@ -119,8 +129,18 @@ class LocationResource extends Resource
                                                 ->label('Country (EN)'),
                                             Forms\Components\TextInput::make('en_phone')
                                                 ->label('Phone (EN)'),
+                                            Forms\Components\TextInput::make('en_email')
+                                                ->label('Email (EN)')
+                                                ->email(),
                                             Forms\Components\TextInput::make('en_website')
-                                                ->label('Website (EN)'),
+                                                ->label('Website (EN)')
+                                                ->url(),
+                                            Forms\Components\TextInput::make('en_website_opening_hours')
+                                                ->label('Website Opening Hours (EN)')
+                                                ->url(),
+                                            Forms\Components\TextInput::make('en_website_pricing')
+                                                ->label('Website Pricing (EN)')
+                                                ->url(),
                                         ]),
                                     Forms\Components\Section::make('Widgets')
                                         ->columnSpan(1)
