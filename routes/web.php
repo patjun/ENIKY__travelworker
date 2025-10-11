@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DFSKeywordForKeywordController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use RickWest\WordPress\Facades\WordPress;
@@ -20,6 +21,9 @@ Route::get( '/', function () {
     return view( 'welcome' );
 } );
 */
+
+Route::get('/keyword_tasks_ready', [DFSKeywordForKeywordController::class, 'tasksReady']);
+Route::get('/keyword/{keyword}', [DFSKeywordForKeywordController::class, 'postTask']);
 
 Route::get('/posts', function () {
 
