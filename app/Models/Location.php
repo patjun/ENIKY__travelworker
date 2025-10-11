@@ -86,8 +86,9 @@ class Location extends Model {
 		$street = $language === 'en' ? ($this->en_street ?: $this->street) : $this->street;
 		$city = $language === 'en' ? ($this->en_city ?: $this->city) : $this->city;
 		$country = $language === 'en' ? ($this->en_country ?: $this->country) : $this->country;
-		$phone = $language === 'en' ? ($this->en_phone ?: $this->phone) : $this->phone;
 		$website = $language === 'en' ? ($this->en_website ?: $this->website) : $this->website;
+		$phone = $language === 'en' ? ($this->en_phone ?: $this->phone) : $this->phone;
+		$email = $language === 'en' ? ($this->en_email ?: $this->email) : $this->email;
 
 		$html = "<div class=\"widget contact-info\">\n";
 
@@ -123,16 +124,6 @@ class Location extends Model {
 			$html .= "    </div>\n";
 		}
 
-		// Phone section
-		if ($phone) {
-			$html .= "    <div class=\"item\">\n";
-			$html .= "      <div class=\"icon\">📞</div>\n";
-			$html .= "      <div class=\"info\">\n";
-			$html .= "        <a href=\"tel:{$phone}\" class=\"contact-link\">{$phone}</a>\n";
-			$html .= "      </div>\n";
-			$html .= "    </div>\n";
-		}
-
 		// Website section
 		if ($website) {
 			$websiteText = $language === 'en' ? 'Visit Website' : 'Website besuchen';
@@ -143,6 +134,27 @@ class Location extends Model {
 			$html .= "      </div>\n";
 			$html .= "    </div>\n";
 		}
+
+		// E-Mail section
+		if ($email) {
+			$html .= "    <div class=\"item\">\n";
+			$html .= "      <div class=\"icon\">✉️</div>\n";
+			$html .= "      <div class=\"info\">\n";
+			$html .= "        <a href=\"mailto:{$email}\" target=\"_blank\" rel=\"noopener\" class=\"link\">{$email}</a>\n";
+			$html .= "      </div>\n";
+			$html .= "    </div>\n";
+		}
+
+		// Phone section
+		if ($phone) {
+			$html .= "    <div class=\"item\">\n";
+			$html .= "      <div class=\"icon\">📞</div>\n";
+			$html .= "      <div class=\"info\">\n";
+			$html .= "        <a href=\"tel:{$phone}\" class=\"contact-link\">{$phone}</a>\n";
+			$html .= "      </div>\n";
+			$html .= "    </div>\n";
+		}
+
 
 		$html .= "  </div>\n";
 		$html .= "</div>";
