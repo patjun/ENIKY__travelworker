@@ -52,6 +52,14 @@ class LocationResource extends Resource
                 ->numeric()
                 ->minValue(0)
                 ->step(1),
+            Forms\Components\Select::make('accessibilityAttributes')
+                ->label('Accessibility Attributes')
+                ->helperText('Select the accessibility features available at this location')
+                ->multiple()
+                ->relationship('accessibilityAttributes', 'name_en')
+                ->searchable(['placeholder', 'name_en', 'name_de'])
+                ->preload()
+                ->columnSpanFull(),
             Forms\Components\Section::make('Opening Hours')
                 ->description('Define opening hours that will be used for both German and English versions')
                 ->collapsible()

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Location extends Model {
@@ -50,6 +51,11 @@ class Location extends Model {
 		'wp_de_last_sync' => 'datetime',
 		'wp_en_last_sync' => 'datetime',
 	];
+
+	public function accessibilityAttributes(): BelongsToMany
+	{
+		return $this->belongsToMany(AccessibilityAttribute::class, 'location_accessibility_attribute');
+	}
 
 	public function generateWidgets()
 	{
