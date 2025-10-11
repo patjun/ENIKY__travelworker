@@ -19,7 +19,7 @@ class ProcessLocationBusinessDataTasks extends Command
      *
      * @var string
      */
-    protected $description = 'Process ready location business data tasks from DataForSeo API';
+    protected $description = 'Process ready coordinate update tasks from DataForSeo API';
 
     /**
      * Execute the console command.

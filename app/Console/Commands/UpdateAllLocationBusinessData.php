@@ -10,7 +10,7 @@ class UpdateAllLocationBusinessData extends Command
 {
     protected $signature = 'location:update-business-data {--force : Update all locations regardless of last update time}';
 
-    protected $description = 'Update business data for all locations with CID from Dataforseo API';
+    protected $description = 'Update latitude and longitude coordinates for all locations with CID from Dataforseo API';
 
     public function handle(): int
     {
