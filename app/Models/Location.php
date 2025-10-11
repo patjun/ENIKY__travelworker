@@ -178,79 +178,16 @@ class Location extends Model {
 
 	public function generateAccessibilityHtml($language = 'de')
 	{
-		// Get the correct accessibility field based on language
-		$accessibilityData = $language === 'en' ? $this->en_accessibility : $this->accessibility;
+		// Load accessibility attributes from relationship
+		$attributes = $this->accessibilityAttributes;
 
-		// Return null if no accessibility data
-		if (!$accessibilityData) {
-			return null;
-		}
-
-		// Ensure accessibility data is an array (handle JSON string case)
-		if (is_string($accessibilityData)) {
-			$accessibilityData = json_decode($accessibilityData, true);
-			if (!$accessibilityData) {
-				\Log::warning("Location {$this->id}: Failed to decode accessibility JSON for language {$language}");
-				return null;
-			}
-		}
-
-		// Ensure it's an array type
-		if (!is_array($accessibilityData)) {
-			\Log::warning("Location {$this->id}: Accessibility data is not an array for language {$language}, type: " . gettype($accessibilityData));
-			return null;
-		}
-
-		// Check if the expected structure exists
-		if (!isset($accessibilityData['available_attributes'])) {
-			\Log::warning("Location {$this->id}: Missing 'available_attributes' key in accessibility data for language {$language}. Keys: " . implode(', ', array_keys($accessibilityData)));
-			return null;
-		}
-
-		// Check if accessibility key exists in available_attributes
-		if (!isset($accessibilityData['available_attributes']['accessibility'])) {
-			\Log::info("Location {$this->id}: No 'accessibility' key in available_attributes for language {$language}");
-			// Don't return null yet - might still have unavailable features
-		}
-
-		// Extract accessibility features
-		$availableFeatures = $accessibilityData['available_attributes']['accessibility'] ?? [];
-		$unavailableFeatures = [];
-		if (isset($accessibilityData['unavailable_attributes']) && is_array($accessibilityData['unavailable_attributes'])) {
-			$unavailableFeatures = $accessibilityData['unavailable_attributes']['accessibility'] ?? [];
-		}
-
-		// Return null if no accessibility features at all
-		if (empty($availableFeatures) && empty($unavailableFeatures)) {
+		// Return null if no accessibility attributes
+		if ($attributes->isEmpty()) {
 			return null;
 		}
 
 		// Set up translations
 		$titleText = $language === 'en' ? 'Accessibility' : 'Barrierefreiheit';
-
-		// Define feature translations
-		$featureTranslations = [
-			'has_wheelchair_accessible_entrance' => [
-				'de' => 'Rollstuhlgerechter Eingang',
-				'en' => 'Wheelchair accessible entrance'
-			],
-			'has_wheelchair_accessible_seating' => [
-				'de' => 'Rollstuhlgerechte Sitzplätze',
-				'en' => 'Wheelchair accessible seating'
-			],
-			'has_wheelchair_accessible_parking' => [
-				'de' => 'Rollstuhlgerechte Parkplätze',
-				'en' => 'Wheelchair accessible parking'
-			],
-			'has_wheelchair_accessible_restroom' => [
-				'de' => 'Rollstuhlgerechte Toiletten',
-				'en' => 'Wheelchair accessible restroom'
-			],
-			'has_hearing_loop' => [
-				'de' => 'Induktionsschleife',
-				'en' => 'Hearing loop'
-			]
-		];
 
 		// Start building HTML
 		$output = '<div class="widget accessibility">' . "\n";
@@ -259,30 +196,15 @@ class Location extends Model {
 		$output .= '  </div>' . "\n";
 		$output .= '  <div class="widget-content accessibility">' . "\n";
 
-		// Add available features
-		foreach ($availableFeatures as $featureKey) {
-			if (isset($featureTranslations[$featureKey])) {
-				$feature = $featureTranslations[$featureKey];
-				$label = $feature[$language];
+		// Add all accessibility features
+		foreach ($attributes as $attribute) {
+			// Get the name in the correct language
+			$label = $language === 'en' ? $attribute->name_en : $attribute->name_de;
 
-				$output .= '    <div class="item available">' . "\n";
-				$output .= '      <span class="status yes">✓</span>' . "\n";
-				$output .= '      <span class="label">' . $label . '</span>' . "\n";
-				$output .= '    </div>' . "\n";
-			}
-		}
-
-		// Add unavailable features
-		foreach ($unavailableFeatures as $featureKey) {
-			if (isset($featureTranslations[$featureKey])) {
-				$feature = $featureTranslations[$featureKey];
-				$label = $feature[$language];
-
-				$output .= '    <div class="item unavailable">' . "\n";
-				$output .= '      <span class="status no">✗</span>' . "\n";
-				$output .= '      <span class="label">' . $label . '</span>' . "\n";
-				$output .= '    </div>' . "\n";
-			}
+			$output .= '    <div class="item available">' . "\n";
+			$output .= '      <span class="status yes">✓</span>' . "\n";
+			$output .= '      <span class="label">' . htmlspecialchars($label) . '</span>' . "\n";
+			$output .= '    </div>' . "\n";
 		}
 
 		$output .= '  </div>' . "\n";
