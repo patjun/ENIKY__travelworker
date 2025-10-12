@@ -31,10 +31,9 @@ class ProcessDataForSeoOrchestrator implements ShouldQueue
                 'en_job_status' => 'orchestrating'
             ]);
 
-            Log::info('Starting DataForSEO orchestration for location (German + English)', ['location_id' => $this->location->id]);
+            Log::info('Starting DataForSEO orchestration for location (English only)', ['location_id' => $this->location->id]);
 
-            // Dispatch both German and English tasks simultaneously
-            \App\Jobs\ProcessDataForSeoTaskPost::dispatch($this->location);
+            // Dispatch only English task (coordinates are language-independent)
             \App\Jobs\ProcessDataForSeoTaskPostEnglish::dispatch($this->location);
 
         } catch (\Exception $e) {

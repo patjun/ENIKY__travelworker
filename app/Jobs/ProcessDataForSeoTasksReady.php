@@ -56,36 +56,14 @@ class ProcessDataForSeoTasksReady implements ShouldQueue
                 return;
             }
 
-            // Find locations with ready German tasks
-            $locationsWithReadyTasks = Location::whereIn('task_id', $readyTaskIds)
-                ->where('job_status', 'task_posted')
-                ->get();
-
-            // Find locations with ready English tasks
+            // Find locations with ready English tasks (coordinates are language-independent)
             $locationsWithReadyEnglishTasks = Location::whereIn('en_task_id', $readyTaskIds)
                 ->where('en_job_status', 'task_posted')
                 ->get();
 
             Log::info('Found locations with ready tasks', [
-                'german_count' => $locationsWithReadyTasks->count(),
                 'english_count' => $locationsWithReadyEnglishTasks->count()
             ]);
-
-            // Process German tasks
-            foreach ($locationsWithReadyTasks as $location) {
-                Log::info('Processing ready German task for location', [
-                    'location_id' => $location->id,
-                    'task_id' => $location->task_id
-                ]);
-
-                $location->update([
-                    'job_status' => 'task_ready',
-                    'get_attempts' => 0,
-                    'tasks_ready_output' => $readyTasks
-                ]);
-
-                ProcessDataForSeoTaskGet::dispatch($location);
-            }
 
             // Process English tasks
             foreach ($locationsWithReadyEnglishTasks as $location) {
@@ -95,8 +73,11 @@ class ProcessDataForSeoTasksReady implements ShouldQueue
                 ]);
 
                 $location->update([
+                    'job_status' => 'task_ready',
                     'en_job_status' => 'task_ready',
+                    'get_attempts' => 0,
                     'en_get_attempts' => 0,
+                    'tasks_ready_output' => $readyTasks,
                     'en_tasks_ready_output' => $readyTasks
                 ]);
 

@@ -31,7 +31,10 @@ class ProcessDataForSeoTaskPostEnglish implements ShouldQueue
         try {
             // Increment attempt counter for English
             $this->location->increment('en_post_attempts');
-            $this->location->update(['en_job_status' => 'posting_task']);
+            $this->location->update([
+                'job_status' => 'posting_task',
+                'en_job_status' => 'posting_task'
+            ]);
 
             Log::info('Starting English DataForSEO task_post for location', [
                 'location_id' => $this->location->id,
@@ -54,8 +57,11 @@ class ProcessDataForSeoTaskPostEnglish implements ShouldQueue
             }
 
             $this->location->update([
+                'task_id' => $taskId,
                 'en_task_id' => $taskId,
+                'task_post_output' => $taskResult,
                 'en_task_post_output' => $taskResult,
+                'job_status' => 'task_posted',
                 'en_job_status' => 'task_posted'
             ]);
 
@@ -71,7 +77,10 @@ class ProcessDataForSeoTaskPostEnglish implements ShouldQueue
                 'error' => $e->getMessage()
             ]);
 
-            $this->location->update(['en_job_status' => 'failed']);
+            $this->location->update([
+                'job_status' => 'failed',
+                'en_job_status' => 'failed'
+            ]);
             throw $e;
         }
     }

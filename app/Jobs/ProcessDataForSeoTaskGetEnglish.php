@@ -31,7 +31,10 @@ class ProcessDataForSeoTaskGetEnglish implements ShouldQueue
         try {
             // Increment attempt counter for English
             $this->location->increment('en_get_attempts');
-            $this->location->update(['en_job_status' => 'getting_results']);
+            $this->location->update([
+                'job_status' => 'getting_results',
+                'en_job_status' => 'getting_results'
+            ]);
 
             Log::info('Getting English task results for location', [
                 'location_id' => $this->location->id,
@@ -56,23 +59,35 @@ class ProcessDataForSeoTaskGetEnglish implements ShouldQueue
             $businessData = $results['tasks'][0]['result'][0]['items'][0] ?? null;
 
             if ($businessData) {
-                // Coordinates are language-independent, so we only update job status for English task
+                // Extract latitude and longitude from DataForSEO data
                 $updateData = [
+                    'last_dataforseo_update' => now(),
                     'en_last_dataforseo_update' => now(),
+                    'job_status' => 'completed',
                     'en_job_status' => 'completed'
                 ];
 
-                // Note: latitude and longitude are already set by the German task
-                // We only track that the English task completed successfully
+                // Map coordinates (language-independent)
+                if (isset($businessData['latitude'])) {
+                    $updateData['latitude'] = $businessData['latitude'];
+                }
+
+                if (isset($businessData['longitude'])) {
+                    $updateData['longitude'] = $businessData['longitude'];
+                }
 
                 $location->update($updateData);
 
-                Log::info('English DataForSEO task completed (coordinates already set by German task)', [
-                    'location_id' => $location->id
+                Log::info('Successfully extracted coordinates from English task', [
+                    'location_id' => $location->id,
+                    'latitude' => $updateData['latitude'] ?? 'not found',
+                    'longitude' => $updateData['longitude'] ?? 'not found'
                 ]);
             } else {
                 $location->update([
+                    'last_dataforseo_update' => now(),
                     'en_last_dataforseo_update' => now(),
+                    'job_status' => 'completed',
                     'en_job_status' => 'completed'
                 ]);
 
@@ -94,7 +109,10 @@ class ProcessDataForSeoTaskGetEnglish implements ShouldQueue
                 'error' => $e->getMessage()
             ]);
 
-            $this->location->update(['en_job_status' => 'failed']);
+            $this->location->update([
+                'job_status' => 'failed',
+                'en_job_status' => 'failed'
+            ]);
             throw $e;
         }
     }
