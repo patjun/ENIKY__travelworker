@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('locations', function (Blueprint $table) {
-            $table->string('place_id')->nullable()->after('cid');
+            $table->timestamp('wp_de_last_sync')->nullable()->after('structured_data');
+            $table->bigInteger('wp_de_id')->nullable()->after('wp_de_last_sync');
+            $table->timestamp('wp_en_last_sync')->nullable()->after('wp_de_id');
+            $table->bigInteger('wp_en_id')->nullable()->after('wp_en_last_sync');
         });
     }
 
@@ -22,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('locations', function (Blueprint $table) {
-            $table->dropColumn('place_id');
+            $table->dropColumn(['wp_de_last_sync', 'wp_de_id', 'wp_en_last_sync', 'wp_en_id']);
         });
     }
 };

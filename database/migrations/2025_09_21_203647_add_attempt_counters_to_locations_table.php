@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('locations', function (Blueprint $table) {
-            $table->string('task_id')->nullable()->after('place_id');
-            $table->json('task_post_output')->nullable()->after('task_id');
-            $table->json('task_get_output')->nullable()->after('task_post_output');
+            $table->integer('post_attempts')->default(0);
+            $table->integer('ready_attempts')->default(0);
+            $table->integer('get_attempts')->default(0);
         });
     }
 
@@ -24,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('locations', function (Blueprint $table) {
-            $table->dropColumn(['task_id', 'task_post_output', 'task_get_output']);
+            $table->dropColumn(['post_attempts', 'ready_attempts', 'get_attempts']);
         });
     }
 };

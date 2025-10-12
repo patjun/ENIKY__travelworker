@@ -42,15 +42,34 @@ class ProcessLocationBusinessDataTasks implements ShouldQueue
                     
                     // Find the location with this task_id
                     $location = Location::where('task_id', $taskResult['tasks'][0]['id'])->first();
-                    
+
                     if ($location) {
-                        $location->update([
-                            'task_get_output' => $taskResult['tasks'][0]['result'],
-                            'business_data' => $taskResult['tasks'][0]['result'],
+                        // Extract only latitude and longitude from business data
+                        $businessData = $taskResult['tasks'][0]['result'][0]['items'][0] ?? null;
+
+                        $updateData = [
                             'last_dataforseo_update' => now(),
-                        ]);
-                        
-                        Log::info("Successfully processed business data task for location {$location->id}, task_id: {$task['id']}");
+                        ];
+
+                        if ($businessData) {
+                            if (isset($businessData['latitude'])) {
+                                $updateData['latitude'] = $businessData['latitude'];
+                            }
+
+                            if (isset($businessData['longitude'])) {
+                                $updateData['longitude'] = $businessData['longitude'];
+                            }
+
+                            Log::info("Successfully extracted coordinates for location {$location->id}", [
+                                'latitude' => $updateData['latitude'] ?? 'not found',
+                                'longitude' => $updateData['longitude'] ?? 'not found',
+                                'task_id' => $task['id']
+                            ]);
+                        } else {
+                            Log::warning("No business data found in API response for location {$location->id}, task_id: {$task['id']}");
+                        }
+
+                        $location->update($updateData);
                     } else {
                         Log::warning("No location found for task_id: {$task['id']}");
                     }

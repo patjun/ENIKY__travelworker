@@ -21,12 +21,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('location:update-business-data')
-            ->weekly()
-            ->sundays()
-            ->at('02:00')
-            ->withoutOverlapping()
-            ->runInBackground();
+        // Sync attractions to WordPress daily at 2:00 AM
+        $schedule->command('attractions:sync-wordpress --language=both')
+                 ->dailyAt('02:00')
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/wp-sync.log'));
     }
 
     /**

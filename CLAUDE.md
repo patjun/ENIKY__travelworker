@@ -14,6 +14,9 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/prompts (PROMPTS) - v0
 - livewire/livewire (LIVEWIRE) - v3
 - rector/rector (RECTOR) - v1
+- laravel/mcp (MCP) - v0
+- laravel/sail (SAIL) - v1
+- phpunit/phpunit (PHPUNIT) - v10
 
 
 ## Conventions
@@ -105,6 +108,14 @@ protected function isAccessible(User $user, ?string $path = null): bool
 
 ## Enums
 - Typically, keys in an Enum should be TitleCase. For example: `FavoritePerson`, `BestLake`, `Monthly`.
+
+
+=== herd rules ===
+
+## Laravel Herd
+
+- The application is served by Laravel Herd and will be available at: https?://[kebab-case-project-dir].test. Use the `get-absolute-url` tool to generate URLs for the user to ensure valid URLs.
+- You must not run any commands to make the site available via HTTP(s). It is _always_ available through Laravel Herd.
 
 
 === filament/core rules ===
@@ -269,7 +280,7 @@ Forms\Components\Select::make('user_id')
 
 ## Livewire Core
 - Use the `search-docs` tool to find exact version specific documentation for how to write Livewire & Livewire tests.
-- Use the `php artisan make:livewire [Posts\CreatePost]` artisan command to create new components
+- Use the `php artisan make:livewire [Posts\\CreatePost]` artisan command to create new components
 - State should live on the server, with the UI reflecting it.
 - All Livewire requests hit the Laravel backend, they're like regular HTTP requests. Always validate form data, and run authorization checks in Livewire actions.
 
@@ -286,7 +297,7 @@ Forms\Components\Select::make('user_id')
     @endforeach
     ```
 
-- Prefer lifecycle hooks like `mount()`, `updatedFoo()`) for initialization and reactive side effects:
+- Prefer lifecycle hooks like `mount()`, `updatedFoo()` for initialization and reactive side effects:
 
 <code-snippet name="Lifecycle hook examples" lang="php">
     public function mount(User $user) { $this->user = $user; }
@@ -346,4 +357,22 @@ document.addEventListener('livewire:init', function () {
     });
 });
 </code-snippet>
+
+
+=== phpunit/core rules ===
+
+## PHPUnit Core
+
+- This application uses PHPUnit for testing. All tests must be written as PHPUnit classes. Use `php artisan make:test --phpunit <name>` to create a new test.
+- If you see a test using "Pest", convert it to PHPUnit.
+- Every time a test has been updated, run that singular test.
+- When the tests relating to your feature are passing, ask the user if they would like to also run the entire test suite to make sure everything is still passing.
+- Tests should test all of the happy paths, failure paths, and weird paths.
+- You must not remove any tests or test files from the tests directory without approval. These are not temporary or helper files, these are core to the application.
+
+### Running Tests
+- Run the minimal number of tests, using an appropriate filter, before finalizing.
+- To run all tests: `php artisan test`.
+- To run all tests in a file: `php artisan test tests/Feature/ExampleTest.php`.
+- To filter on a particular test name: `php artisan test --filter=testName` (recommended after making a change to a related file).
 </laravel-boost-guidelines>

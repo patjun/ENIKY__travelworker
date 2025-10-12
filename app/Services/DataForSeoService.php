@@ -3,99 +3,114 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class DataForSeoService
 {
-    private $baseUrl = 'https://api.dataforseo.com/v3';
-    private $auth;
+    private string $apiKey;
+    private string $baseUrl;
 
     public function __construct()
     {
-        $this->auth = base64_encode(config('services.dataforseo.username') . ':' . config('services.dataforseo.password'));
+        $this->apiKey = config('services.dataforseo.api_key');
+        $this->baseUrl = config('services.dataforseo.base_url');
     }
 
-    public function getKeywordsForKeywords(array $data)
+    public function getBusinessData(string $locationId, string $languageCode = 'en', int $locationCode = 2276): array
     {
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Basic ' . $this->auth,
-        ])->post($this->baseUrl . '/keywords_data/google_ads/keywords_for_keywords/task_post', $data);
+        try {
+            $response = Http::timeout(60)
+                ->withHeaders([
+                    'Authorization' => 'Basic ' . base64_encode($this->apiKey),
+                    'Content-Type' => 'application/json'
+                ])
+                ->post("{$this->baseUrl}/v3/business_data/google/my_business_info/task_post", [
+                    [
+                        'keyword' => 'place_id:' . $locationId,
+                        'language_code' => $languageCode,
+                        'location_code' => $locationCode,
+                        'tag' => 'location_' . $locationId
+                    ]
+                ]);
 
-        return $response->json();
-    }
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info('DataForSEO API response', ['data' => $data]);
+                return $data;
+            }
 
-    public function KeywordsForKeywordsTasksReady()
-    {
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Basic ' . $this->auth,
-        ])->get($this->baseUrl . '/keywords_data/google_ads/keywords_for_keywords/tasks_ready');
+            Log::error('DataForSEO API error', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'url' => "{$this->baseUrl}/v3/business_data/google/my_business_info/task_post"
+            ]);
 
-        return $response->json();
-    }
+            return [
+                'error' => 'API request failed',
+                'status' => $response->status(),
+                'response' => $response->body(),
+                'url' => "{$this->baseUrl}/v3/business_data/google/my_business_info/task_post"
+            ];
 
-    public function KeywordsForKeywordsTaskGet($taskId)
-    {
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Basic ' . $this->auth,
-        ])->get($this->baseUrl . '/keywords_data/google_ads/keywords_for_keywords/task_get/' . $taskId);
-
-        return $response->json();
-    }
-
-    public function searchLocations(string $query): array
-    {
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Basic ' . $this->auth,
-        ])->get($this->baseUrl . '/dataforseo_labs/locations', [
-            'limit' => 10,
-            'search' => $query
-        ]);
-
-        return $response->json();
-    }
-
-    public function getMyBusinessInfo(?string $cid, int $locationCode = 2276, string $languageCode = 'de', ?string $placeId = null): array
-    {
-        if (empty($cid) && empty($placeId)) {
-            throw new \InvalidArgumentException('Either CID or Place ID must be provided');
+        } catch (\Exception $e) {
+            Log::error('DataForSEO API exception', ['message' => $e->getMessage()]);
+            return ['error' => $e->getMessage()];
         }
-
-        $data = [
-            [
-                'keyword' => $placeId ? "place_id:$placeId" : "cid:$cid",
-                'location_code' => $locationCode,
-                'language_code' => $languageCode
-            ]
-        ];
-
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Basic ' . $this->auth,
-        ])->post($this->baseUrl . '/business_data/google/my_business_info/task_post', $data);
-
-        return $response->json();
     }
 
-    public function myBusinessInfoTasksReady(): array
+    public function getTasksReady(): array
     {
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Basic ' . $this->auth,
-        ])->get($this->baseUrl . '/business_data/google/my_business_info/tasks_ready');
+        try {
+            $response = Http::timeout(60)
+                ->withHeaders([
+                    'Authorization' => 'Basic ' . base64_encode($this->apiKey)
+                ])
+                ->get("{$this->baseUrl}/v3/business_data/google/my_business_info/tasks_ready");
 
-        return $response->json();
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info('DataForSEO tasks ready', ['data' => $data]);
+                return $data;
+            }
+
+            Log::error('DataForSEO tasks ready error', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
+            return ['error' => 'Tasks ready request failed', 'status' => $response->status()];
+
+        } catch (\Exception $e) {
+            Log::error('DataForSEO tasks ready exception', ['message' => $e->getMessage()]);
+            return ['error' => $e->getMessage()];
+        }
     }
 
-    public function myBusinessInfoTaskGet(string $taskId): array
+    public function getTaskResult(string $taskId): array
     {
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Basic ' . $this->auth,
-        ])->get($this->baseUrl . '/business_data/google/my_business_info/task_get/' . $taskId);
+        try {
+            $response = Http::timeout(60)
+                ->withHeaders([
+                    'Authorization' => 'Basic ' . base64_encode($this->apiKey)
+                ])
+                ->get("{$this->baseUrl}/v3/business_data/google/my_business_info/task_get/{$taskId}");
 
-        return $response->json();
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info('DataForSEO task result', ['data' => $data]);
+                return $data;
+            }
+
+            Log::error('DataForSEO task result error', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
+            return ['error' => 'Task result request failed', 'status' => $response->status()];
+
+        } catch (\Exception $e) {
+            Log::error('DataForSEO task result exception', ['message' => $e->getMessage()]);
+            return ['error' => $e->getMessage()];
+        }
     }
 }

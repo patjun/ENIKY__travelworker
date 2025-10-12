@@ -32,9 +32,9 @@ return [
     ],
 
     'dataforseo' => [
-        'username' => env('DATAFORSEO_USERNAME'),
-        'password' => env('DATAFORSEO_PASSWORD'),
+        'api_key' => env('DATAFORSEO_API_KEY'),
+        'waiting_time' => env('DATAFORSEO_WAITING', 180),
+        'base_url' => env('DATAFORSEO_BASE_URL', 'https://api.dataforseo.com'),
     ],
-
 
 ];

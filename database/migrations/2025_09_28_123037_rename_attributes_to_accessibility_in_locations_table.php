@@ -12,11 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('locations', function (Blueprint $table) {
-            $table->string('cid')->nullable();
-            $table->integer('location_code')->nullable();
-            $table->string('language_code')->default('de');
-            $table->json('business_data')->nullable();
-            $table->timestamp('last_dataforseo_update')->nullable();
+            // Rename attributes columns to accessibility to avoid conflict with Eloquent's $attributes property
+            $table->renameColumn('attributes', 'accessibility');
+            $table->renameColumn('en_attributes', 'en_accessibility');
         });
     }
 
@@ -26,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('locations', function (Blueprint $table) {
-            $table->dropColumn(['cid', 'location_code', 'language_code', 'business_data', 'last_dataforseo_update']);
+            // Rollback: Rename back to original names
+            $table->renameColumn('accessibility', 'attributes');
+            $table->renameColumn('en_accessibility', 'en_attributes');
         });
     }
 };

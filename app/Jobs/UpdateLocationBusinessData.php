@@ -39,9 +39,7 @@ class UpdateLocationBusinessData implements ShouldQueue
 
             // Update location with task info
             $this->location->update([
-                'task_post_output' => $result,
                 'task_id' => $result['tasks'][0]['id'] ?? null,
-                'last_dataforseo_update' => now(),
             ]);
 
             Log::info("Successfully posted business data task for location {$this->location->id}, task_id: " . ($result['tasks'][0]['id'] ?? 'unknown'));
