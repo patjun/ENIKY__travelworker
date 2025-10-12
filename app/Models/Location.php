@@ -219,7 +219,7 @@ class Location extends Model {
 			return null;
 		}
 
-		$ratingText = $language === 'en' ? 'Rating' : 'Bewertung';
+		$ratingText = $language === 'en' ? 'Our Rating' : 'Unsere Bewertung';
 		$reviewsText = $language === 'en' ? 'Reviews' : 'Bewertungen';
 		$outOfText = $language === 'en' ? 'out of' : 'von';
 
@@ -356,6 +356,7 @@ class Location extends Model {
 		$city = $language === 'en' ? ($this->en_city ?: $this->city) : $this->city;
 		$country = $language === 'en' ? ($this->en_country ?: $this->country) : $this->country;
 		$phone = $language === 'en' ? ($this->en_phone ?: $this->phone) : $this->phone;
+		$email = $language === 'en' ? ($this->en_email ?: $this->email) : $this->email;
 		$website = $language === 'en' ? ($this->en_website ?: $this->website) : $this->website;
 		$description = $language === 'en' ? ($this->en_description ?: $this->description) : $this->description;
 		$category = $language === 'en' ? ($this->en_category ?: $this->category) : $this->category;
@@ -381,6 +382,10 @@ class Location extends Model {
 
 		if ($phone) {
 			$structuredData['telephone'] = $phone;
+		}
+
+		if ($email) {
+			$structuredData['email'] = $email;
 		}
 
 		if ($website) {
