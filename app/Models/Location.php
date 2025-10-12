@@ -429,18 +429,22 @@ class Location extends Model {
 		$specifications = [];
 		$groupedDays = [];
 
-		foreach ($timetable as $day => $hours) {
-			if (!empty($hours)) {
-				$timeKey = sprintf('%02d:%02d-%02d:%02d',
-					$hours[0]['open']['hour'],
-					$hours[0]['open']['minute'],
-					$hours[0]['close']['hour'],
-					$hours[0]['close']['minute']
-				);
-				$groupedDays[$timeKey][] = $dayMapping[$day];
+		// Collect all time slots for each day
+		foreach ($timetable as $day => $timeSlots) {
+			if (!empty($timeSlots)) {
+				foreach ($timeSlots as $slot) {
+					$timeKey = sprintf('%02d:%02d-%02d:%02d',
+						$slot['open']['hour'],
+						$slot['open']['minute'],
+						$slot['close']['hour'],
+						$slot['close']['minute']
+					);
+					$groupedDays[$timeKey][] = $dayMapping[$day];
+				}
 			}
 		}
 
+		// Create specifications from grouped days
 		foreach ($groupedDays as $timeRange => $days) {
 			list($openTime, $closeTime) = explode('-', $timeRange);
 
