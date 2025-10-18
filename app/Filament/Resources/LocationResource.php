@@ -256,7 +256,7 @@ class LocationResource extends Resource
                             if (!is_null($record)){
                                 // ray('using record');
                                 $set('map', ['lat' => $record->latitude, 'lng' => $record->longitude]);
-                            } elseif ($state['lat'] !== 0 && $state['lng'] !== 0) {
+                            } elseif (is_array($state) && isset($state['lat']) && isset($state['lng']) && $state['lat'] !== 0 && $state['lng'] !== 0) {
                                 // ray('using state');
                                 $set('map', ['lat' => $state['lat'], 'lng' => $state['lng']]);
                             } else {
