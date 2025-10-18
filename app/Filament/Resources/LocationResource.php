@@ -31,75 +31,14 @@ class LocationResource extends Resource
     public static function getFormSchema(): array
     {
         return [
-            Forms\Components\TextInput::make('place_id')
-                ->label('Google Places ID')
-                ->helperText(new HtmlString('<a href="https://developers.google.com/maps/documentation/places/web-service/place-id?hl=de" target="_blank" rel="noopener">Klick zum Place ID Finder</a>')),
             Forms\Components\Placeholder::make('global_widget_styles')
                 ->label('')
+                ->columnSpanFull()
                 ->content(new HtmlString('
                     <style>
                     .widget{padding:15px;background-color:#fff;border-radius:16px;font-family:Arial,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:20px;border:1px solid rgba(0,0,0,.05)}.widget .header{text-align:center;margin-bottom:15px;border-bottom:2px solid #186b29;padding-bottom:15px}.widget .header h3.title{margin:0;font-size:2.25rem;font-weight:bold;color:#186b29}.widget .widget-content{background:#fff;color:#374151}.widget .widget-content.contact{display:flex;flex-direction:column;gap:15px}.widget .widget-content.contact .item{display:flex;align-items:flex-start;gap:12px;padding:12px;background:rgba(113,191,68,.05);border-radius:16px}.widget .widget-content.contact .item .icon{font-size:20px;width:24px;text-align:center;flex-shrink:0;color:#71bf44}.widget .widget-content.contact .item .info{flex:1;line-height:1.4;font-size:1.75rem}.widget .widget-content.contact .item .line{margin-bottom:2px}.widget .widget-content.contact .item .link{color:#186b29;text-decoration:none;border-bottom:1px solid rgba(24,107,41,.3);transition:border-bottom-color .3s ease}.widget .widget-content.contact .item .link:hover{border-bottom-color:#186b29}.widget .widget-content.opening-hours .day{margin-bottom:8px;font-size:1.75rem;padding:8px 12px;background:rgba(113,191,68,.05);border-radius:16px}.widget .widget-content.opening-hours .day .timeline{display:flex;justify-content:space-between;margin-top:6px}.widget .widget-content.opening-hours .day .timeline.first{margin-top:0}.widget .widget-content.opening-hours .day .timeline .name{font-weight:bold;color:#186b29}.widget .widget-content.rating{display:flex;justify-content:space-between;align-items:center}.widget .widget-content.rating .score{display:flex;align-items:center;gap:15px}.widget .widget-content.rating .score .number{font-size:3rem;font-weight:bold;color:#186b29}.widget .widget-content.rating .score .details{display:flex;flex-direction:column;gap:5px}.widget .widget-content.rating .score .details .stars{display:flex;gap:2px}.widget .widget-content.rating .score .details .stars .star{font-size:20px}.widget .widget-content.rating .score .details .stars .star-full{color:orange}.widget .widget-content.rating .score .details .stars .star-half{color:orange}.widget .widget-content.rating .score .details .stars .star-empty{color:#d1d5db}.widget .widget-content.rating .score .details .text{font-size:1.75rem;color:#6b7280}.widget .widget-content.rating .reviews{text-align:right;display:flex;flex-direction:column;align-items:flex-end}.widget .widget-content.rating .reviews .count{font-size:2.25rem;font-weight:bold;color:#186b29}.widget .widget-content.rating .reviews .label{font-size:1.75rem;color:#6b7280}.widget .widget-content.accessibility{display:flex;flex-direction:column;gap:10px}.widget .widget-content.accessibility .item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:16px;background:rgba(113,191,68,.05)}.widget .widget-content.accessibility .item .status{font-size:1rem;width:20px;text-align:center;flex-shrink:0;color:#71bf44;font-weight:500}.widget .widget-content.accessibility .item .status.no{color:#ef4444}.widget .widget-content.accessibility .item .label{flex:1;font-size:1.75rem;font-weight:500}.widget .widget-content.accessibility .item.unavailable{opacity:.7}.knowledge_card_content .widget{padding:15px 0;border-radius:0px;box-shadow:none;margin-bottom:20px;border:none}
                     </style>
                 ')),
-            Forms\Components\TextInput::make('rating_value')
-                ->label('Rating Value')
-                ->numeric()
-                ->minValue(0)
-                ->maxValue(5)
-                ->step(0.1),
-            Forms\Components\TextInput::make('rating_votes_count')
-                ->label('Rating Count')
-                ->numeric()
-                ->minValue(0)
-                ->step(1),
-            Forms\Components\Select::make('accessibilityAttributes')
-                ->label('Accessibility Attributes')
-                ->helperText('Select the accessibility features available at this location')
-                ->multiple()
-                ->relationship('accessibilityAttributes', 'name_en')
-                ->searchable(['placeholder', 'name_en', 'name_de'])
-                ->preload()
-                ->columnSpanFull(),
-            Forms\Components\Section::make('Opening Hours')
-                ->description('Define opening hours that will be used for both German and English versions')
-                ->collapsible()
-                ->collapsed()
-                ->columnSpanFull()
-                ->schema([
-                    Forms\Components\Repeater::make('manual_opening_hours')
-                        ->label('Time Slots')
-                        ->schema([
-                            Forms\Components\Select::make('days')
-                                ->label('Days')
-                                ->multiple()
-                                ->options([
-                                    'monday' => 'Monday / Montag',
-                                    'tuesday' => 'Tuesday / Dienstag',
-                                    'wednesday' => 'Wednesday / Mittwoch',
-                                    'thursday' => 'Thursday / Donnerstag',
-                                    'friday' => 'Friday / Freitag',
-                                    'saturday' => 'Saturday / Samstag',
-                                    'sunday' => 'Sunday / Sonntag',
-                                ])
-                                ->required()
-                                ->columnSpan(1),
-                            Forms\Components\TimePicker::make('open_time')
-                                ->label('Opening Time')
-                                ->seconds(false)
-                                ->required()
-                                ->columnSpan(1),
-                            Forms\Components\TimePicker::make('close_time')
-                                ->label('Closing Time')
-                                ->seconds(false)
-                                ->required()
-                                ->columnSpan(1),
-                        ])
-                        ->columns(3)
-                        ->defaultItems(0)
-                        ->addActionLabel('Add Time Slot')
-                        ->reorderable()
-                        ->collapsible()
-                ]),
             Forms\Components\Tabs::make('Languages')
                 ->columnSpanFull()
                 ->tabs([
@@ -319,6 +258,66 @@ class LocationResource extends Resource
                                 ]),
                         ]),
                     ]),
+                                Forms\Components\TextInput::make('rating_value')
+                ->label('Rating Value')
+                ->numeric()
+                ->minValue(0)
+                ->maxValue(5)
+                ->step(0.1),
+            Forms\Components\TextInput::make('rating_votes_count')
+                ->label('Rating Count')
+                ->numeric()
+                ->minValue(0)
+                ->step(1),
+            Forms\Components\Select::make('accessibilityAttributes')
+                ->label('Accessibility Attributes')
+                ->helperText('Select the accessibility features available at this location')
+                ->multiple()
+                ->relationship('accessibilityAttributes', 'name_en')
+                ->searchable(['placeholder', 'name_en', 'name_de'])
+                ->preload()
+                ->columnSpanFull(),
+            Forms\Components\Section::make('Opening Hours')
+                ->description('Define opening hours that will be used for both German and English versions')
+                ->collapsible()
+                ->collapsed()
+                ->columnSpanFull()
+                ->schema([
+                    Forms\Components\Repeater::make('manual_opening_hours')
+                        ->label('Time Slots')
+                        ->schema([
+                            Forms\Components\Select::make('days')
+                                ->label('Days')
+                                ->multiple()
+                                ->options([
+                                    'monday' => 'Monday / Montag',
+                                    'tuesday' => 'Tuesday / Dienstag',
+                                    'wednesday' => 'Wednesday / Mittwoch',
+                                    'thursday' => 'Thursday / Donnerstag',
+                                    'friday' => 'Friday / Freitag',
+                                    'saturday' => 'Saturday / Samstag',
+                                    'sunday' => 'Sunday / Sonntag',
+                                ])
+                                ->required()
+                                ->columnSpan(1),
+                            Forms\Components\TimePicker::make('open_time')
+                                ->label('Opening Time')
+                                ->seconds(false)
+                                ->required()
+                                ->columnSpan(1),
+                            Forms\Components\TimePicker::make('close_time')
+                                ->label('Closing Time')
+                                ->seconds(false)
+                                ->required()
+                                ->columnSpan(1),
+                        ])
+                        ->columns(3)
+                        ->defaultItems(0)
+                        ->addActionLabel('Add Time Slot')
+                        ->reorderable()
+                        ->collapsible()
+                ]),
+
                     Forms\Components\TextInput::make('latitude')
                         ->label('Latitude')
                         ->required()
@@ -378,6 +377,22 @@ class LocationResource extends Resource
                             'zoomDelta'           => 1,
                             'zoomSnap'            => 2,
                         ]),
+                    Forms\Components\TextInput::make('place_id')
+                        ->label('Google Places ID')
+                        ->helperText('Enter the Place ID manually or use the finder below')
+                        ->suffixAction(
+                            Forms\Components\Actions\Action::make('clearPlaceId')
+                                ->icon('heroicon-o-x-mark')
+                                ->action(fn (Set $set) => $set('place_id', null))
+                        ),
+                    Forms\Components\ViewField::make('place_id_finder')
+                        ->label('Place ID Finder')
+                        ->view('filament.forms.components.place-id-finder')
+                        ->viewData([
+                            'fieldName' => 'place_id',
+                        ])
+                        ->dehydrated(false),
+
         ];
     }
 
