@@ -3,17 +3,17 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\LocationResource\Pages;
-use App\Models\Location;
 use App\Jobs\ProcessDataForSeoOrchestrator;
+use App\Models\Location;
+use Dotswan\MapPicker\Fields\Map;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Notifications\Notification;
-use Dotswan\MapPicker\Fields\Map;
 use Illuminate\Support\HtmlString;
 
 class LocationResource extends Resource
@@ -43,7 +43,7 @@ class LocationResource extends Resource
                 ->columnSpanFull()
                 ->tabs([
                     Forms\Components\Tabs\Tab::make('German')
-                        ->label(fn (Get $get) => ($get('name') ?? 'Neue Location') . ' - DE')
+                        ->label(fn (Get $get) => ($get('name') ?? 'Neue Location').' - DE')
                         ->schema([
                             Forms\Components\Grid::make(2)
                                 ->schema([
@@ -69,11 +69,12 @@ class LocationResource extends Resource
                                                                 ->body('Bitte geben Sie einen Namen oder eine Adresse ein.')
                                                                 ->warning()
                                                                 ->send();
+
                                                             return;
                                                         }
 
                                                         // Use Nominatim (OpenStreetMap) for geocoding
-                                                        $url = 'https://nominatim.openstreetmap.org/search?' . http_build_query([
+                                                        $url = 'https://nominatim.openstreetmap.org/search?'.http_build_query([
                                                             'q' => $searchQuery,
                                                             'format' => 'json',
                                                             'limit' => 1,
@@ -93,7 +94,7 @@ class LocationResource extends Resource
                                                         if ($httpCode === 200 && $response) {
                                                             $results = json_decode($response, true);
 
-                                                            if (!empty($results) && isset($results[0])) {
+                                                            if (! empty($results) && isset($results[0])) {
                                                                 $result = $results[0];
                                                                 $lat = (float) $result['lat'];
                                                                 $lng = (float) $result['lon'];
@@ -107,7 +108,7 @@ class LocationResource extends Resource
                                                                 $address = $result['address'] ?? [];
                                                                 if (isset($address['road'])) {
                                                                     $houseNumber = $address['house_number'] ?? '';
-                                                                    $set('street', trim($address['road'] . ' ' . $houseNumber));
+                                                                    $set('street', trim($address['road'].' '.$houseNumber));
                                                                 }
                                                                 if (isset($address['postcode'])) {
                                                                     $set('zip', $address['postcode']);
@@ -194,7 +195,7 @@ class LocationResource extends Resource
                                 ]),
                         ]),
                     Forms\Components\Tabs\Tab::make('English')
-                        ->label(fn (Get $get) => ($get('en_name') ?? 'New Location') . ' - EN')
+                        ->label(fn (Get $get) => ($get('en_name') ?? 'New Location').' - EN')
                         ->schema([
                             Forms\Components\Grid::make(2)
                                 ->schema([
@@ -257,8 +258,8 @@ class LocationResource extends Resource
                                         ]),
                                 ]),
                         ]),
-                    ]),
-                                Forms\Components\TextInput::make('rating_value')
+                ]),
+            Forms\Components\TextInput::make('rating_value')
                 ->label('Rating Value')
                 ->numeric()
                 ->minValue(0)
@@ -315,84 +316,83 @@ class LocationResource extends Resource
                         ->defaultItems(0)
                         ->addActionLabel('Add Time Slot')
                         ->reorderable()
-                        ->collapsible()
+                        ->collapsible(),
                 ]),
 
-                    Forms\Components\TextInput::make('latitude')
-                        ->label('Latitude')
-                        ->required()
-                        ->live()
-                        ->numeric()
-                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
-                            $lng = $get('longitude');
-                            if ($state && $lng) {
-                                $set('map', ['lat' => (float) $state, 'lng' => (float) $lng]);
-                            }
-                        }),
-                    Forms\Components\TextInput::make('longitude')
-                        ->label('Longitude')
-                        ->required()
-                        ->live()
-                        ->numeric()
-                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
-                            $lat = $get('latitude');
-                            if ($state && $lat) {
-                                $set('map', ['lat' => (float) $lat, 'lng' => (float) $state]);
-                            }
-                        }),
-                    Map::make('map')
-                        ->label('Map')
-                        ->columnSpanFull()
-                        ->afterStateUpdated(function (Set $set, ?array $state): void {
-                            $set('latitude', $state['lat']);
-                            $set('longitude', $state['lng']);
-                        })
-                        ->afterStateHydrated(function ($state, $record, Set $set): void {
-                            // ray()->clearAll();
-                            // ray($state, $record);
+            Forms\Components\TextInput::make('latitude')
+                ->label('Latitude')
+                ->required()
+                ->live()
+                ->numeric()
+                ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                    $lng = $get('longitude');
+                    if ($state && $lng) {
+                        $set('map', ['lat' => (float) $state, 'lng' => (float) $lng]);
+                    }
+                }),
+            Forms\Components\TextInput::make('longitude')
+                ->label('Longitude')
+                ->required()
+                ->live()
+                ->numeric()
+                ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                    $lat = $get('latitude');
+                    if ($state && $lat) {
+                        $set('map', ['lat' => (float) $lat, 'lng' => (float) $state]);
+                    }
+                }),
+            Map::make('map')
+                ->label('Map')
+                ->columnSpanFull()
+                ->afterStateUpdated(function (Set $set, ?array $state): void {
+                    $set('latitude', $state['lat']);
+                    $set('longitude', $state['lng']);
+                })
+                ->afterStateHydrated(function ($state, $record, Set $set): void {
+                    // ray()->clearAll();
+                    // ray($state, $record);
 
-                            if (!is_null($record)){
-                                // ray('using record');
-                                $set('map', ['lat' => $record->latitude, 'lng' => $record->longitude]);
-                            } elseif (is_array($state) && isset($state['lat']) && isset($state['lng']) && $state['lat'] !== 0 && $state['lng'] !== 0) {
-                                // ray('using state');
-                                $set('map', ['lat' => $state['lat'], 'lng' => $state['lng']]);
-                            } else {
-                                // ray('using default');
-                                $set('map', ['lat' => 52.520008, 'lng' => 13.404954]);
-                            }
-                        })
-                        ->liveLocation()
-                        ->showMarker()
-                        ->markerColor("#22c55eff")
-                        ->showFullscreenControl()
-                        ->showZoomControl()
-                        ->draggable()
-                        ->tilesUrl("https://tile.openstreetmap.de/{z}/{x}/{y}.png")
-                        ->zoom(13)
-                        ->detectRetina()
-                        // ->showMyLocationButton()
-                        ->extraTileControl([])
-                        ->extraControl([
-                            'zoomDelta'           => 1,
-                            'zoomSnap'            => 2,
-                        ]),
-                    Forms\Components\TextInput::make('place_id')
-                        ->label('Google Places ID')
-                        ->helperText('Enter the Place ID manually or use the finder below')
-                        ->suffixAction(
-                            Forms\Components\Actions\Action::make('clearPlaceId')
-                                ->icon('heroicon-o-x-mark')
-                                ->action(fn (Set $set) => $set('place_id', null))
-                        ),
-                    Forms\Components\ViewField::make('place_id_finder')
-                        ->label('Place ID Finder')
-                        ->view('filament.forms.components.place-id-finder')
-                        ->viewData([
-                            'fieldName' => 'place_id',
-                        ])
-                        ->dehydrated(false),
-
+                    if (! is_null($record)) {
+                        // ray('using record');
+                        $set('map', ['lat' => $record->latitude, 'lng' => $record->longitude]);
+                    } elseif (is_array($state) && isset($state['lat']) && isset($state['lng']) && $state['lat'] !== 0 && $state['lng'] !== 0) {
+                        // ray('using state');
+                        $set('map', ['lat' => $state['lat'], 'lng' => $state['lng']]);
+                    } else {
+                        // ray('using default');
+                        $set('map', ['lat' => 52.520008, 'lng' => 13.404954]);
+                    }
+                })
+                ->liveLocation()
+                ->showMarker()
+                ->markerColor('#22c55eff')
+                ->showFullscreenControl()
+                ->showZoomControl()
+                ->draggable()
+                ->tilesUrl('https://tile.openstreetmap.de/{z}/{x}/{y}.png')
+                ->zoom(13)
+                ->detectRetina()
+                // ->showMyLocationButton()
+                ->extraTileControl([])
+                ->extraControl([
+                    'zoomDelta' => 1,
+                    'zoomSnap' => 2,
+                ]),
+            Forms\Components\TextInput::make('place_id')
+                ->label('Google Places ID')
+                ->helperText('Enter the Place ID manually or use the finder below')
+                ->suffixAction(
+                    Forms\Components\Actions\Action::make('clearPlaceId')
+                        ->icon('heroicon-o-x-mark')
+                        ->action(fn (Set $set) => $set('place_id', null))
+                ),
+            Forms\Components\ViewField::make('place_id_finder')
+                ->label('Place ID Finder')
+                ->view('filament.forms.components.place-id-finder')
+                ->viewData([
+                    'fieldName' => 'place_id',
+                ])
+                ->dehydrated(false),
         ];
     }
 
@@ -416,63 +416,63 @@ class LocationResource extends Resource
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('job_status')
-                     ->label('Status (DE)')
-                     ->badge()
-                     ->color(fn (string $state): string => match ($state) {
-                         'pending' => 'warning',
-                         'processing' => 'info',
-                         'completed' => 'success',
-                         'failed' => 'danger',
-                         'orchestrating' => 'info',
-                         'posting_task' => 'info',
-                         'task_posted' => 'warning',
-                         'task_ready' => 'warning',
-                         'getting_results' => 'info',
-                         default => 'gray',
-                     })
-                     ->toggleable(),
+                    ->label('Status (DE)')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'processing' => 'info',
+                        'completed' => 'success',
+                        'failed' => 'danger',
+                        'orchestrating' => 'info',
+                        'posting_task' => 'info',
+                        'task_posted' => 'warning',
+                        'task_ready' => 'warning',
+                        'getting_results' => 'info',
+                        default => 'gray',
+                    })
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('en_job_status')
-                     ->label('Status (EN)')
-                     ->badge()
-                     ->color(fn (string $state): string => match ($state) {
-                         'pending' => 'warning',
-                         'processing' => 'info',
-                         'completed' => 'success',
-                         'failed' => 'danger',
-                         'orchestrating' => 'info',
-                         'posting_task' => 'info',
-                         'task_posted' => 'warning',
-                         'task_ready' => 'warning',
-                         'getting_results' => 'info',
-                         default => 'gray',
-                     })
-                     ->toggleable(),
+                    ->label('Status (EN)')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'processing' => 'info',
+                        'completed' => 'success',
+                        'failed' => 'danger',
+                        'orchestrating' => 'info',
+                        'posting_task' => 'info',
+                        'task_posted' => 'warning',
+                        'task_ready' => 'warning',
+                        'getting_results' => 'info',
+                        default => 'gray',
+                    })
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('last_dataforseo_update')
-                     ->label('Updated (DE)')
-                     ->date('d.m.Y')
-                     ->sortable()
-                     ->toggleable(),
+                    ->label('Updated (DE)')
+                    ->date('d.m.Y')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('en_last_dataforseo_update')
-                     ->label('Updated (EN)')
-                     ->date('d.m.Y')
-                     ->sortable()
-                     ->toggleable(),
+                    ->label('Updated (EN)')
+                    ->date('d.m.Y')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('task_id')
-                     ->label('Task ID (DE)')
-                     ->searchable()
-                     ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Task ID (DE)')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('en_task_id')
-                     ->label('Task ID (EN)')
-                     ->searchable()
-                     ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Task ID (EN)')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
-                     ->dateTime()
-                     ->sortable()
-                     ->toggleable(isToggledHiddenByDefault: true),
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                     ->dateTime()
-                     ->sortable()
-                     ->toggleable(isToggledHiddenByDefault: true),
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('country')
@@ -511,6 +511,7 @@ class LocationResource extends Resource
                                 ->body('Bitte geben Sie zuerst eine DataForSEO Location ID ein.')
                                 ->danger()
                                 ->send();
+
                             return;
                         }
 
@@ -546,6 +547,7 @@ class LocationResource extends Resource
                                 // Check if place_id is empty
                                 if (empty($record->place_id)) {
                                     $errors++;
+
                                     continue;
                                 }
 
@@ -553,6 +555,7 @@ class LocationResource extends Resource
                                 if (in_array($record->job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready']) ||
                                     in_array($record->en_job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready'])) {
                                     $skipped++;
+
                                     continue;
                                 }
 
