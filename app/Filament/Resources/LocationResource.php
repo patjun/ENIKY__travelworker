@@ -116,6 +116,91 @@ class LocationResource extends Resource
                                                 ->default('Neue Location')
                                                 ->required()
                                                 ->live(),
+                                            Forms\Components\Actions::make([
+                                                Forms\Components\Actions\Action::make('search_address')
+                                                    ->label('Adresse suchen')
+                                                    ->icon('heroicon-o-magnifying-glass')
+                                                    ->color('primary')
+                                                    ->action(function (Set $set, Get $get) {
+                                                        $searchQuery = $get('name');
+
+                                                        if (empty($searchQuery)) {
+                                                            \Filament\Notifications\Notification::make()
+                                                                ->title('Fehler')
+                                                                ->body('Bitte geben Sie einen Namen oder eine Adresse ein.')
+                                                                ->warning()
+                                                                ->send();
+                                                            return;
+                                                        }
+
+                                                        // Use Nominatim (OpenStreetMap) for geocoding
+                                                        $url = 'https://nominatim.openstreetmap.org/search?' . http_build_query([
+                                                            'q' => $searchQuery,
+                                                            'format' => 'json',
+                                                            'limit' => 1,
+                                                            'addressdetails' => 1,
+                                                        ]);
+
+                                                        $ch = curl_init();
+                                                        curl_setopt($ch, CURLOPT_URL, $url);
+                                                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                                                        curl_setopt($ch, CURLOPT_USERAGENT, 'TravelWorker Location Finder');
+                                                        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+
+                                                        $response = curl_exec($ch);
+                                                        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                                                        curl_close($ch);
+
+                                                        if ($httpCode === 200 && $response) {
+                                                            $results = json_decode($response, true);
+
+                                                            if (!empty($results) && isset($results[0])) {
+                                                                $result = $results[0];
+                                                                $lat = (float) $result['lat'];
+                                                                $lng = (float) $result['lon'];
+
+                                                                // Update coordinates
+                                                                $set('latitude', $lat);
+                                                                $set('longitude', $lng);
+                                                                $set('map', ['lat' => $lat, 'lng' => $lng]);
+
+                                                                // Update address fields
+                                                                $address = $result['address'] ?? [];
+                                                                if (isset($address['road'])) {
+                                                                    $houseNumber = $address['house_number'] ?? '';
+                                                                    $set('street', trim($address['road'] . ' ' . $houseNumber));
+                                                                }
+                                                                if (isset($address['postcode'])) {
+                                                                    $set('zip', $address['postcode']);
+                                                                }
+                                                                if (isset($address['city']) || isset($address['town']) || isset($address['village'])) {
+                                                                    $set('city', $address['city'] ?? $address['town'] ?? $address['village']);
+                                                                }
+                                                                if (isset($address['country'])) {
+                                                                    $set('country', $address['country']);
+                                                                }
+
+                                                                \Filament\Notifications\Notification::make()
+                                                                    ->title('Adresse gefunden')
+                                                                    ->body('Die Adressdaten und Koordinaten wurden erfolgreich aktualisiert.')
+                                                                    ->success()
+                                                                    ->send();
+                                                            } else {
+                                                                \Filament\Notifications\Notification::make()
+                                                                    ->title('Keine Ergebnisse')
+                                                                    ->body('Für diese Suche wurden keine Ergebnisse gefunden.')
+                                                                    ->warning()
+                                                                    ->send();
+                                                            }
+                                                        } else {
+                                                            \Filament\Notifications\Notification::make()
+                                                                ->title('Fehler')
+                                                                ->body('Die Adresssuche ist fehlgeschlagen. Bitte versuchen Sie es erneut.')
+                                                                ->danger()
+                                                                ->send();
+                                                        }
+                                                    }),
+                                            ]),
                                             Forms\Components\TextInput::make('street')
                                                 ->label('Street'),
                                             Forms\Components\TextInput::make('zip')
@@ -237,11 +322,25 @@ class LocationResource extends Resource
                     Forms\Components\TextInput::make('latitude')
                         ->label('Latitude')
                         ->required()
-                        ->disabled(),
+                        ->live()
+                        ->numeric()
+                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                            $lng = $get('longitude');
+                            if ($state && $lng) {
+                                $set('map', ['lat' => (float) $state, 'lng' => (float) $lng]);
+                            }
+                        }),
                     Forms\Components\TextInput::make('longitude')
                         ->label('Longitude')
                         ->required()
-                        ->disabled(),
+                        ->live()
+                        ->numeric()
+                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                            $lat = $get('latitude');
+                            if ($state && $lat) {
+                                $set('map', ['lat' => (float) $lat, 'lng' => (float) $state]);
+                            }
+                        }),
                     Map::make('map')
                         ->label('Map')
                         ->columnSpanFull()
