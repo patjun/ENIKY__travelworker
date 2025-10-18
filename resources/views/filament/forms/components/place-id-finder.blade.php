@@ -27,60 +27,41 @@
     @else
         <div
             x-data="{
-                map: null,
-                marker: null,
                 autocomplete: null,
-                infowindow: null,
                 selectedPlace: null,
                 showFinder: false,
 
                 init() {
-                    // Wait for Google Maps to load
-                    this.$nextTick(() => {
-                        if (typeof google !== 'undefined') {
-                            this.initMap();
-                        } else {
-                            console.error('Google Maps not loaded');
+                    // Listen for Google Maps loaded event
+                    window.addEventListener('google-maps-loaded', () => {
+                        if (this.showFinder && !this.autocomplete) {
+                            this.$nextTick(() => {
+                                this.initAutocomplete();
+                            });
                         }
                     });
                 },
 
-                initMap() {
-                    const mapElement = this.$refs.mapContainer;
-
-                    // Default to Berlin
-                    const defaultCenter = { lat: 52.520008, lng: 13.404954 };
-
-                    this.map = new google.maps.Map(mapElement, {
-                        center: defaultCenter,
-                        zoom: 13,
-                        mapTypeControl: true,
-                    });
-
-                    this.infowindow = new google.maps.InfoWindow();
-
-                    // Setup autocomplete
+                initAutocomplete() {
                     const input = this.$refs.autocompleteInput;
+
+                    if (!input) {
+                        console.error('Autocomplete input not found');
+                        return;
+                    }
+
                     this.autocomplete = new google.maps.places.Autocomplete(input);
-                    this.autocomplete.bindTo('bounds', this.map);
-                    this.autocomplete.setFields(['place_id', 'geometry', 'name', 'formatted_address']);
+                    this.autocomplete.setFields(['place_id', 'name', 'formatted_address', 'geometry']);
 
                     this.autocomplete.addListener('place_changed', () => {
                         this.handlePlaceSelect();
                     });
-
-                    // Allow clicking on map
-                    this.map.addListener('click', (e) => {
-                        this.handleMapClick(e.latLng);
-                    });
                 },
 
                 handlePlaceSelect() {
-                    this.infowindow.close();
-
                     const place = this.autocomplete.getPlace();
 
-                    if (!place.geometry || !place.geometry.location) {
+                    if (!place.place_id) {
                         return;
                     }
 
@@ -90,83 +71,25 @@
                         address: place.formatted_address
                     };
 
-                    // Update map
-                    if (place.geometry.viewport) {
-                        this.map.fitBounds(place.geometry.viewport);
-                    } else {
-                        this.map.setCenter(place.geometry.location);
-                        this.map.setZoom(17);
-                    }
+                    // Auto-apply Place ID immediately
+                    @this.set('data.place_id', this.selectedPlace.placeId);
 
-                    // Add marker
-                    if (this.marker) {
-                        this.marker.setMap(null);
-                    }
-
-                    this.marker = new google.maps.Marker({
-                        map: this.map,
-                        position: place.geometry.location,
-                    });
-
-                    this.showInfoWindow(place);
-                },
-
-                handleMapClick(location) {
-                    const geocoder = new google.maps.Geocoder();
-
-                    geocoder.geocode({ location: location }, (results, status) => {
-                        if (status === 'OK' && results[0]) {
-                            this.selectedPlace = {
-                                placeId: results[0].place_id,
-                                name: results[0].name || 'Unbekannt',
-                                address: results[0].formatted_address
-                            };
-
-                            if (this.marker) {
-                                this.marker.setMap(null);
-                            }
-
-                            this.marker = new google.maps.Marker({
-                                map: this.map,
-                                position: location,
-                            });
-
-                            this.showInfoWindow(results[0]);
-                        }
-                    });
-                },
-
-                showInfoWindow(place) {
-                    this.infowindow.setContent(`
-                        <div style='font-size: 13px; line-height: 1.4;'>
-                            <strong>${place.name || 'Location'}</strong><br>
-                            ${place.formatted_address || ''}<br>
-                            <small style='color: #666; font-family: monospace;'>
-                                Place ID: ${place.place_id}
-                            </small>
-                        </div>
-                    `);
-                    this.infowindow.open(this.map, this.marker);
-                },
-
-                applyPlaceId() {
-                    if (this.selectedPlace && this.selectedPlace.placeId) {
-                        // Set the place_id in the form data
-                        @this.set('data.place_id', this.selectedPlace.placeId);
-
-                        new FilamentNotification()
-                            .title('Place ID übernommen')
-                            .body('Die Place ID wurde erfolgreich eingetragen.')
-                            .success()
-                            .send();
-                    }
+                    new FilamentNotification()
+                        .title('Place ID übernommen')
+                        .body(`${this.selectedPlace.name} wurde ausgewählt.`)
+                        .success()
+                        .send();
                 },
 
                 toggleFinder() {
                     this.showFinder = !this.showFinder;
-                    if (this.showFinder && !this.map) {
+                    if (this.showFinder && !this.autocomplete) {
                         this.$nextTick(() => {
-                            this.initMap();
+                            if (typeof google !== 'undefined' && google.maps) {
+                                this.initAutocomplete();
+                            } else {
+                                console.warn('Google Maps not loaded yet');
+                            }
                         });
                     }
                 }
@@ -190,14 +113,14 @@
                 </button>
             </div>
 
-            <!-- Map Container -->
+            <!-- Autocomplete Search Container -->
             <div
                 x-show="showFinder"
                 x-transition
                 class="border rounded-lg overflow-hidden bg-white dark:bg-gray-800"
                 style="display: none;"
             >
-                <div class="p-4 bg-gray-50 dark:bg-gray-900 border-b">
+                <div class="p-4">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Suchen Sie nach einer Location
                     </label>
@@ -208,11 +131,9 @@
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                     />
                     <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                        Tipp: Sie können auch direkt auf die Karte klicken, um einen Ort auszuwählen
+                        Wählen Sie eine Location aus der Liste. Die Place ID wird automatisch übernommen.
                     </p>
                 </div>
-
-                <div x-ref="mapContainer" class="w-full" style="height: 500px;"></div>
             </div>
 
             <!-- Selected Place Info -->
@@ -222,14 +143,13 @@
                 class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg"
                 style="display: none;"
             >
-                <div class="flex items-start justify-between gap-4">
+                <div class="flex items-start gap-2">
+                    <svg class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
                     <div class="flex-1">
-                        <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-1 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            Ausgewählte Location:
+                        <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-1">
+                            Location ausgewählt
                         </h4>
                         <p class="text-sm font-medium text-gray-700 dark:text-gray-300" x-text="selectedPlace?.name"></p>
                         <p class="text-xs text-gray-600 dark:text-gray-400 mt-1" x-text="selectedPlace?.address"></p>
@@ -238,33 +158,35 @@
                             <code class="text-xs font-mono text-blue-600 dark:text-blue-400" x-text="selectedPlace?.placeId"></code>
                         </div>
                     </div>
-
-                    <button
-                        type="button"
-                        @click="applyPlaceId()"
-                        class="inline-flex items-center justify-center gap-2 font-medium rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm shadow-sm bg-success-600 text-white border-transparent hover:bg-success-500 focus:bg-success-700 whitespace-nowrap"
-                    >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        Place ID übernehmen
-                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Load Google Maps Script -->
         <script>
-            if (typeof google === 'undefined') {
-                const script = document.createElement('script');
-                script.src = 'https://maps.googleapis.com/maps/api/js?key={{ $apiKey }}&libraries=places&callback=initGoogleMaps';
-                script.async = true;
-                script.defer = true;
-                document.head.appendChild(script);
+            if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
+                // Prevent multiple script loads
+                if (!window.googleMapsLoading) {
+                    window.googleMapsLoading = true;
 
-                window.initGoogleMaps = function() {
+                    const script = document.createElement('script');
+                    script.src = 'https://maps.googleapis.com/maps/api/js?key={{ $apiKey }}&libraries=places&callback=initGoogleMaps';
+                    script.async = true;
+                    script.defer = true;
+                    document.head.appendChild(script);
+
+                    window.initGoogleMaps = function() {
+                        window.googleMapsLoading = false;
+                        window.googleMapsLoaded = true;
+                        window.dispatchEvent(new CustomEvent('google-maps-loaded'));
+                        console.log('Google Maps loaded successfully');
+                    };
+                }
+            } else if (window.googleMapsLoaded) {
+                // Google Maps already loaded, dispatch event for components that missed it
+                setTimeout(() => {
                     window.dispatchEvent(new CustomEvent('google-maps-loaded'));
-                };
+                }, 100);
             }
         </script>
     @endif

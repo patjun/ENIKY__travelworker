@@ -381,6 +381,7 @@ class LocationResource extends Resource
             Forms\Components\TextInput::make('place_id')
                 ->label('Google Places ID')
                 ->helperText('Enter the Place ID manually or use the finder below')
+                ->required()
                 ->suffixAction(
                     Forms\Components\Actions\Action::make('clearPlaceId')
                         ->icon('heroicon-o-x-mark')
