@@ -4,6 +4,7 @@ namespace App\Filament\Resources\LocationResource\Pages;
 
 use App\Filament\Resources\LocationResource;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateLocation extends CreateRecord
 {
@@ -11,6 +12,13 @@ class CreateLocation extends CreateRecord
 
     protected function getRedirectUrl(): string
     {
-        return $this->getResource()::getUrl('index');
+        return $this->getResource()::getUrl('edit', ['record' => $this->record]);
+    }
+
+    protected function afterCreate(): void
+    {
+        // Generate widgets after creating
+        $this->record->generateWidgets();
+        $this->record->save();
     }
 }

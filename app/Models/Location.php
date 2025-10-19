@@ -64,8 +64,11 @@ class Location extends Model
         return $this->belongsToMany(AccessibilityAttribute::class, 'location_accessibility_attribute');
     }
 
-    public function generateWidgets()
+    public function generateWidgets(): void
     {
+        // Ensure relationships are loaded
+        $this->loadMissing(['city.country', 'accessibilityAttributes']);
+
         // Transform manual opening hours to timetable format if available
         if (! empty($this->manual_opening_hours)) {
             $timetable = $this->transformManualOpeningHoursToTimetable($this->manual_opening_hours);
