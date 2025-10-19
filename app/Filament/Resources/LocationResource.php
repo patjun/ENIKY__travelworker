@@ -147,6 +147,7 @@ class LocationResource extends Resource
                                                 ->relationship('city', 'name_de')
                                                 ->searchable()
                                                 ->preload()
+                                                ->required()
                                                 ->createOptionForm([
                                                     Forms\Components\Select::make('country_id')
                                                         ->label('Country')
@@ -164,8 +165,10 @@ class LocationResource extends Resource
                                                         ->maxLength(255),
                                                 ]),
                                             Forms\Components\TextInput::make('street')
+                                                ->required()
                                                 ->label('Street'),
                                             Forms\Components\TextInput::make('zip')
+                                                ->required()
                                                 ->label('ZIP'),
                                             Forms\Components\TextInput::make('city')
                                                 ->label('City (Legacy)'),
@@ -177,6 +180,7 @@ class LocationResource extends Resource
                                                 ->label('Email')
                                                 ->email(),
                                             Forms\Components\TextInput::make('website')
+                                                ->required()
                                                 ->label('Website')
                                                 ->url(),
                                             Forms\Components\TextInput::make('website_opening_hours')
@@ -226,6 +230,7 @@ class LocationResource extends Resource
                                         ->schema([
                                             Forms\Components\TextInput::make('en_name')
                                                 ->label('Name (EN)')
+                                                ->required()
                                                 ->live(),
                                             Forms\Components\Actions::make([
                                                 Forms\Components\Actions\Action::make('search_address_en')
@@ -314,9 +319,33 @@ class LocationResource extends Resource
                                                         }
                                                     }),
                                             ]),
+                                            Forms\Components\Select::make('city_id')
+                                                ->label('City')
+                                                ->relationship('city', 'name_en')
+                                                ->searchable()
+                                                ->preload()
+                                                ->required()
+                                                ->createOptionForm([
+                                                    Forms\Components\Select::make('country_id')
+                                                        ->label('Country')
+                                                        ->relationship('country', 'name_de')
+                                                        ->required()
+                                                        ->searchable()
+                                                        ->preload(),
+                                                    Forms\Components\TextInput::make('name_de')
+                                                        ->label('Name (DE)')
+                                                        ->required()
+                                                        ->maxLength(255),
+                                                    Forms\Components\TextInput::make('name_en')
+                                                        ->label('Name (EN)')
+                                                        ->required()
+                                                        ->maxLength(255),
+                                                ]),                                            
                                             Forms\Components\TextInput::make('en_street')
+                                            ->required()
                                                 ->label('Street (EN)'),
                                             Forms\Components\TextInput::make('en_zip')
+                                            ->required()
                                                 ->label('ZIP (EN)'),
                                             Forms\Components\TextInput::make('en_city')
                                                 ->label('City (EN)'),
@@ -329,6 +358,7 @@ class LocationResource extends Resource
                                                 ->email(),
                                             Forms\Components\TextInput::make('en_website')
                                                 ->label('Website (EN)')
+                                                ->required()
                                                 ->url(),
                                             Forms\Components\TextInput::make('en_website_opening_hours')
                                                 ->label('Website Opening Hours (EN)')
@@ -371,12 +401,14 @@ class LocationResource extends Resource
             Forms\Components\TextInput::make('rating_value')
                 ->label('Rating Value')
                 ->numeric()
+                ->required()
                 ->minValue(0)
                 ->maxValue(5)
                 ->step(0.1),
             Forms\Components\TextInput::make('rating_votes_count')
                 ->label('Rating Count')
                 ->numeric()
+                ->required()
                 ->minValue(0)
                 ->step(1),
             Forms\Components\Select::make('accessibilityAttributes')
