@@ -5,6 +5,7 @@ namespace App\Filament\Resources\LocationResource\Pages;
 use App\Filament\Resources\LocationResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditLocation extends EditRecord
 {
@@ -15,5 +16,17 @@ class EditLocation extends EditRecord
         return [
             Actions\DeleteAction::make(),
         ];
+    }
+
+    protected function afterSave(): void
+    {
+        // Generate widgets after saving
+        $this->record->generateWidgets();
+        $this->record->save();
+    }
+
+    protected function getSavedNotificationTitle(): ?string
+    {
+        return 'Location saved and widgets generated';
     }
 }
