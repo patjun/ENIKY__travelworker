@@ -18,7 +18,7 @@ class CountryResource extends Resource
 
     protected static ?string $navigationGroup = 'Locations';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 30;
 
     public static function form(Form $form): Form
     {

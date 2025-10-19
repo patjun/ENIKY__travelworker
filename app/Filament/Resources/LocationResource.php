@@ -20,7 +20,11 @@ class LocationResource extends Resource
 {
     protected static ?string $model = Location::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-map-pin';
+
+    protected static ?string $navigationGroup = 'Locations';
+
+    protected static ?int $navigationSort = 10;
 
     public static function form(Form $form): Form
     {
@@ -139,7 +143,7 @@ class LocationResource extends Resource
                                             Forms\Components\Select::make('city_id')
                                                 ->label('City')
                                                 ->relationship('city', 'name_de')
-                                                ->searchable()
+                                                ->searchable(['name_de', 'name_en'])
                                                 ->preload()
                                                 ->required()
                                                 ->createOptionForm([
@@ -147,7 +151,7 @@ class LocationResource extends Resource
                                                         ->label('Country')
                                                         ->relationship('country', 'name_de')
                                                         ->required()
-                                                        ->searchable()
+                                                        ->searchable(['name_de', 'name_en'])
                                                         ->preload(),
                                                     Forms\Components\TextInput::make('name_de')
                                                         ->label('Name (DE)')
@@ -306,7 +310,7 @@ class LocationResource extends Resource
                                             Forms\Components\Select::make('city_id')
                                                 ->label('City')
                                                 ->relationship('city', 'name_en')
-                                                ->searchable()
+                                                ->searchable(['name_de', 'name_en'])
                                                 ->preload()
                                                 ->required()
                                                 ->createOptionForm([
@@ -314,7 +318,7 @@ class LocationResource extends Resource
                                                         ->label('Country')
                                                         ->relationship('country', 'name_de')
                                                         ->required()
-                                                        ->searchable()
+                                                        ->searchable(['name_de', 'name_en'])
                                                         ->preload(),
                                                     Forms\Components\TextInput::make('name_de')
                                                         ->label('Name (DE)')
