@@ -57,7 +57,7 @@ class LocationResource extends Resource
                                                 ->live(),
                                             Forms\Components\Actions::make([
                                                 Forms\Components\Actions\Action::make('search_address')
-                                                    ->label('Adresse suchen')
+                                                    ->label('Search Address')
                                                     ->icon('heroicon-o-magnifying-glass')
                                                     ->color('primary')
                                                     ->action(function (Set $set, Get $get) {
@@ -65,8 +65,8 @@ class LocationResource extends Resource
 
                                                         if (empty($searchQuery)) {
                                                             \Filament\Notifications\Notification::make()
-                                                                ->title('Fehler')
-                                                                ->body('Bitte geben Sie einen Namen oder eine Adresse ein.')
+                                                                ->title('Error')
+                                                                ->body('Please enter a name or address.')
                                                                 ->warning()
                                                                 ->send();
 
@@ -79,6 +79,7 @@ class LocationResource extends Resource
                                                             'format' => 'json',
                                                             'limit' => 1,
                                                             'addressdetails' => 1,
+                                                            'accept-language' => 'de',
                                                         ]);
 
                                                         $ch = curl_init();
@@ -205,6 +206,93 @@ class LocationResource extends Resource
                                             Forms\Components\TextInput::make('en_name')
                                                 ->label('Name (EN)')
                                                 ->live(),
+                                            Forms\Components\Actions::make([
+                                                Forms\Components\Actions\Action::make('search_address_en')
+                                                    ->label('Search Address')
+                                                    ->icon('heroicon-o-magnifying-glass')
+                                                    ->color('primary')
+                                                    ->action(function (Set $set, Get $get) {
+                                                        $searchQuery = $get('en_name') ?: $get('name');
+
+                                                        if (empty($searchQuery)) {
+                                                            \Filament\Notifications\Notification::make()
+                                                                ->title('Error')
+                                                                ->body('Please enter a name or address.')
+                                                                ->warning()
+                                                                ->send();
+
+                                                            return;
+                                                        }
+
+                                                        // Use Nominatim (OpenStreetMap) for geocoding with English language preference
+                                                        $url = 'https://nominatim.openstreetmap.org/search?'.http_build_query([
+                                                            'q' => $searchQuery,
+                                                            'format' => 'json',
+                                                            'limit' => 1,
+                                                            'addressdetails' => 1,
+                                                            'accept-language' => 'en',
+                                                        ]);
+
+                                                        $ch = curl_init();
+                                                        curl_setopt($ch, CURLOPT_URL, $url);
+                                                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                                                        curl_setopt($ch, CURLOPT_USERAGENT, 'TravelWorker Location Finder');
+                                                        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+
+                                                        $response = curl_exec($ch);
+                                                        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                                                        curl_close($ch);
+
+                                                        if ($httpCode === 200 && $response) {
+                                                            $results = json_decode($response, true);
+
+                                                            if (! empty($results) && isset($results[0])) {
+                                                                $result = $results[0];
+                                                                $lat = (float) $result['lat'];
+                                                                $lng = (float) $result['lon'];
+
+                                                                // Update coordinates (shared between languages)
+                                                                $set('latitude', $lat);
+                                                                $set('longitude', $lng);
+                                                                $set('map', ['lat' => $lat, 'lng' => $lng]);
+
+                                                                // Update English address fields
+                                                                $address = $result['address'] ?? [];
+                                                                if (isset($address['road'])) {
+                                                                    $houseNumber = $address['house_number'] ?? '';
+                                                                    $set('en_street', trim($address['road'].' '.$houseNumber));
+                                                                }
+                                                                if (isset($address['postcode'])) {
+                                                                    $set('en_zip', $address['postcode']);
+                                                                }
+                                                                if (isset($address['city']) || isset($address['town']) || isset($address['village'])) {
+                                                                    $set('en_city', $address['city'] ?? $address['town'] ?? $address['village']);
+                                                                }
+                                                                if (isset($address['country'])) {
+                                                                    $set('en_country', $address['country']);
+                                                                }
+
+                                                                \Filament\Notifications\Notification::make()
+                                                                    ->title('Address Found')
+                                                                    ->body('Address data and coordinates have been successfully updated.')
+                                                                    ->success()
+                                                                    ->send();
+                                                            } else {
+                                                                \Filament\Notifications\Notification::make()
+                                                                    ->title('No Results')
+                                                                    ->body('No results found for this search.')
+                                                                    ->warning()
+                                                                    ->send();
+                                                            }
+                                                        } else {
+                                                            \Filament\Notifications\Notification::make()
+                                                                ->title('Error')
+                                                                ->body('Address search failed. Please try again.')
+                                                                ->danger()
+                                                                ->send();
+                                                        }
+                                                    }),
+                                            ]),
                                             Forms\Components\TextInput::make('en_street')
                                                 ->label('Street (EN)'),
                                             Forms\Components\TextInput::make('en_zip')
