@@ -21,7 +21,7 @@ class Location extends Model
         'opening_hours', 'accessibility', 'main_image_url', 'is_claimed',
         'price_level', 'additional_categories', 'opening_hours_html', 'structured_data',
         'contact_info_html', 'rating_html', 'accessibility_html', 'manual_opening_hours',
-        'en_name', 'en_street', 'en_phone', 'en_email', 'en_website',
+        'en_name', 'en_street', 'en_zip', 'en_phone', 'en_email', 'en_website',
         'en_website_opening_hours', 'en_website_pricing',
         'en_description', 'en_category', 'en_opening_hours', 'en_accessibility',
         'en_main_image_url', 'en_price_level', 'en_additional_categories',
@@ -105,6 +105,7 @@ class Location extends Model
     {
         $name = $language === 'en' ? ($this->en_name ?: $this->name) : $this->name;
         $street = $language === 'en' ? ($this->en_street ?: $this->street) : $this->street;
+        $zip = $language === 'en' ? ($this->en_zip ?: $this->zip) : $this->zip;
 
         // Load city relationship if not loaded
         if (! $this->relationLoaded('city')) {
@@ -131,7 +132,7 @@ class Location extends Model
         $html .= "  <div class=\"contact widget-content\">\n";
 
         // Address section
-        if ($street || $city || $country || $this->zip) {
+        if ($street || $city || $country || $zip) {
             $html .= "    <div class=\"item\">\n";
             $html .= "      <div class=\"icon\">📍</div>\n";
             $html .= "      <div class=\"info\">\n";
@@ -140,8 +141,8 @@ class Location extends Model
             if ($street) {
                 $addressParts[] = $street;
             }
-            if ($this->zip && $city) {
-                $addressParts[] = $this->zip.' '.$city;
+            if ($zip && $city) {
+                $addressParts[] = $zip.' '.$city;
             } elseif ($city) {
                 $addressParts[] = $city;
             }
@@ -371,6 +372,7 @@ class Location extends Model
     {
         $name = $language === 'en' ? ($this->en_name ?: $this->name) : $this->name;
         $street = $language === 'en' ? ($this->en_street ?: $this->street) : $this->street;
+        $zip = $language === 'en' ? ($this->en_zip ?: $this->zip) : $this->zip;
 
         // Load city relationship if not loaded
         if (! $this->relationLoaded('city')) {
@@ -396,7 +398,7 @@ class Location extends Model
             'name' => $name,
         ];
 
-        if ($street || $city || $country || $this->zip) {
+        if ($street || $city || $country || $zip) {
             $structuredData['address'] = [
                 '@type' => 'PostalAddress',
             ];
@@ -409,8 +411,8 @@ class Location extends Model
             if ($country) {
                 $structuredData['address']['addressCountry'] = $country;
             }
-            if ($this->zip) {
-                $structuredData['address']['postalCode'] = $this->zip;
+            if ($zip) {
+                $structuredData['address']['postalCode'] = $zip;
             }
         }
 
