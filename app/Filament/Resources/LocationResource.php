@@ -114,12 +114,6 @@ class LocationResource extends Resource
                                                                 if (isset($address['postcode'])) {
                                                                     $set('zip', $address['postcode']);
                                                                 }
-                                                                if (isset($address['city']) || isset($address['town']) || isset($address['village'])) {
-                                                                    $set('city', $address['city'] ?? $address['town'] ?? $address['village']);
-                                                                }
-                                                                if (isset($address['country'])) {
-                                                                    $set('country', $address['country']);
-                                                                }
 
                                                                 \Filament\Notifications\Notification::make()
                                                                     ->title('Adresse gefunden')
@@ -170,10 +164,6 @@ class LocationResource extends Resource
                                             Forms\Components\TextInput::make('zip')
                                                 ->required()
                                                 ->label('ZIP'),
-                                            Forms\Components\TextInput::make('city')
-                                                ->label('City (Legacy)'),
-                                            Forms\Components\TextInput::make('country')
-                                                ->label('Country (Legacy)'),
                                             Forms\Components\TextInput::make('phone')
                                                 ->label('Phone'),
                                             Forms\Components\TextInput::make('email')
@@ -291,12 +281,6 @@ class LocationResource extends Resource
                                                                 if (isset($address['postcode'])) {
                                                                     $set('en_zip', $address['postcode']);
                                                                 }
-                                                                if (isset($address['city']) || isset($address['town']) || isset($address['village'])) {
-                                                                    $set('en_city', $address['city'] ?? $address['town'] ?? $address['village']);
-                                                                }
-                                                                if (isset($address['country'])) {
-                                                                    $set('en_country', $address['country']);
-                                                                }
 
                                                                 \Filament\Notifications\Notification::make()
                                                                     ->title('Address Found')
@@ -340,17 +324,13 @@ class LocationResource extends Resource
                                                         ->label('Name (EN)')
                                                         ->required()
                                                         ->maxLength(255),
-                                                ]),                                            
+                                                ]),
                                             Forms\Components\TextInput::make('en_street')
-                                            ->required()
+                                                ->required()
                                                 ->label('Street (EN)'),
                                             Forms\Components\TextInput::make('en_zip')
-                                            ->required()
+                                                ->required()
                                                 ->label('ZIP (EN)'),
-                                            Forms\Components\TextInput::make('en_city')
-                                                ->label('City (EN)'),
-                                            Forms\Components\TextInput::make('en_country')
-                                                ->label('Country (EN)'),
                                             Forms\Components\TextInput::make('en_phone')
                                                 ->label('Phone (EN)'),
                                             Forms\Components\TextInput::make('en_email')
@@ -550,25 +530,15 @@ class LocationResource extends Resource
                     ->width(300)
                     ->wrap(),
                 Tables\Columns\TextColumn::make('city.name_de')
-                    ->label('City (Structured)')
+                    ->label('City')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('city.country.name_de')
-                    ->label('Country (Structured)')
+                    ->label('Country')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('city')
-                    ->label('City (Legacy)')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('country')
-                    ->label('Country (Legacy)')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('job_status')
                     ->label('Status (DE)')
                     ->badge()
@@ -629,24 +599,25 @@ class LocationResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('city_id')
+                    ->label('Stadt')
+                    ->relationship('city', 'name_de')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\SelectFilter::make('country')
                     ->label('Land')
+                    ->query(function ($query, $data) {
+                        if (isset($data['value'])) {
+                            $query->whereHas('city.country', function ($q) use ($data) {
+                                $q->where('id', $data['value']);
+                            });
+                        }
+                    })
                     ->options(function () {
-                        return Location::whereNotNull('country')
-                            ->distinct()
-                            ->orderBy('country')
-                            ->pluck('country', 'country')
-                            ->toArray();
-                    }),
-                Tables\Filters\SelectFilter::make('city')
-                    ->label('Stadt')
-                    ->options(function () {
-                        return Location::whereNotNull('city')
-                            ->distinct()
-                            ->orderBy('city')
-                            ->pluck('city', 'city')
-                            ->toArray();
-                    }),
+                        return \App\Models\Country::orderBy('name_de')->pluck('name_de', 'id')->toArray();
+                    })
+                    ->searchable()
+                    ->preload(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
