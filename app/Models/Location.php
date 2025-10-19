@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -10,7 +11,7 @@ class Location extends Model {
 	use SoftDeletes;
 
 	protected $fillable = [
-		'name', 'street', 'zip', 'city', 'country', 'latitude', 'longitude',
+		'city_id', 'name', 'street', 'zip', 'city', 'country', 'latitude', 'longitude',
 		'cid', 'place_id', 'task_id', 'task_post_output', 'task_get_output',
 		'location_code', 'language_code', 'business_data', 'last_dataforseo_update',
 		'job_status', 'post_attempts', 'get_attempts', 'phone', 'email', 'website',
@@ -51,6 +52,11 @@ class Location extends Model {
 		'wp_de_last_sync' => 'datetime',
 		'wp_en_last_sync' => 'datetime',
 	];
+
+	public function city(): BelongsTo
+	{
+		return $this->belongsTo(City::class);
+	}
 
 	public function accessibilityAttributes(): BelongsToMany
 	{

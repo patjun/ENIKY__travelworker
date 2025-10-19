@@ -142,14 +142,35 @@ class LocationResource extends Resource
                                                         }
                                                     }),
                                             ]),
+                                            Forms\Components\Select::make('city_id')
+                                                ->label('City')
+                                                ->relationship('city', 'name_de')
+                                                ->searchable()
+                                                ->preload()
+                                                ->createOptionForm([
+                                                    Forms\Components\Select::make('country_id')
+                                                        ->label('Country')
+                                                        ->relationship('country', 'name_de')
+                                                        ->required()
+                                                        ->searchable()
+                                                        ->preload(),
+                                                    Forms\Components\TextInput::make('name_de')
+                                                        ->label('Name (DE)')
+                                                        ->required()
+                                                        ->maxLength(255),
+                                                    Forms\Components\TextInput::make('name_en')
+                                                        ->label('Name (EN)')
+                                                        ->required()
+                                                        ->maxLength(255),
+                                                ]),
                                             Forms\Components\TextInput::make('street')
                                                 ->label('Street'),
                                             Forms\Components\TextInput::make('zip')
                                                 ->label('ZIP'),
                                             Forms\Components\TextInput::make('city')
-                                                ->label('City'),
+                                                ->label('City (Legacy)'),
                                             Forms\Components\TextInput::make('country')
-                                                ->label('Country'),
+                                                ->label('Country (Legacy)'),
                                             Forms\Components\TextInput::make('phone')
                                                 ->label('Phone'),
                                             Forms\Components\TextInput::make('email')
@@ -496,14 +517,26 @@ class LocationResource extends Resource
                     ->sortable()
                     ->width(300)
                     ->wrap(),
+                Tables\Columns\TextColumn::make('city.name_de')
+                    ->label('City (Structured)')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('city.country.name_de')
+                    ->label('Country (Structured)')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('city')
+                    ->label('City (Legacy)')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('country')
+                    ->label('Country (Legacy)')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('job_status')
                     ->label('Status (DE)')
                     ->badge()
