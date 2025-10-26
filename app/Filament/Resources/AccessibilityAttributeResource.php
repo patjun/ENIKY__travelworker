@@ -25,6 +25,10 @@ class AccessibilityAttributeResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Accessibility Attributes';
 
+    protected static ?int $navigationSort = 40;
+
+    protected static ?string $navigationGroup = 'Locations';
+
     public static function form(Form $form): Form
     {
         return $form
