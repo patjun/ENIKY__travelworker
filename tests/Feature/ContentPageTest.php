@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\ContentBlock;
 use App\Models\ContentPage;
 use App\Models\Location;
+use App\Models\LocationBlock;
 use App\Models\RelatedLinksBlock;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -24,18 +25,16 @@ class ContentPageTest extends TestCase
         ]);
     }
 
-    public function test_can_attach_locations_to_content_page(): void
+    public function test_can_create_location_block(): void
     {
-        $contentPage = ContentPage::factory()->create();
         $location = Location::factory()->create();
-
-        $contentPage->locations()->attach($location->id, [
-            'order' => 0,
-            'custom_intro_de' => 'Test intro',
+        $locationBlock = LocationBlock::factory()->create([
+            'location_id' => $location->id,
+            'custom_intro' => '<p>Test intro</p>',
         ]);
 
-        $this->assertDatabaseHas('content_page_location', [
-            'content_page_id' => $contentPage->id,
+        $this->assertDatabaseHas('location_blocks', [
+            'id' => $locationBlock->id,
             'location_id' => $location->id,
         ]);
     }
@@ -47,6 +46,28 @@ class ContentPageTest extends TestCase
         $this->assertDatabaseHas('related_links_blocks', [
             'id' => $relatedLinksBlock->id,
         ]);
+    }
+
+    public function test_can_create_content_block_with_location(): void
+    {
+        $contentPage = ContentPage::factory()->create();
+        $locationBlock = LocationBlock::factory()->create();
+
+        $contentBlock = ContentBlock::create([
+            'content_page_id' => $contentPage->id,
+            'blockable_type' => LocationBlock::class,
+            'blockable_id' => $locationBlock->id,
+            'order' => 0,
+            'language' => 'de',
+        ]);
+
+        $this->assertDatabaseHas('content_blocks', [
+            'id' => $contentBlock->id,
+            'content_page_id' => $contentPage->id,
+            'language' => 'de',
+        ]);
+
+        $this->assertEquals($locationBlock->id, $contentBlock->blockable_id);
     }
 
     public function test_can_create_content_block_with_related_links(): void
@@ -80,9 +101,17 @@ class ContentPageTest extends TestCase
             'contact_info_html' => '<div>Contact info</div>',
         ]);
 
-        $contentPage->locations()->attach($location->id, [
+        $locationBlock = LocationBlock::create([
+            'location_id' => $location->id,
+            'custom_intro' => '<p>Custom intro</p>',
+        ]);
+
+        ContentBlock::create([
+            'content_page_id' => $contentPage->id,
+            'blockable_type' => LocationBlock::class,
+            'blockable_id' => $locationBlock->id,
             'order' => 0,
-            'custom_intro_de' => '<p>Custom intro</p>',
+            'language' => 'de',
         ]);
 
         $contentPage->generateWidgets();
@@ -95,11 +124,10 @@ class ContentPageTest extends TestCase
     public function test_related_links_block_renders_html(): void
     {
         $relatedLinksBlock = RelatedLinksBlock::factory()->create([
-            'title_de' => 'Test Title',
+            'title' => 'Test Title',
             'links' => [
                 [
-                    'title_de' => 'Link 1',
-                    'title_en' => 'Link 1',
+                    'title' => 'Link 1',
                     'url' => 'https://example.com/link1',
                 ],
             ],
@@ -110,5 +138,56 @@ class ContentPageTest extends TestCase
         $this->assertStringContainsString('Test Title', $html);
         $this->assertStringContainsString('Link 1', $html);
         $this->assertStringContainsString('https://example.com/link1', $html);
+    }
+
+    public function test_can_have_different_blocks_per_language(): void
+    {
+        $contentPage = ContentPage::factory()->create();
+        $location = Location::factory()->create();
+
+        // Create German blocks
+        $locationBlockDe = LocationBlock::create([
+            'location_id' => $location->id,
+            'custom_intro' => '<p>Deutsche Intro</p>',
+        ]);
+
+        ContentBlock::create([
+            'content_page_id' => $contentPage->id,
+            'blockable_type' => LocationBlock::class,
+            'blockable_id' => $locationBlockDe->id,
+            'order' => 0,
+            'language' => 'de',
+        ]);
+
+        // Create English blocks (different number)
+        $locationBlockEn1 = LocationBlock::create([
+            'location_id' => $location->id,
+            'custom_intro' => '<p>English Intro 1</p>',
+        ]);
+
+        $locationBlockEn2 = LocationBlock::create([
+            'location_id' => $location->id,
+            'custom_intro' => '<p>English Intro 2</p>',
+        ]);
+
+        ContentBlock::create([
+            'content_page_id' => $contentPage->id,
+            'blockable_type' => LocationBlock::class,
+            'blockable_id' => $locationBlockEn1->id,
+            'order' => 0,
+            'language' => 'en',
+        ]);
+
+        ContentBlock::create([
+            'content_page_id' => $contentPage->id,
+            'blockable_type' => LocationBlock::class,
+            'blockable_id' => $locationBlockEn2->id,
+            'order' => 1,
+            'language' => 'en',
+        ]);
+
+        // Verify different number of blocks per language
+        $this->assertEquals(1, $contentPage->contentBlocks()->where('language', 'de')->count());
+        $this->assertEquals(2, $contentPage->contentBlocks()->where('language', 'en')->count());
     }
 }

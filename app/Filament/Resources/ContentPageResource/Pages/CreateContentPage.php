@@ -28,60 +28,53 @@ class CreateContentPage extends CreateRecord
 
     protected function handleContentBlocks(): void
     {
-        $contentBlocksData = $this->data['content_blocks_data'] ?? [];
+        // Handle German blocks
+        $contentBlocksDataDe = $this->data['content_blocks_data_de'] ?? [];
+        foreach (array_values($contentBlocksDataDe) as $index => $blockData) {
+            $this->createBlock($blockData, $index, 'de');
+        }
 
-        foreach (array_values($contentBlocksData) as $index => $blockData) {
-            $blockType = $blockData['block_type'] ?? null;
+        // Handle English blocks
+        $contentBlocksDataEn = $this->data['content_blocks_data_en'] ?? [];
+        foreach (array_values($contentBlocksDataEn) as $index => $blockData) {
+            $this->createBlock($blockData, $index, 'en');
+        }
+    }
 
-            if ($blockType === 'location') {
-                // Create LocationBlock
-                $locationBlock = LocationBlock::create([
-                    'location_id' => $blockData['location_id'],
-                    'custom_intro_de' => $blockData['custom_intro_de'] ?? null,
-                    'custom_intro_en' => $blockData['custom_intro_en'] ?? null,
-                ]);
+    protected function createBlock(array $blockData, int $index, string $language): void
+    {
+        $blockType = $blockData['block_type'] ?? null;
 
-                // Create ContentBlocks for both languages
-                ContentBlock::create([
-                    'content_page_id' => $this->record->id,
-                    'blockable_type' => LocationBlock::class,
-                    'blockable_id' => $locationBlock->id,
-                    'order' => $index,
-                    'language' => 'de',
-                ]);
+        if ($blockType === 'location') {
+            // Create LocationBlock
+            $locationBlock = LocationBlock::create([
+                'location_id' => $blockData['location_id'],
+                'custom_intro' => $blockData['custom_intro'] ?? null,
+            ]);
 
-                ContentBlock::create([
-                    'content_page_id' => $this->record->id,
-                    'blockable_type' => LocationBlock::class,
-                    'blockable_id' => $locationBlock->id,
-                    'order' => $index,
-                    'language' => 'en',
-                ]);
-            } elseif ($blockType === 'related_links') {
-                // Create RelatedLinksBlock
-                $relatedLinksBlock = RelatedLinksBlock::create([
-                    'title_de' => $blockData['title_de'] ?? 'Das könnte Dich auch interessieren',
-                    'title_en' => $blockData['title_en'] ?? 'You might also be interested in',
-                    'links' => $blockData['links'] ?? [],
-                ]);
+            // Create single ContentBlock with language
+            ContentBlock::create([
+                'content_page_id' => $this->record->id,
+                'blockable_type' => LocationBlock::class,
+                'blockable_id' => $locationBlock->id,
+                'order' => $index,
+                'language' => $language,
+            ]);
+        } elseif ($blockType === 'related_links') {
+            // Create RelatedLinksBlock
+            $relatedLinksBlock = RelatedLinksBlock::create([
+                'title' => $blockData['title'] ?? ($language === 'de' ? 'Das könnte Dich auch interessieren' : 'You might also be interested in'),
+                'links' => $blockData['links'] ?? [],
+            ]);
 
-                // Create ContentBlocks for both languages
-                ContentBlock::create([
-                    'content_page_id' => $this->record->id,
-                    'blockable_type' => RelatedLinksBlock::class,
-                    'blockable_id' => $relatedLinksBlock->id,
-                    'order' => $index,
-                    'language' => 'de',
-                ]);
-
-                ContentBlock::create([
-                    'content_page_id' => $this->record->id,
-                    'blockable_type' => RelatedLinksBlock::class,
-                    'blockable_id' => $relatedLinksBlock->id,
-                    'order' => $index,
-                    'language' => 'en',
-                ]);
-            }
+            // Create single ContentBlock with language
+            ContentBlock::create([
+                'content_page_id' => $this->record->id,
+                'blockable_type' => RelatedLinksBlock::class,
+                'blockable_id' => $relatedLinksBlock->id,
+                'order' => $index,
+                'language' => $language,
+            ]);
         }
     }
 }

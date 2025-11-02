@@ -67,8 +67,8 @@ class ContentPageResource extends Resource
                             Forms\Components\Section::make('Content Blocks')
                                 ->description('Füge Locations, Links und andere Inhalte hinzu. Die Reihenfolge kann beliebig angepasst werden.')
                                 ->schema([
-                                    Forms\Components\Repeater::make('content_blocks_data')
-                                        ->label('Inhalt')
+                                    Forms\Components\Repeater::make('content_blocks_data_de')
+                                        ->label('Inhalt (DE)')
                                         ->schema([
                                             Forms\Components\Select::make('block_type')
                                                 ->label('Block Typ')
@@ -88,37 +88,28 @@ class ContentPageResource extends Resource
                                                 ->required()
                                                 ->live()
                                                 ->visible(fn (Forms\Get $get) => $get('block_type') === 'location'),
-                                            Forms\Components\RichEditor::make('custom_intro_de')
-                                                ->label('Custom Intro (DE)')
-                                                ->visible(fn (Forms\Get $get) => $get('block_type') === 'location'),
-                                            Forms\Components\RichEditor::make('custom_intro_en')
-                                                ->label('Custom Intro (EN)')
+                                            Forms\Components\RichEditor::make('custom_intro')
+                                                ->label('Custom Intro')
                                                 ->visible(fn (Forms\Get $get) => $get('block_type') === 'location'),
 
                                             // Related Links Block Fields
-                                            Forms\Components\TextInput::make('title_de')
-                                                ->label('Block Titel (DE)')
+                                            Forms\Components\TextInput::make('title')
+                                                ->label('Block Titel')
                                                 ->default('Das könnte Dich auch interessieren')
                                                 ->live()
-                                                ->visible(fn (Forms\Get $get) => $get('block_type') === 'related_links'),
-                                            Forms\Components\TextInput::make('title_en')
-                                                ->label('Block Titel (EN)')
-                                                ->default('You might also be interested in')
                                                 ->visible(fn (Forms\Get $get) => $get('block_type') === 'related_links'),
                                             Forms\Components\Repeater::make('links')
                                                 ->label('Links')
                                                 ->schema([
-                                                    Forms\Components\TextInput::make('title_de')
-                                                        ->label('Link Titel (DE)')
+                                                    Forms\Components\TextInput::make('title')
+                                                        ->label('Link Titel')
                                                         ->required(),
-                                                    Forms\Components\TextInput::make('title_en')
-                                                        ->label('Link Titel (EN)'),
                                                     Forms\Components\TextInput::make('url')
                                                         ->label('URL')
                                                         ->url()
                                                         ->required(),
                                                 ])
-                                                ->columns(3)
+                                                ->columns(2)
                                                 ->collapsible()
                                                 ->visible(fn (Forms\Get $get) => $get('block_type') === 'related_links'),
                                         ])
@@ -130,7 +121,7 @@ class ContentPageResource extends Resource
                                                 return 'Location: ' . (\App\Models\Location::find($state['location_id'])?->name ?? 'Unbekannt');
                                             }
                                             if (($state['block_type'] ?? '') === 'related_links') {
-                                                return 'Weitere Links: ' . ($state['title_de'] ?? 'Unbenannt');
+                                                return 'Weitere Links: ' . ($state['title'] ?? 'Unbenannt');
                                             }
                                             return 'Neuer Block';
                                         })
@@ -179,6 +170,71 @@ class ContentPageResource extends Resource
                                         ->helperText('Max. 160 characters for SEO'),
                                 ]),
 
+                            Forms\Components\Section::make('Content Blocks')
+                                ->description('Add locations, links and other content. The order can be customized.')
+                                ->schema([
+                                    Forms\Components\Repeater::make('content_blocks_data_en')
+                                        ->label('Content (EN)')
+                                        ->schema([
+                                            Forms\Components\Select::make('block_type')
+                                                ->label('Block Type')
+                                                ->options([
+                                                    'location' => 'Location',
+                                                    'related_links' => 'Related Links',
+                                                ])
+                                                ->required()
+                                                ->live()
+                                                ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('block_data', null)),
+
+                                            // Location Block Fields
+                                            Forms\Components\Select::make('location_id')
+                                                ->label('Location')
+                                                ->options(\App\Models\Location::all()->pluck('name', 'id'))
+                                                ->searchable()
+                                                ->required()
+                                                ->live()
+                                                ->visible(fn (Forms\Get $get) => $get('block_type') === 'location'),
+                                            Forms\Components\RichEditor::make('custom_intro')
+                                                ->label('Custom Intro')
+                                                ->visible(fn (Forms\Get $get) => $get('block_type') === 'location'),
+
+                                            // Related Links Block Fields
+                                            Forms\Components\TextInput::make('title')
+                                                ->label('Block Title')
+                                                ->default('You might also be interested in')
+                                                ->live()
+                                                ->visible(fn (Forms\Get $get) => $get('block_type') === 'related_links'),
+                                            Forms\Components\Repeater::make('links')
+                                                ->label('Links')
+                                                ->schema([
+                                                    Forms\Components\TextInput::make('title')
+                                                        ->label('Link Title')
+                                                        ->required(),
+                                                    Forms\Components\TextInput::make('url')
+                                                        ->label('URL')
+                                                        ->url()
+                                                        ->required(),
+                                                ])
+                                                ->columns(2)
+                                                ->collapsible()
+                                                ->visible(fn (Forms\Get $get) => $get('block_type') === 'related_links'),
+                                        ])
+                                        ->reorderable()
+                                        ->collapsible()
+                                        ->collapsed()
+                                        ->itemLabel(function (array $state): ?string {
+                                            if (($state['block_type'] ?? '') === 'location') {
+                                                return 'Location: ' . (\App\Models\Location::find($state['location_id'])?->name ?? 'Unknown');
+                                            }
+                                            if (($state['block_type'] ?? '') === 'related_links') {
+                                                return 'Related Links: ' . ($state['title'] ?? 'Untitled');
+                                            }
+                                            return 'New Block';
+                                        })
+                                        ->defaultItems(0)
+                                        ->addActionLabel('Add Block'),
+                                ]),
+
                             Forms\Components\Section::make('HTML Preview')
                                 ->schema([
                                     Forms\Components\Placeholder::make('generated_html_en_preview')
@@ -220,15 +276,10 @@ class ContentPageResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title_de')
-                    ->label('Titel (DE)')
-                    ->searchable()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('title_en')
                     ->label('Title (EN)')
                     ->searchable()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('slug_de')
                     ->label('Slug (DE)')
                     ->searchable()
@@ -239,10 +290,6 @@ class ContentPageResource extends Resource
                         'warning' => 'draft',
                         'success' => 'published',
                     ])
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('content_blocks_count')
-                    ->label('Blöcke')
-                    ->counts('contentBlocks')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('published_at')
                     ->label('Veröffentlicht')

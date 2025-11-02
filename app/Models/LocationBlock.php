@@ -13,8 +13,7 @@ class LocationBlock extends Model
 
     protected $fillable = [
         'location_id',
-        'custom_intro_de',
-        'custom_intro_en',
+        'custom_intro',
     ];
 
     public function location(): BelongsTo
@@ -42,16 +41,13 @@ class LocationBlock extends Model
             return '';
         }
 
-        $customIntroField = $language === 'de' ? 'custom_intro_de' : 'custom_intro_en';
-        $customIntro = $this->{$customIntroField};
-
         $html .= '<div class="content-page__location">';
 
-        if ($customIntro) {
-            $html .= '<div class="content-page__location-intro">' . $customIntro . '</div>';
+        if ($this->custom_intro) {
+            $html .= '<div class="content-page__location-intro">' . $this->custom_intro . '</div>';
         }
 
-        // Use existing location widgets
+        // Use existing location widgets (still language-specific from Location model)
         $contactField = $language === 'de' ? 'contact_info_html' : 'en_contact_info_html';
         $ratingField = $language === 'de' ? 'rating_html' : 'en_rating_html';
         $openingHoursField = $language === 'de' ? 'opening_hours_html' : 'en_opening_hours_html';

@@ -18,8 +18,7 @@ class LocationBlockFactory extends Factory
     {
         return [
             'location_id' => \App\Models\Location::factory(),
-            'custom_intro_de' => '<p>' . fake()->paragraph() . '</p>',
-            'custom_intro_en' => '<p>' . fake()->paragraph() . '</p>',
+            'custom_intro' => '<p>' . fake()->paragraph() . '</p>',
         ];
     }
 }

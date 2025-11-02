@@ -21,15 +21,13 @@ class RelatedLinksBlockFactory extends Factory
 
         for ($i = 0; $i < $count; $i++) {
             $links[] = [
-                'title_de' => fake()->sentence(3),
-                'title_en' => fake()->sentence(3),
+                'title' => fake()->sentence(3),
                 'url' => fake()->url(),
             ];
         }
 
         return [
-            'title_de' => 'Das könnte Dich auch interessieren',
-            'title_en' => 'You might also be interested in',
+            'title' => 'Das könnte Dich auch interessieren',
             'links' => $links,
         ];
     }

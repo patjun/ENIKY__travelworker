@@ -11,8 +11,7 @@ class RelatedLinksBlock extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title_de',
-        'title_en',
+        'title',
         'links',
     ];
 
@@ -27,8 +26,7 @@ class RelatedLinksBlock extends Model
 
     public function renderHtml(string $language = 'de'): string
     {
-        $titleField = $language === 'de' ? 'title_de' : 'title_en';
-        $title = $this->{$titleField} ?? ($language === 'de' ? 'Weitere Links' : 'Related Links');
+        $title = $this->title ?? ($language === 'de' ? 'Weitere Links' : 'Related Links');
 
         if (empty($this->links)) {
             return '';
@@ -39,7 +37,7 @@ class RelatedLinksBlock extends Model
         $html .= '<ul class="related-links-block__list">';
 
         foreach ($this->links as $link) {
-            $linkTitle = $link['title_' . $language] ?? $link['title'] ?? '';
+            $linkTitle = $link['title'] ?? '';
             $linkUrl = $link['url'] ?? '';
 
             if ($linkTitle && $linkUrl) {
