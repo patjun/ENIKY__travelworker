@@ -20,5 +20,12 @@ class DatabaseSeeder extends Seeder
                 'password' => bcrypt('abcd1234'),
             ]
         );
+
+        // Seed countries first as cities depend on them
+        $this->call([
+            CountrySeeder::class,
+            CitySeeder::class,
+        ]);
+
     }
 }
