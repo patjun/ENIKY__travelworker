@@ -20,6 +20,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/login', function () {
+    return redirect()->route('filament.admin.auth.login');
+})->name('login');
+
 Route::get('/keyword_tasks_ready', [DFSKeywordForKeywordController::class, 'tasksReady']);
 Route::get('/keyword/{keyword}', [DFSKeywordForKeywordController::class, 'postTask']);
 
