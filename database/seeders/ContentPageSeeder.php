@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\ContentBlock;
 use App\Models\ContentPage;
 use App\Models\Location;
+use App\Models\LocationBlock;
 use App\Models\RelatedLinksBlock;
 use Illuminate\Database\Seeder;
 
@@ -33,52 +34,89 @@ class ContentPageSeeder extends Seeder
             'intro_en' => '<p>Discover the most beautiful places in Bratislava, the capital of Slovakia.</p>',
         ]);
 
-        // Attach locations to the content page
-        foreach ($locations as $index => $location) {
-            $contentPage->locations()->attach($location->id, [
+        // Create German content blocks
+        foreach ($locations->take(5) as $index => $location) {
+            $locationBlock = LocationBlock::create([
+                'location_id' => $location->id,
+                'custom_intro' => '<p>Ein wunderbarer Ort zum Besuchen in Bratislava.</p>',
+            ]);
+
+            ContentBlock::create([
+                'content_page_id' => $contentPage->id,
+                'blockable_type' => LocationBlock::class,
+                'blockable_id' => $locationBlock->id,
                 'order' => $index,
-                'custom_intro_de' => '<p>Ein wunderbarer Ort zum Besuchen in Bratislava.</p>',
-                'custom_intro_en' => '<p>A wonderful place to visit in Bratislava.</p>',
+                'language' => 'de',
             ]);
         }
 
-        // Create a related links block
-        $relatedLinksBlock = RelatedLinksBlock::factory()->create([
-            'title_de' => 'Das könnte Dich auch interessieren',
-            'title_en' => 'You might also be interested in',
+        // Create German related links block
+        $relatedLinksBlockDe = RelatedLinksBlock::create([
+            'title' => 'Das könnte Dich auch interessieren',
             'links' => [
                 [
-                    'title_de' => 'Hotels in Bratislava',
-                    'title_en' => 'Hotels in Bratislava',
+                    'title' => 'Hotels in Bratislava',
                     'url' => 'https://example.com/hotels-bratislava',
                 ],
                 [
-                    'title_de' => 'Restaurants in Bratislava',
-                    'title_en' => 'Restaurants in Bratislava',
+                    'title' => 'Restaurants in Bratislava',
                     'url' => 'https://example.com/restaurants-bratislava',
                 ],
                 [
-                    'title_de' => 'Stadtrundfahrten',
-                    'title_en' => 'City Tours',
+                    'title' => 'Stadtrundfahrten',
                     'url' => 'https://example.com/city-tours',
                 ],
             ],
         ]);
 
-        // Create content blocks for both languages
         ContentBlock::create([
             'content_page_id' => $contentPage->id,
             'blockable_type' => RelatedLinksBlock::class,
-            'blockable_id' => $relatedLinksBlock->id,
-            'order' => 0,
+            'blockable_id' => $relatedLinksBlockDe->id,
+            'order' => 5,
             'language' => 'de',
+        ]);
+
+        // Create English content blocks (different number to demonstrate flexibility)
+        foreach ($locations->take(7) as $index => $location) {
+            $locationBlock = LocationBlock::create([
+                'location_id' => $location->id,
+                'custom_intro' => '<p>A wonderful place to visit in Bratislava.</p>',
+            ]);
+
+            ContentBlock::create([
+                'content_page_id' => $contentPage->id,
+                'blockable_type' => LocationBlock::class,
+                'blockable_id' => $locationBlock->id,
+                'order' => $index,
+                'language' => 'en',
+            ]);
+        }
+
+        // Create English related links block
+        $relatedLinksBlockEn = RelatedLinksBlock::create([
+            'title' => 'You might also be interested in',
+            'links' => [
+                [
+                    'title' => 'Hotels in Bratislava',
+                    'url' => 'https://example.com/hotels-bratislava',
+                ],
+                [
+                    'title' => 'Restaurants in Bratislava',
+                    'url' => 'https://example.com/restaurants-bratislava',
+                ],
+                [
+                    'title' => 'City Tours',
+                    'url' => 'https://example.com/city-tours',
+                ],
+            ],
         ]);
 
         ContentBlock::create([
             'content_page_id' => $contentPage->id,
             'blockable_type' => RelatedLinksBlock::class,
-            'blockable_id' => $relatedLinksBlock->id,
-            'order' => 0,
+            'blockable_id' => $relatedLinksBlockEn->id,
+            'order' => 7,
             'language' => 'en',
         ]);
 
@@ -86,5 +124,7 @@ class ContentPageSeeder extends Seeder
         $contentPage->generateWidgets();
 
         $this->command->info('ContentPage seeded successfully!');
+        $this->command->info('Created 5 location blocks + 1 related links block for German');
+        $this->command->info('Created 7 location blocks + 1 related links block for English');
     }
 }
