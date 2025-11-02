@@ -21,10 +21,11 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Seed countries first as cities depend on them
+        // Seed countries first as cities depend on them, then locations depend on cities
         $this->call([
             CountrySeeder::class,
             CitySeeder::class,
+            LocationSeeder::class,
         ]);
 
     }
