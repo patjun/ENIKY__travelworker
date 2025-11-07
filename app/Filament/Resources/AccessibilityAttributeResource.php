@@ -27,7 +27,7 @@ class AccessibilityAttributeResource extends Resource
 
     protected static ?int $navigationSort = 40;
 
-    protected static ?string $navigationGroup = 'Locations';
+    protected static ?string $navigationGroup = 'Places Management';
 
     public static function form(Form $form): Form
     {

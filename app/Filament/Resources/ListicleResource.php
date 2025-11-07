@@ -21,7 +21,7 @@ class ListicleResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationGroup = 'Content';
+    protected static ?string $navigationGroup = 'Content Management';
 
     protected static ?int $navigationSort = 20;
 
