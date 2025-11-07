@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Filament\Resources\ContentPageResource\Pages;
+namespace App\Filament\Resources\ListicleResource\Pages;
 
-use App\Filament\Resources\ContentPageResource;
+use App\Filament\Resources\ListicleResource;
 use App\Models\ContentBlock;
 use App\Models\LocationBlock;
 use App\Models\RelatedLinksBlock;
 use Filament\Resources\Pages\CreateRecord;
 
-class CreateContentPage extends CreateRecord
+class CreateListicle extends CreateRecord
 {
-    protected static string $resource = ContentPageResource::class;
+    protected static string $resource = ListicleResource::class;
 
     protected function getRedirectUrl(): string
     {
@@ -54,7 +54,7 @@ class CreateContentPage extends CreateRecord
 
             // Create single ContentBlock with language
             ContentBlock::create([
-                'content_page_id' => $this->record->id,
+                'listicle_id' => $this->record->id,
                 'blockable_type' => LocationBlock::class,
                 'blockable_id' => $locationBlock->id,
                 'order' => $index,
@@ -69,7 +69,7 @@ class CreateContentPage extends CreateRecord
 
             // Create single ContentBlock with language
             ContentBlock::create([
-                'content_page_id' => $this->record->id,
+                'listicle_id' => $this->record->id,
                 'blockable_type' => RelatedLinksBlock::class,
                 'blockable_id' => $relatedLinksBlock->id,
                 'order' => $index,

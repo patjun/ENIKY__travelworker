@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ContentPage extends Model
+class Listicle extends Model
 {
     use HasFactory, SoftDeletes;
+
+    protected $table = 'listicles';
 
     protected $fillable = [
         'title_de',
@@ -35,14 +37,14 @@ class ContentPage extends Model
         return $this->hasMany(ContentBlock::class)->orderBy('order');
     }
 
-    public function generatePageHtml(string $language = 'de'): string
+    public function generateListicleHtml(string $language = 'de'): string
     {
         $html = '';
 
         // Add intro if present
         $introField = $language === 'de' ? 'intro_de' : 'intro_en';
         if ($this->{$introField}) {
-            $html .= '<div class="content-page__intro">' . $this->{$introField} . '</div>';
+            $html .= '<div class="content-listicle__intro">' . $this->{$introField} . '</div>';
         }
 
         // Add all content blocks (including locations) in order
@@ -67,8 +69,8 @@ class ContentPage extends Model
         $this->loadMissing(['contentBlocks.blockable']);
 
         // Generate HTML for both languages
-        $this->generated_html_de = $this->generatePageHtml('de');
-        $this->generated_html_en = $this->generatePageHtml('en');
+        $this->generated_html_de = $this->generateListicleHtml('de');
+        $this->generated_html_en = $this->generateListicleHtml('en');
 
         // Save the generated HTML
         $this->saveQuietly();

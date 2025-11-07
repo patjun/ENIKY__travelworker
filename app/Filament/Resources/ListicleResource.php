@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ContentPageResource\Pages;
-use App\Models\ContentPage;
+use App\Filament\Resources\ListicleResource\Pages;
+use App\Models\Listicle;
 use App\Models\LocationBlock;
 use App\Models\RelatedLinksBlock;
 use Filament\Forms;
@@ -15,9 +15,9 @@ use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
-class ContentPageResource extends Resource
+class ListicleResource extends Resource
 {
-    protected static ?string $model = ContentPage::class;
+    protected static ?string $model = Listicle::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
@@ -38,7 +38,7 @@ class ContentPageResource extends Resource
                 ->columnSpanFull()
                 ->tabs([
                     Forms\Components\Tabs\Tab::make('German')
-                        ->label(fn (Get $get) => ($get('title_de') ?? 'Neue Content Page').' - DE')
+                        ->label(fn (Get $get) => ($get('title_de') ?? 'New Listicle').' - DE')
                         ->schema([
                             Forms\Components\Section::make('Grunddaten')
                                 ->schema([
@@ -133,7 +133,7 @@ class ContentPageResource extends Resource
                                 ->schema([
                                     Forms\Components\Placeholder::make('generated_html_de_preview')
                                         ->label('Generierter HTML Code')
-                                        ->content(function (?ContentPage $record): HtmlString {
+                                        ->content(function (?Listicle $record): HtmlString {
                                             if (!$record || !$record->generated_html_de) {
                                                 return new HtmlString('<p>HTML wird nach dem Speichern generiert...</p>');
                                             }
@@ -146,7 +146,7 @@ class ContentPageResource extends Resource
                         ]),
 
                     Forms\Components\Tabs\Tab::make('English')
-                        ->label(fn (Get $get) => ($get('title_en') ?? 'New Content Page').' - EN')
+                        ->label(fn (Get $get) => ($get('title_en') ?? 'New Listicle').' - EN')
                         ->schema([
                             Forms\Components\Section::make('Basic Info')
                                 ->schema([
@@ -239,7 +239,7 @@ class ContentPageResource extends Resource
                                 ->schema([
                                     Forms\Components\Placeholder::make('generated_html_en_preview')
                                         ->label('Generated HTML Code')
-                                        ->content(function (?ContentPage $record): HtmlString {
+                                        ->content(function (?Listicle $record): HtmlString {
                                             if (!$record || !$record->generated_html_en) {
                                                 return new HtmlString('<p>HTML will be generated after saving...</p>');
                                             }
@@ -336,9 +336,9 @@ class ContentPageResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListContentPages::route('/'),
-            'create' => Pages\CreateContentPage::route('/create'),
-            'edit' => Pages\EditContentPage::route('/{record}/edit'),
+            'index' => Pages\ListListicles::route('/'),
+            'create' => Pages\CreateListicle::route('/create'),
+            'edit' => Pages\EditListicle::route('/{record}/edit'),
         ];
     }
 }

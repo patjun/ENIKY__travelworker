@@ -3,13 +3,13 @@
 namespace Database\Seeders;
 
 use App\Models\ContentBlock;
-use App\Models\ContentPage;
+use App\Models\Listicle;
 use App\Models\Location;
 use App\Models\LocationBlock;
 use App\Models\RelatedLinksBlock;
 use Illuminate\Database\Seeder;
 
-class ContentPageSeeder extends Seeder
+class ListicleSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -24,8 +24,8 @@ class ContentPageSeeder extends Seeder
             return;
         }
 
-        // Create a sample content page
-        $contentPage = ContentPage::factory()->published()->create([
+        // Create a sample listicle
+        $listicle = Listicle::factory()->published()->create([
             'title_de' => '10 Sehenswürdigkeiten in Bratislava',
             'title_en' => '10 Attractions in Bratislava',
             'slug_de' => '10-sehenswuerdigkeiten-in-bratislava',
@@ -42,7 +42,7 @@ class ContentPageSeeder extends Seeder
             ]);
 
             ContentBlock::create([
-                'content_page_id' => $contentPage->id,
+                'listicle_id' => $listicle->id,
                 'blockable_type' => LocationBlock::class,
                 'blockable_id' => $locationBlock->id,
                 'order' => $index,
@@ -70,7 +70,7 @@ class ContentPageSeeder extends Seeder
         ]);
 
         ContentBlock::create([
-            'content_page_id' => $contentPage->id,
+            'listicle_id' => $listicle->id,
             'blockable_type' => RelatedLinksBlock::class,
             'blockable_id' => $relatedLinksBlockDe->id,
             'order' => 5,
@@ -85,7 +85,7 @@ class ContentPageSeeder extends Seeder
             ]);
 
             ContentBlock::create([
-                'content_page_id' => $contentPage->id,
+                'listicle_id' => $listicle->id,
                 'blockable_type' => LocationBlock::class,
                 'blockable_id' => $locationBlock->id,
                 'order' => $index,
@@ -113,7 +113,7 @@ class ContentPageSeeder extends Seeder
         ]);
 
         ContentBlock::create([
-            'content_page_id' => $contentPage->id,
+            'listicle_id' => $listicle->id,
             'blockable_type' => RelatedLinksBlock::class,
             'blockable_id' => $relatedLinksBlockEn->id,
             'order' => 7,
@@ -121,9 +121,9 @@ class ContentPageSeeder extends Seeder
         ]);
 
         // Generate HTML widgets
-        $contentPage->generateWidgets();
+        $listicle->generateWidgets();
 
-        $this->command->info('ContentPage seeded successfully!');
+        $this->command->info('Listicle seeded successfully!');
         $this->command->info('Created 5 location blocks + 1 related links block for German');
         $this->command->info('Created 7 location blocks + 1 related links block for English');
     }

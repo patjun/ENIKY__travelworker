@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\ContentBlock;
-use App\Models\ContentPage;
+use App\Models\Listicle;
 use App\Models\Location;
 use App\Models\LocationBlock;
 use App\Models\RelatedLinksBlock;
@@ -11,17 +11,17 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class ContentPageTest extends TestCase
+class ListicleTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_can_create_content_page(): void
+    public function test_can_create_listicle(): void
     {
-        $contentPage = ContentPage::factory()->create();
+        $listicle = Listicle::factory()->create();
 
-        $this->assertDatabaseHas('content_pages', [
-            'id' => $contentPage->id,
-            'title_de' => $contentPage->title_de,
+        $this->assertDatabaseHas('listicles', [
+            'id' => $listicle->id,
+            'title_de' => $listicle->title_de,
         ]);
     }
 
@@ -50,11 +50,11 @@ class ContentPageTest extends TestCase
 
     public function test_can_create_content_block_with_location(): void
     {
-        $contentPage = ContentPage::factory()->create();
+        $listicle = Listicle::factory()->create();
         $locationBlock = LocationBlock::factory()->create();
 
         $contentBlock = ContentBlock::create([
-            'content_page_id' => $contentPage->id,
+            'listicle_id' => $listicle->id,
             'blockable_type' => LocationBlock::class,
             'blockable_id' => $locationBlock->id,
             'order' => 0,
@@ -63,7 +63,7 @@ class ContentPageTest extends TestCase
 
         $this->assertDatabaseHas('content_blocks', [
             'id' => $contentBlock->id,
-            'content_page_id' => $contentPage->id,
+            'listicle_id' => $listicle->id,
             'language' => 'de',
         ]);
 
@@ -72,11 +72,11 @@ class ContentPageTest extends TestCase
 
     public function test_can_create_content_block_with_related_links(): void
     {
-        $contentPage = ContentPage::factory()->create();
+        $listicle = Listicle::factory()->create();
         $relatedLinksBlock = RelatedLinksBlock::factory()->create();
 
         $contentBlock = ContentBlock::create([
-            'content_page_id' => $contentPage->id,
+            'listicle_id' => $listicle->id,
             'blockable_type' => RelatedLinksBlock::class,
             'blockable_id' => $relatedLinksBlock->id,
             'order' => 0,
@@ -85,15 +85,15 @@ class ContentPageTest extends TestCase
 
         $this->assertDatabaseHas('content_blocks', [
             'id' => $contentBlock->id,
-            'content_page_id' => $contentPage->id,
+            'listicle_id' => $listicle->id,
         ]);
 
         $this->assertEquals($relatedLinksBlock->id, $contentBlock->blockable_id);
     }
 
-    public function test_generates_html_for_content_page(): void
+    public function test_generates_html_for_listicle(): void
     {
-        $contentPage = ContentPage::factory()->create([
+        $listicle = Listicle::factory()->create([
             'intro_de' => '<p>Test intro</p>',
         ]);
 
@@ -107,18 +107,18 @@ class ContentPageTest extends TestCase
         ]);
 
         ContentBlock::create([
-            'content_page_id' => $contentPage->id,
+            'listicle_id' => $listicle->id,
             'blockable_type' => LocationBlock::class,
             'blockable_id' => $locationBlock->id,
             'order' => 0,
             'language' => 'de',
         ]);
 
-        $contentPage->generateWidgets();
+        $listicle->generateWidgets();
 
-        $this->assertNotNull($contentPage->generated_html_de);
-        $this->assertStringContainsString('Test intro', $contentPage->generated_html_de);
-        $this->assertStringContainsString('Custom intro', $contentPage->generated_html_de);
+        $this->assertNotNull($listicle->generated_html_de);
+        $this->assertStringContainsString('Test intro', $listicle->generated_html_de);
+        $this->assertStringContainsString('Custom intro', $listicle->generated_html_de);
     }
 
     public function test_related_links_block_renders_html(): void
@@ -142,7 +142,7 @@ class ContentPageTest extends TestCase
 
     public function test_can_have_different_blocks_per_language(): void
     {
-        $contentPage = ContentPage::factory()->create();
+        $listicle = Listicle::factory()->create();
         $location = Location::factory()->create();
 
         // Create German blocks
@@ -152,7 +152,7 @@ class ContentPageTest extends TestCase
         ]);
 
         ContentBlock::create([
-            'content_page_id' => $contentPage->id,
+            'listicle_id' => $listicle->id,
             'blockable_type' => LocationBlock::class,
             'blockable_id' => $locationBlockDe->id,
             'order' => 0,
@@ -171,7 +171,7 @@ class ContentPageTest extends TestCase
         ]);
 
         ContentBlock::create([
-            'content_page_id' => $contentPage->id,
+            'listicle_id' => $listicle->id,
             'blockable_type' => LocationBlock::class,
             'blockable_id' => $locationBlockEn1->id,
             'order' => 0,
@@ -179,7 +179,7 @@ class ContentPageTest extends TestCase
         ]);
 
         ContentBlock::create([
-            'content_page_id' => $contentPage->id,
+            'listicle_id' => $listicle->id,
             'blockable_type' => LocationBlock::class,
             'blockable_id' => $locationBlockEn2->id,
             'order' => 1,
@@ -187,7 +187,7 @@ class ContentPageTest extends TestCase
         ]);
 
         // Verify different number of blocks per language
-        $this->assertEquals(1, $contentPage->contentBlocks()->where('language', 'de')->count());
-        $this->assertEquals(2, $contentPage->contentBlocks()->where('language', 'en')->count());
+        $this->assertEquals(1, $listicle->contentBlocks()->where('language', 'de')->count());
+        $this->assertEquals(2, $listicle->contentBlocks()->where('language', 'en')->count());
     }
 }

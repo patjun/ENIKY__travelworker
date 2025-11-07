@@ -5,9 +5,9 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ContentPage>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Listicle>
  */
-class ContentPageFactory extends Factory
+class ListicleFactory extends Factory
 {
     /**
      * Define the model's default state.

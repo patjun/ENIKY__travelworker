@@ -12,16 +12,16 @@ class ContentBlock extends Model
     use HasFactory;
 
     protected $fillable = [
-        'content_page_id',
+        'listicle_id',
         'blockable_type',
         'blockable_id',
         'order',
         'language',
     ];
 
-    public function contentPage(): BelongsTo
+    public function listicle(): BelongsTo
     {
-        return $this->belongsTo(ContentPage::class);
+        return $this->belongsTo(Listicle::class);
     }
 
     public function blockable(): MorphTo

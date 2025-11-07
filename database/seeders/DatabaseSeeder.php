@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
             CountrySeeder::class,
             CitySeeder::class,
             LocationSeeder::class,
-            ContentPageSeeder::class,
+            ListicleSeeder::class,
         ]);
 
     }
