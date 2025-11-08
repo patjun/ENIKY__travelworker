@@ -15,9 +15,16 @@ class AuthenticationRedirectTest extends TestCase
         $this->assertTrue(Route::has('filament.admin.auth.login'));
     }
 
-    public function test_login_route_does_not_exist(): void
+    public function test_login_route_exists(): void
     {
-        $this->assertFalse(Route::has('login'));
+        $this->assertTrue(Route::has('login'));
+    }
+
+    public function test_login_route_redirects_to_filament(): void
+    {
+        $response = $this->get('/login');
+
+        $response->assertRedirect('/admin/login');
     }
 
     public function test_authentication_redirects_to_filament_login(): void
