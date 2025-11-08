@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\ListicleResource\Pages;
 
 use App\Filament\Resources\ListicleResource;
+use App\Models\AttractionBlock;
 use App\Models\ContentBlock;
-use App\Models\LocationBlock;
 use App\Models\RelatedLinksBlock;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -46,17 +46,17 @@ class CreateListicle extends CreateRecord
         $blockType = $blockData['block_type'] ?? null;
 
         if ($blockType === 'location') {
-            // Create LocationBlock
-            $locationBlock = LocationBlock::create([
-                'location_id' => $blockData['location_id'],
+            // Create AttractionBlock
+            $attractionBlock = AttractionBlock::create([
+                'attraction_id' => $blockData['attraction_id'],
                 'custom_intro' => $blockData['custom_intro'] ?? null,
             ]);
 
             // Create single ContentBlock with language
             ContentBlock::create([
                 'listicle_id' => $this->record->id,
-                'blockable_type' => LocationBlock::class,
-                'blockable_id' => $locationBlock->id,
+                'blockable_type' => AttractionBlock::class,
+                'blockable_id' => $attractionBlock->id,
                 'order' => $index,
                 'language' => $language,
             ]);

@@ -3,8 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ListicleResource\Pages;
+use App\Models\AttractionBlock;
 use App\Models\Listicle;
-use App\Models\LocationBlock;
 use App\Models\RelatedLinksBlock;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -80,10 +80,10 @@ class ListicleResource extends Resource
                                                 ->live()
                                                 ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('block_data', null)),
 
-                                            // Location Block Fields
-                                            Forms\Components\Select::make('location_id')
-                                                ->label('Location')
-                                                ->options(\App\Models\Location::all()->pluck('name', 'id'))
+                                            // Attraction Block Fields
+                                            Forms\Components\Select::make('attraction_id')
+                                                ->label('Attraction')
+                                                ->options(\App\Models\Attraction::all()->pluck('name', 'id'))
                                                 ->searchable()
                                                 ->required()
                                                 ->live()
@@ -118,7 +118,7 @@ class ListicleResource extends Resource
                                         ->collapsed()
                                         ->itemLabel(function (array $state): ?string {
                                             if (($state['block_type'] ?? '') === 'location') {
-                                                return 'Location: ' . (\App\Models\Location::find($state['location_id'])?->name ?? 'Unbekannt');
+                                                return 'Attraction: ' . (\App\Models\Attraction::find($state['attraction_id'])?->name ?? 'Unbekannt');
                                             }
                                             if (($state['block_type'] ?? '') === 'related_links') {
                                                 return 'Weitere Links: ' . ($state['title'] ?? 'Unbenannt');
@@ -186,10 +186,10 @@ class ListicleResource extends Resource
                                                 ->live()
                                                 ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('block_data', null)),
 
-                                            // Location Block Fields
-                                            Forms\Components\Select::make('location_id')
-                                                ->label('Location')
-                                                ->options(\App\Models\Location::all()->pluck('name', 'id'))
+                                            // Attraction Block Fields
+                                            Forms\Components\Select::make('attraction_id')
+                                                ->label('Attraction')
+                                                ->options(\App\Models\Attraction::all()->pluck('name', 'id'))
                                                 ->searchable()
                                                 ->required()
                                                 ->live()
@@ -224,7 +224,7 @@ class ListicleResource extends Resource
                                         ->collapsed()
                                         ->itemLabel(function (array $state): ?string {
                                             if (($state['block_type'] ?? '') === 'location') {
-                                                return 'Location: ' . (\App\Models\Location::find($state['location_id'])?->name ?? 'Unknown');
+                                                return 'Attraction: ' . (\App\Models\Attraction::find($state['attraction_id'])?->name ?? 'Unknown');
                                             }
                                             if (($state['block_type'] ?? '') === 'related_links') {
                                                 return 'Related Links: ' . ($state['title'] ?? 'Untitled');

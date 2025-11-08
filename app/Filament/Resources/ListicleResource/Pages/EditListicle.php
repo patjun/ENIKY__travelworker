@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\ListicleResource\Pages;
 
 use App\Filament\Resources\ListicleResource;
+use App\Models\AttractionBlock;
 use App\Models\ContentBlock;
-use App\Models\LocationBlock;
 use App\Models\RelatedLinksBlock;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -32,9 +32,9 @@ class EditListicle extends EditRecord
         $data['content_blocks_data_de'] = $contentBlocksDe->map(function ($block) {
             $blockData = ['block_type' => null];
 
-            if ($block->blockable_type === LocationBlock::class) {
+            if ($block->blockable_type === AttractionBlock::class) {
                 $blockData['block_type'] = 'location';
-                $blockData['location_id'] = $block->blockable->location_id;
+                $blockData['attraction_id'] = $block->blockable->attraction_id;
                 $blockData['custom_intro'] = $block->blockable->custom_intro;
             } elseif ($block->blockable_type === RelatedLinksBlock::class) {
                 $blockData['block_type'] = 'related_links';
@@ -55,9 +55,9 @@ class EditListicle extends EditRecord
         $data['content_blocks_data_en'] = $contentBlocksEn->map(function ($block) {
             $blockData = ['block_type' => null];
 
-            if ($block->blockable_type === LocationBlock::class) {
+            if ($block->blockable_type === AttractionBlock::class) {
                 $blockData['block_type'] = 'location';
-                $blockData['location_id'] = $block->blockable->location_id;
+                $blockData['attraction_id'] = $block->blockable->attraction_id;
                 $blockData['custom_intro'] = $block->blockable->custom_intro;
             } elseif ($block->blockable_type === RelatedLinksBlock::class) {
                 $blockData['block_type'] = 'related_links';
@@ -113,17 +113,17 @@ class EditListicle extends EditRecord
         $blockType = $blockData['block_type'] ?? null;
 
         if ($blockType === 'location') {
-            // Create LocationBlock
-            $locationBlock = LocationBlock::create([
-                'location_id' => $blockData['location_id'],
+            // Create AttractionBlock
+            $attractionBlock = AttractionBlock::create([
+                'attraction_id' => $blockData['attraction_id'],
                 'custom_intro' => $blockData['custom_intro'] ?? null,
             ]);
 
             // Create single ContentBlock with language
             ContentBlock::create([
                 'listicle_id' => $this->record->id,
-                'blockable_type' => LocationBlock::class,
-                'blockable_id' => $locationBlock->id,
+                'blockable_type' => AttractionBlock::class,
+                'blockable_id' => $attractionBlock->id,
                 'order' => $index,
                 'language' => $language,
             ]);
