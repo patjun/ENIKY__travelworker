@@ -38,7 +38,8 @@ class CountryResource extends Resource
                     ->length(2)
                     ->helperText('ISO 3166-1 alpha-2 code (e.g., DE, AT, CH)')
                     ->unique(ignoreRecord: true)
-                    ->uppercase(),
+                    ->formatStateUsing(fn (?string $state): string => $state ? strtoupper($state) : '')
+                    ->dehydrateStateUsing(fn (?string $state): string => $state ? strtoupper($state) : ''),
             ]);
     }
 
