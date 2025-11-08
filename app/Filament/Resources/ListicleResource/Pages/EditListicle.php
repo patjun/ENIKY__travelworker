@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ListicleResource\Pages;
 
 use App\Filament\Resources\ListicleResource;
+use App\Filament\Resources\ListicleResource\Actions\GenerateIntroAction;
 use App\Models\AttractionBlock;
 use App\Models\ContentBlock;
 use App\Models\RelatedLinksBlock;
@@ -16,6 +17,8 @@ class EditListicle extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            GenerateIntroAction::make('de'),
+            GenerateIntroAction::make('en'),
             Actions\DeleteAction::make(),
         ];
     }
