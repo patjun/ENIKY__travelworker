@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Attraction;
+use App\Models\AttractionBlock;
 use App\Models\ContentBlock;
 use App\Models\Listicle;
-use App\Models\Location;
-use App\Models\LocationBlock;
 use App\Models\RelatedLinksBlock;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,17 +25,17 @@ class ListicleTest extends TestCase
         ]);
     }
 
-    public function test_can_create_location_block(): void
+    public function test_can_create_attraction_block(): void
     {
-        $location = Location::factory()->create();
-        $locationBlock = LocationBlock::factory()->create([
-            'location_id' => $location->id,
+        $attraction = Attraction::factory()->create();
+        $attractionBlock = AttractionBlock::factory()->create([
+            'attraction_id' => $attraction->id,
             'custom_intro' => '<p>Test intro</p>',
         ]);
 
-        $this->assertDatabaseHas('location_blocks', [
-            'id' => $locationBlock->id,
-            'location_id' => $location->id,
+        $this->assertDatabaseHas('attraction_blocks', [
+            'id' => $attractionBlock->id,
+            'attraction_id' => $attraction->id,
         ]);
     }
 
@@ -48,15 +48,15 @@ class ListicleTest extends TestCase
         ]);
     }
 
-    public function test_can_create_content_block_with_location(): void
+    public function test_can_create_content_block_with_attraction(): void
     {
         $listicle = Listicle::factory()->create();
-        $locationBlock = LocationBlock::factory()->create();
+        $attractionBlock = AttractionBlock::factory()->create();
 
         $contentBlock = ContentBlock::create([
             'listicle_id' => $listicle->id,
-            'blockable_type' => LocationBlock::class,
-            'blockable_id' => $locationBlock->id,
+            'blockable_type' => AttractionBlock::class,
+            'blockable_id' => $attractionBlock->id,
             'order' => 0,
             'language' => 'de',
         ]);
@@ -67,7 +67,7 @@ class ListicleTest extends TestCase
             'language' => 'de',
         ]);
 
-        $this->assertEquals($locationBlock->id, $contentBlock->blockable_id);
+        $this->assertEquals($attractionBlock->id, $contentBlock->blockable_id);
     }
 
     public function test_can_create_content_block_with_related_links(): void
@@ -97,19 +97,19 @@ class ListicleTest extends TestCase
             'intro_de' => '<p>Test intro</p>',
         ]);
 
-        $location = Location::factory()->create([
+        $attraction = Attraction::factory()->create([
             'contact_info_html' => '<div>Contact info</div>',
         ]);
 
-        $locationBlock = LocationBlock::create([
-            'location_id' => $location->id,
+        $attractionBlock = AttractionBlock::create([
+            'attraction_id' => $attraction->id,
             'custom_intro' => '<p>Custom intro</p>',
         ]);
 
         ContentBlock::create([
             'listicle_id' => $listicle->id,
-            'blockable_type' => LocationBlock::class,
-            'blockable_id' => $locationBlock->id,
+            'blockable_type' => AttractionBlock::class,
+            'blockable_id' => $attractionBlock->id,
             'order' => 0,
             'language' => 'de',
         ]);
@@ -143,45 +143,45 @@ class ListicleTest extends TestCase
     public function test_can_have_different_blocks_per_language(): void
     {
         $listicle = Listicle::factory()->create();
-        $location = Location::factory()->create();
+        $attraction = Attraction::factory()->create();
 
         // Create German blocks
-        $locationBlockDe = LocationBlock::create([
-            'location_id' => $location->id,
+        $attractionBlockDe = AttractionBlock::create([
+            'attraction_id' => $attraction->id,
             'custom_intro' => '<p>Deutsche Intro</p>',
         ]);
 
         ContentBlock::create([
             'listicle_id' => $listicle->id,
-            'blockable_type' => LocationBlock::class,
-            'blockable_id' => $locationBlockDe->id,
+            'blockable_type' => AttractionBlock::class,
+            'blockable_id' => $attractionBlockDe->id,
             'order' => 0,
             'language' => 'de',
         ]);
 
         // Create English blocks (different number)
-        $locationBlockEn1 = LocationBlock::create([
-            'location_id' => $location->id,
+        $attractionBlockEn1 = AttractionBlock::create([
+            'attraction_id' => $attraction->id,
             'custom_intro' => '<p>English Intro 1</p>',
         ]);
 
-        $locationBlockEn2 = LocationBlock::create([
-            'location_id' => $location->id,
+        $attractionBlockEn2 = AttractionBlock::create([
+            'attraction_id' => $attraction->id,
             'custom_intro' => '<p>English Intro 2</p>',
         ]);
 
         ContentBlock::create([
             'listicle_id' => $listicle->id,
-            'blockable_type' => LocationBlock::class,
-            'blockable_id' => $locationBlockEn1->id,
+            'blockable_type' => AttractionBlock::class,
+            'blockable_id' => $attractionBlockEn1->id,
             'order' => 0,
             'language' => 'en',
         ]);
 
         ContentBlock::create([
             'listicle_id' => $listicle->id,
-            'blockable_type' => LocationBlock::class,
-            'blockable_id' => $locationBlockEn2->id,
+            'blockable_type' => AttractionBlock::class,
+            'blockable_id' => $attractionBlockEn2->id,
             'order' => 1,
             'language' => 'en',
         ]);
