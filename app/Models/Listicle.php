@@ -20,6 +20,8 @@ class Listicle extends Model
         'slug_en',
         'intro_de',
         'intro_en',
+        'image_de',
+        'image_en',
         'meta_description_de',
         'meta_description_en',
         'generated_html_de',

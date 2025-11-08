@@ -26,6 +26,8 @@ class ListicleFactory extends Factory
             'slug_en' => \Illuminate\Support\Str::slug($titleEn),
             'intro_de' => '<p>' . fake()->paragraph(3) . '</p>',
             'intro_en' => '<p>' . fake()->paragraph(3) . '</p>',
+            'image_de' => fake()->optional(0.6)->imageUrl(1920, 1080, 'travel', true),
+            'image_en' => fake()->optional(0.6)->imageUrl(1920, 1080, 'travel', true),
             'meta_description_de' => fake()->text(150),
             'meta_description_en' => fake()->text(150),
             'status' => fake()->randomElement(['draft', 'published']),

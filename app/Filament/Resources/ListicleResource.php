@@ -60,7 +60,7 @@ class ListicleResource extends Resource
                                         ->label('Intro Text')
                                         ->disableToolbarButtons(['attachFiles', 'codeBlock'])
                                         ->columnSpanFull(),
-                                    FileUpload::make('image')
+                                    FileUpload::make('image_de')
                                         ->label('Beitragsbild')
                                         ->image()
                                         ->imageEditor()
@@ -180,6 +180,19 @@ class ListicleResource extends Resource
                                     Forms\Components\RichEditor::make('intro_en')
                                         ->label('Intro Text')
                                         ->disableToolbarButtons(['attachFiles', 'codeBlock'])
+                                        ->columnSpanFull(),
+                                    FileUpload::make('image_en')
+                                        ->label('Featured Image')
+                                        ->image()
+                                        ->imageEditor()
+                                        ->imageCropAspectRatio('16:9')
+                                        ->imageResizeTargetWidth('1920')
+                                        ->imageResizeTargetHeight('1080')
+                                        ->imageResizeMode('cover')
+                                        ->disk('public')
+                                        ->directory('listicle-images')
+                                        ->acceptedFileTypes(['image/jpeg', 'image/png'])
+                                        ->rules(['dimensions:min_width=1200,min_height=675'])
                                         ->columnSpanFull(),
                                     Forms\Components\TextInput::make('meta_description_en')
                                         ->label('Meta Description')

@@ -73,30 +73,56 @@ class ListicleResourceTest extends TestCase
             });
     }
 
-    public function test_image_field_exists_with_correct_configuration(): void
+    public function test_image_de_field_exists_with_correct_configuration(): void
     {
         Livewire::test(CreateListicle::class)
-            ->assertFormFieldExists('image', function (FileUpload $field): bool {
+            ->assertFormFieldExists('image_de', function (FileUpload $field): bool {
                 return $field->getAcceptedFileTypes() === ['image/jpeg', 'image/png']
                     && $field->getDiskName() === 'public'
                     && $field->getDirectory() === 'listicle-images';
             });
     }
 
-    public function test_can_upload_image_to_listicle_form(): void
+    public function test_image_en_field_exists_with_correct_configuration(): void
+    {
+        Livewire::test(CreateListicle::class)
+            ->assertFormFieldExists('image_en', function (FileUpload $field): bool {
+                return $field->getAcceptedFileTypes() === ['image/jpeg', 'image/png']
+                    && $field->getDiskName() === 'public'
+                    && $field->getDirectory() === 'listicle-images';
+            });
+    }
+
+    public function test_can_upload_image_de_to_listicle_form(): void
     {
         Storage::fake('public');
 
-        $file = UploadedFile::fake()->image('test-image.jpg', 1920, 1080);
+        $file = UploadedFile::fake()->image('test-image-de.jpg', 1920, 1080);
 
         $component = Livewire::test(CreateListicle::class)
             ->fillForm([
-                'image' => $file,
+                'image_de' => $file,
             ]);
 
         // Verify that the image field accepts the file without errors
-        $component->assertFormFieldExists('image');
-        $component->assertHasNoErrors(['image']);
+        $component->assertFormFieldExists('image_de');
+        $component->assertHasNoErrors(['image_de']);
+    }
+
+    public function test_can_upload_image_en_to_listicle_form(): void
+    {
+        Storage::fake('public');
+
+        $file = UploadedFile::fake()->image('test-image-en.jpg', 1920, 1080);
+
+        $component = Livewire::test(CreateListicle::class)
+            ->fillForm([
+                'image_en' => $file,
+            ]);
+
+        // Verify that the image field accepts the file without errors
+        $component->assertFormFieldExists('image_en');
+        $component->assertHasNoErrors(['image_en']);
     }
 
     public function test_can_render_create_listicle_page(): void
