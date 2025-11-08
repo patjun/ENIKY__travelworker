@@ -2,12 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Attraction;
 use App\Models\City;
-use App\Models\Location;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class LocationSeeder extends Seeder
+class AttractionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -309,12 +308,12 @@ class LocationSeeder extends Seeder
 
         foreach ($locations as $cityData) {
             $city = City::where('name_de', $cityData['city_name'])
-                       ->orWhere('name_en', $cityData['city_name'])
-                       ->first();
+                ->orWhere('name_en', $cityData['city_name'])
+                ->first();
 
             if ($city) {
                 foreach ($cityData['locations'] as $locationData) {
-                    Location::create([
+                    Attraction::create([
                         'city_id' => $city->id,
                         'name' => $locationData['name'],
                         'street' => $locationData['street'],

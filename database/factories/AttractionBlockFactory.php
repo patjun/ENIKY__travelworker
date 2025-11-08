@@ -5,9 +5,9 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\LocationBlock>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AttractionBlock>
  */
-class LocationBlockFactory extends Factory
+class AttractionBlockFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -17,7 +17,7 @@ class LocationBlockFactory extends Factory
     public function definition(): array
     {
         return [
-            'location_id' => \App\Models\Location::factory(),
+            'attraction_id' => \App\Models\Attraction::factory(),
             'custom_intro' => '<p>' . fake()->paragraph() . '</p>',
         ];
     }

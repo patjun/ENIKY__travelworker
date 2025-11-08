@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Resources\LocationResource\Pages;
+namespace App\Filament\Resources\AttractionResource\Pages;
 
-use App\Filament\Resources\LocationResource;
+use App\Filament\Resources\AttractionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 
-class EditLocation extends EditRecord
+class EditAttraction extends EditRecord
 {
-    protected static string $resource = LocationResource::class;
+    protected static string $resource = AttractionResource::class;
 
     protected function getHeaderActions(): array
     {
@@ -27,6 +27,6 @@ class EditLocation extends EditRecord
 
     protected function getSavedNotificationTitle(): ?string
     {
-        return 'Location saved and widgets generated';
+        return 'Attraction saved and widgets generated';
     }
 }

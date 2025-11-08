@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\LocationResource\Pages;
+use App\Filament\Resources\AttractionResource\Pages;
 use App\Jobs\ProcessDataForSeoOrchestrator;
-use App\Models\Location;
+use App\Models\Attraction;
 use Dotswan\MapPicker\Fields\Map;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -16,9 +16,9 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 
-class LocationResource extends Resource
+class AttractionResource extends Resource
 {
-    protected static ?string $model = Location::class;
+    protected static ?string $model = Attraction::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
 
@@ -47,7 +47,7 @@ class LocationResource extends Resource
                 ->columnSpanFull()
                 ->tabs([
                     Forms\Components\Tabs\Tab::make('German')
-                        ->label(fn (Get $get) => ($get('name') ?? 'Neue Location').' - DE')
+                        ->label(fn (Get $get) => ($get('name') ?? 'Neue Attraktion').' - DE')
                         ->schema([
                             Forms\Components\Grid::make(2)
                                 ->schema([
@@ -56,7 +56,7 @@ class LocationResource extends Resource
                                         ->schema([
                                             Forms\Components\TextInput::make('name')
                                                 ->label('Name')
-                                                ->default('Neue Location')
+                                                ->default('Neue Attraktion')
                                                 ->required()
                                                 ->live(),
                                             Forms\Components\Actions::make([
@@ -89,7 +89,7 @@ class LocationResource extends Resource
                                                         $ch = curl_init();
                                                         curl_setopt($ch, CURLOPT_URL, $url);
                                                         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                                                        curl_setopt($ch, CURLOPT_USERAGENT, 'TravelWorker Location Finder');
+                                                        curl_setopt($ch, CURLOPT_USERAGENT, 'TravelWorker Attraction Finder');
                                                         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 
                                                         $response = curl_exec($ch);
@@ -215,7 +215,7 @@ class LocationResource extends Resource
                                 ]),
                         ]),
                     Forms\Components\Tabs\Tab::make('English')
-                        ->label(fn (Get $get) => ($get('en_name') ?? 'New Location').' - EN')
+                        ->label(fn (Get $get) => ($get('en_name') ?? 'New Attraction').' - EN')
                         ->schema([
                             Forms\Components\Grid::make(2)
                                 ->schema([
@@ -256,7 +256,7 @@ class LocationResource extends Resource
                                                         $ch = curl_init();
                                                         curl_setopt($ch, CURLOPT_URL, $url);
                                                         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                                                        curl_setopt($ch, CURLOPT_USERAGENT, 'TravelWorker Location Finder');
+                                                        curl_setopt($ch, CURLOPT_USERAGENT, 'TravelWorker Attraction Finder');
                                                         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 
                                                         $response = curl_exec($ch);
@@ -397,7 +397,7 @@ class LocationResource extends Resource
                 ->step(1),
             Forms\Components\Select::make('accessibilityAttributes')
                 ->label('Accessibility Attributes')
-                ->helperText('Select the accessibility features available at this location')
+                ->helperText('Select the accessibility features available at this attraction')
                 ->multiple()
                 ->relationship('accessibilityAttributes', 'name_en')
                 ->searchable(['placeholder', 'name_en', 'name_de'])
@@ -631,9 +631,9 @@ class LocationResource extends Resource
                     ->color('success')
                     ->requiresConfirmation()
                     ->modalHeading('Update')
-                    ->modalDescription('Möchten Sie die DataForSEO Daten für diese Location laden? Der Prozess wird im Hintergrund ausgeführt.')
+                    ->modalDescription('Möchten Sie die DataForSEO Daten für diese Attraktion laden? Der Prozess wird im Hintergrund ausgeführt.')
                     ->modalSubmitActionLabel('Ja, in Queue einreihen')
-                    ->action(function (Location $record) {
+                    ->action(function (Attraction $record) {
                         if (empty($record->place_id)) {
                             Notification::make()
                                 ->title('Fehler')
@@ -664,8 +664,8 @@ class LocationResource extends Resource
                         ->icon('heroicon-o-arrow-path')
                         ->color('success')
                         ->requiresConfirmation()
-                        ->modalHeading('Update für ausgewählte Locations')
-                        ->modalDescription('Möchten Sie die Daten für alle ausgewählten Locations aktualisieren? Der Prozess wird im Hintergrund ausgeführt.')
+                        ->modalHeading('Update für ausgewählte Attraktionen')
+                        ->modalDescription('Möchten Sie die Daten für alle ausgewählten Attraktionen aktualisieren? Der Prozess wird im Hintergrund ausgeführt.')
                         ->modalSubmitActionLabel('Ja, alle in Queue einreihen')
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
                             $processed = 0;
@@ -724,9 +724,9 @@ class LocationResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListLocations::route('/'),
-            'create' => Pages\CreateLocation::route('/create'),
-            'edit' => Pages\EditLocation::route('/{record}/edit'),
+            'index' => Pages\ListAttractions::route('/'),
+            'create' => Pages\CreateAttraction::route('/create'),
+            'edit' => Pages\EditAttraction::route('/{record}/edit'),
         ];
     }
 }

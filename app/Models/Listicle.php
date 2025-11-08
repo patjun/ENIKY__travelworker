@@ -47,7 +47,7 @@ class Listicle extends Model
             $html .= '<div class="content-listicle__intro">' . $this->{$introField} . '</div>';
         }
 
-        // Add all content blocks (including locations) in order
+        // Add all content blocks (including attractions) in order
         $blocks = $this->contentBlocks()
             ->where('language', $language)
             ->with('blockable')

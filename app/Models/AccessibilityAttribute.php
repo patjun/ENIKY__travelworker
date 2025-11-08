@@ -17,8 +17,8 @@ class AccessibilityAttribute extends Model
         'description_en',
     ];
 
-    public function locations(): BelongsToMany
+    public function attractions(): BelongsToMany
     {
-        return $this->belongsToMany(Location::class, 'location_accessibility_attribute');
+        return $this->belongsToMany(Attraction::class, 'attraction_accessibility_attribute');
     }
 }

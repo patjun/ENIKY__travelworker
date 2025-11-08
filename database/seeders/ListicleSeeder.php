@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Attraction;
+use App\Models\AttractionBlock;
 use App\Models\ContentBlock;
 use App\Models\Listicle;
-use App\Models\Location;
-use App\Models\LocationBlock;
 use App\Models\RelatedLinksBlock;
 use Illuminate\Database\Seeder;
 
@@ -16,11 +16,12 @@ class ListicleSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get some existing locations
-        $locations = Location::take(10)->get();
+        // Get some existing attractions
+        $attractions = Attraction::take(10)->get();
 
-        if ($locations->isEmpty()) {
-            $this->command->warn('No locations found. Please seed locations first.');
+        if ($attractions->isEmpty()) {
+            $this->command->warn('No attractions found. Please seed attractions first.');
+
             return;
         }
 
@@ -35,16 +36,16 @@ class ListicleSeeder extends Seeder
         ]);
 
         // Create German content blocks
-        foreach ($locations->take(5) as $index => $location) {
-            $locationBlock = LocationBlock::create([
-                'location_id' => $location->id,
+        foreach ($attractions->take(5) as $index => $attraction) {
+            $attractionBlock = AttractionBlock::create([
+                'attraction_id' => $attraction->id,
                 'custom_intro' => '<p>Ein wunderbarer Ort zum Besuchen in Bratislava.</p>',
             ]);
 
             ContentBlock::create([
                 'listicle_id' => $listicle->id,
-                'blockable_type' => LocationBlock::class,
-                'blockable_id' => $locationBlock->id,
+                'blockable_type' => AttractionBlock::class,
+                'blockable_id' => $attractionBlock->id,
                 'order' => $index,
                 'language' => 'de',
             ]);
@@ -78,16 +79,16 @@ class ListicleSeeder extends Seeder
         ]);
 
         // Create English content blocks (different number to demonstrate flexibility)
-        foreach ($locations->take(7) as $index => $location) {
-            $locationBlock = LocationBlock::create([
-                'location_id' => $location->id,
+        foreach ($attractions->take(7) as $index => $attraction) {
+            $attractionBlock = AttractionBlock::create([
+                'attraction_id' => $attraction->id,
                 'custom_intro' => '<p>A wonderful place to visit in Bratislava.</p>',
             ]);
 
             ContentBlock::create([
                 'listicle_id' => $listicle->id,
-                'blockable_type' => LocationBlock::class,
-                'blockable_id' => $locationBlock->id,
+                'blockable_type' => AttractionBlock::class,
+                'blockable_id' => $attractionBlock->id,
                 'order' => $index,
                 'language' => 'en',
             ]);
@@ -124,7 +125,7 @@ class ListicleSeeder extends Seeder
         $listicle->generateWidgets();
 
         $this->command->info('Listicle seeded successfully!');
-        $this->command->info('Created 5 location blocks + 1 related links block for German');
-        $this->command->info('Created 7 location blocks + 1 related links block for English');
+        $this->command->info('Created 5 attraction blocks + 1 related links block for German');
+        $this->command->info('Created 7 attraction blocks + 1 related links block for English');
     }
 }

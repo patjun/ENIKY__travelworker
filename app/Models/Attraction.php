@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Location extends Model
+class Attraction extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -62,7 +62,7 @@ class Location extends Model
 
     public function accessibilityAttributes(): BelongsToMany
     {
-        return $this->belongsToMany(AccessibilityAttribute::class, 'location_accessibility_attribute');
+        return $this->belongsToMany(AccessibilityAttribute::class, 'attraction_accessibility_attribute');
     }
 
     public function generateWidgets(): void

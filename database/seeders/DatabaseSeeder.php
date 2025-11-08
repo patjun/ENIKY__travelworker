@@ -21,12 +21,12 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Seed countries first as cities depend on them, then locations depend on cities
+        // Seed countries first as cities depend on them, then attractions depend on cities
         $this->call([
             AccessibilityAttributeSeeder::class,
             CountrySeeder::class,
             CitySeeder::class,
-            LocationSeeder::class,
+            AttractionSeeder::class,
             ListicleSeeder::class,
         ]);
 
