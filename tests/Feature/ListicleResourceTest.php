@@ -25,6 +25,11 @@ class ListicleResourceTest extends TestCase
 
         // Authenticate as a user for Filament access
         $this->actingAs(User::factory()->create());
+
+        // Set the current panel for Filament testing
+        \Filament\Facades\Filament::setCurrentPanel(
+            \Filament\Facades\Filament::getPanel('admin')
+        );
     }
 
     public function test_intro_de_rich_editor_has_disabled_toolbar_buttons(): void
