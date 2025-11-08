@@ -19,7 +19,7 @@ class CountryFactory extends Factory
         return [
             'name_de' => fake()->country(),
             'name_en' => fake()->country(),
-            'code' => fake()->countryCode(),
+            'code' => fake()->unique()->countryCode(),
         ];
     }
 }

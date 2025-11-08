@@ -57,9 +57,9 @@ class CityResource extends Resource
                     ->label('Name (EN)')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('locations_count')
-                    ->counts('locations')
-                    ->label('Locations')
+                Tables\Columns\TextColumn::make('attractions_count')
+                    ->counts('attractions')
+                    ->label('Attractions')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
