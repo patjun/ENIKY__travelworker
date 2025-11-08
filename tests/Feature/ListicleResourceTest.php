@@ -7,8 +7,11 @@ use App\Filament\Resources\ListicleResource\Pages\CreateListicle;
 use App\Filament\Resources\ListicleResource\Pages\EditListicle;
 use App\Models\Listicle;
 use App\Models\User;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -63,6 +66,32 @@ class ListicleResourceTest extends TestCase
                 return ! in_array('attachFiles', $toolbarButtons)
                     && ! in_array('codeBlock', $toolbarButtons);
             });
+    }
+
+    public function test_image_field_exists_with_correct_configuration(): void
+    {
+        Livewire::test(CreateListicle::class)
+            ->assertFormFieldExists('image', function (FileUpload $field): bool {
+                return $field->getAcceptedFileTypes() === ['image/jpeg', 'image/png']
+                    && $field->getDiskName() === 'public'
+                    && $field->getDirectory() === 'listicle-images';
+            });
+    }
+
+    public function test_can_upload_image_to_listicle_form(): void
+    {
+        Storage::fake('public');
+
+        $file = UploadedFile::fake()->image('test-image.jpg', 1920, 1080);
+
+        $component = Livewire::test(CreateListicle::class)
+            ->fillForm([
+                'image' => $file,
+            ]);
+
+        // Verify that the image field accepts the file without errors
+        $component->assertFormFieldExists('image');
+        $component->assertHasNoErrors(['image']);
     }
 
     public function test_can_render_create_listicle_page(): void

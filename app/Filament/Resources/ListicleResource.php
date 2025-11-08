@@ -7,6 +7,7 @@ use App\Models\AttractionBlock;
 use App\Models\Listicle;
 use App\Models\RelatedLinksBlock;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
@@ -58,6 +59,19 @@ class ListicleResource extends Resource
                                     Forms\Components\RichEditor::make('intro_de')
                                         ->label('Intro Text')
                                         ->disableToolbarButtons(['attachFiles', 'codeBlock'])
+                                        ->columnSpanFull(),
+                                    FileUpload::make('image')
+                                        ->label('Beitragsbild')
+                                        ->image()
+                                        ->imageEditor()
+                                        ->imageCropAspectRatio('16:9')
+                                        ->imageResizeTargetWidth('1920')
+                                        ->imageResizeTargetHeight('1080')
+                                        ->imageResizeMode('cover')
+                                        ->disk('public')
+                                        ->directory('listicle-images')
+                                        ->acceptedFileTypes(['image/jpeg', 'image/png'])
+                                        ->rules(['dimensions:min_width=1200,min_height=675'])
                                         ->columnSpanFull(),
                                     Forms\Components\TextInput::make('meta_description_de')
                                         ->label('Meta Description')
