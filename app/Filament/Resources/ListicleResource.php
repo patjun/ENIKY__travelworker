@@ -57,6 +57,7 @@ class ListicleResource extends Resource
                                         ->unique(ignoreRecord: true),
                                     Forms\Components\RichEditor::make('intro_de')
                                         ->label('Intro Text')
+                                        ->disableToolbarButtons(['attachFiles', 'codeBlock'])
                                         ->columnSpanFull(),
                                     Forms\Components\TextInput::make('meta_description_de')
                                         ->label('Meta Description')
@@ -90,6 +91,7 @@ class ListicleResource extends Resource
                                                 ->visible(fn (Forms\Get $get) => $get('block_type') === 'location'),
                                             Forms\Components\RichEditor::make('custom_intro')
                                                 ->label('Custom Intro')
+                                                ->disableToolbarButtons(['attachFiles', 'codeBlock'])
                                                 ->visible(fn (Forms\Get $get) => $get('block_type') === 'location'),
 
                                             // Related Links Block Fields
@@ -163,6 +165,7 @@ class ListicleResource extends Resource
                                         ->unique(ignoreRecord: true),
                                     Forms\Components\RichEditor::make('intro_en')
                                         ->label('Intro Text')
+                                        ->disableToolbarButtons(['attachFiles', 'codeBlock'])
                                         ->columnSpanFull(),
                                     Forms\Components\TextInput::make('meta_description_en')
                                         ->label('Meta Description')
@@ -196,6 +199,7 @@ class ListicleResource extends Resource
                                                 ->visible(fn (Forms\Get $get) => $get('block_type') === 'location'),
                                             Forms\Components\RichEditor::make('custom_intro')
                                                 ->label('Custom Intro')
+                                                ->disableToolbarButtons(['attachFiles', 'codeBlock'])
                                                 ->visible(fn (Forms\Get $get) => $get('block_type') === 'location'),
 
                                             // Related Links Block Fields
