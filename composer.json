@@ -20,6 +20,8 @@
         "laravel/framework": "^10.48",
         "laravel/tinker": "^2.8",
         "rickwest/laravel-wordpress-api": "^1.0",
+        "shuvroroy/filament-spatie-laravel-backup": "*",
+        "spatie/laravel-backup": "*",
         "spatie/laravel-ray": "^1.32"
     },
     "require-dev": {
