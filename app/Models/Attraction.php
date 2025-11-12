@@ -16,13 +16,13 @@ class Attraction extends Model
         'city_id', 'name', 'street', 'zip', 'latitude', 'longitude',
         'cid', 'place_id', 'task_id', 'task_post_output', 'task_get_output',
         'location_code', 'language_code', 'business_data', 'last_dataforseo_update',
-        'job_status', 'post_attempts', 'get_attempts', 'phone', 'email', 'website',
+        'job_status', 'post_attempts', 'get_attempts', 'email', 'website',
         'website_opening_hours', 'website_pricing',
         'description', 'category', 'rating_value', 'rating_votes_count',
         'opening_hours', 'accessibility', 'main_image_url', 'is_claimed',
         'price_level', 'additional_categories', 'opening_hours_html', 'structured_data',
         'contact_info_html', 'rating_html', 'accessibility_html', 'manual_opening_hours',
-        'en_name', 'en_street', 'en_zip', 'en_phone', 'en_email', 'en_website',
+        'en_name', 'en_street', 'en_zip', 'en_email', 'en_website',
         'en_website_opening_hours', 'en_website_pricing',
         'en_description', 'en_category', 'en_opening_hours', 'en_accessibility',
         'en_main_image_url', 'en_price_level', 'en_additional_categories',
@@ -121,7 +121,6 @@ class Attraction extends Model
         $country = $cityModel && $cityModel->country ? ($language === 'en' ? $cityModel->country->name_en : $cityModel->country->name_de) : null;
 
         $website = $language === 'en' ? ($this->en_website ?: $this->website) : $this->website;
-        $phone = $language === 'en' ? ($this->en_phone ?: $this->phone) : $this->phone;
         $email = $language === 'en' ? ($this->en_email ?: $this->email) : $this->email;
 
         $html = "<div class=\"widget contact-info\">\n";
@@ -183,15 +182,6 @@ class Attraction extends Model
             $html .= "    </div>\n";
         }
 
-        // Phone section
-        if ($phone) {
-            $html .= "    <div class=\"item\">\n";
-            $html .= "      <div class=\"icon\">📞</div>\n";
-            $html .= "      <div class=\"info\">\n";
-            $html .= "        <a href=\"tel:{$phone}\" class=\"contact-link\">{$phone}</a>\n";
-            $html .= "      </div>\n";
-            $html .= "    </div>\n";
-        }
 
         $html .= "  </div>\n";
         $html .= '</div>';
@@ -387,7 +377,6 @@ class Attraction extends Model
         $city = $cityModel ? ($language === 'en' ? $cityModel->name_en : $cityModel->name_de) : null;
         $country = $cityModel && $cityModel->country ? ($language === 'en' ? $cityModel->country->name_en : $cityModel->country->name_de) : null;
 
-        $phone = $language === 'en' ? ($this->en_phone ?: $this->phone) : $this->phone;
         $email = $language === 'en' ? ($this->en_email ?: $this->email) : $this->email;
         $website = $language === 'en' ? ($this->en_website ?: $this->website) : $this->website;
         $description = $language === 'en' ? ($this->en_description ?: $this->description) : $this->description;
@@ -418,10 +407,6 @@ class Attraction extends Model
             if ($zip) {
                 $structuredData['address']['postalCode'] = $zip;
             }
-        }
-
-        if ($phone) {
-            $structuredData['telephone'] = $phone;
         }
 
         if ($email) {

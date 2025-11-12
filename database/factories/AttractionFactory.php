@@ -23,7 +23,6 @@ class AttractionFactory extends Factory
             'zip' => fake()->postcode(),
             'latitude' => fake()->latitude(),
             'longitude' => fake()->longitude(),
-            'phone' => fake()->phoneNumber(),
             'email' => fake()->safeEmail(),
             'website' => fake()->url(),
             'description' => fake()->paragraph(),

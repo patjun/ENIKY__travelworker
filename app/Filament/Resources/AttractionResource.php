@@ -168,8 +168,6 @@ class AttractionResource extends Resource
                                             Forms\Components\TextInput::make('zip')
                                                 ->required()
                                                 ->label('ZIP'),
-                                            Forms\Components\TextInput::make('phone')
-                                                ->label('Phone'),
                                             Forms\Components\TextInput::make('email')
                                                 ->label('Email')
                                                 ->email(),
@@ -335,8 +333,6 @@ class AttractionResource extends Resource
                                             Forms\Components\TextInput::make('en_zip')
                                                 ->required()
                                                 ->label('ZIP (EN)'),
-                                            Forms\Components\TextInput::make('en_phone')
-                                                ->label('Phone (EN)'),
                                             Forms\Components\TextInput::make('en_email')
                                                 ->label('Email (EN)')
                                                 ->email(),
