@@ -21,6 +21,11 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Seed roles and permissions first
+        $this->call([
+            RolePermissionSeeder::class,
+        ]);
+
         // Seed countries first as cities depend on them, then attractions depend on cities
         $this->call([
             AccessibilityAttributeSeeder::class,

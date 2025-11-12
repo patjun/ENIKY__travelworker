@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use App\Filament\Pages\Backups;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -59,6 +60,9 @@ class AdminPanelProvider extends PanelProvider
                 'Places Management',
                 'Settings',
             ])
-            ->plugin(FilamentSpatieLaravelBackupPlugin::make());
+            ->plugin(
+                FilamentSpatieLaravelBackupPlugin::make()
+                    ->usingPage(Backups::class)
+            );
     }
 }
