@@ -42,7 +42,7 @@ class AiSettingsPageTest extends TestCase
         // Ensure clean slate and create the record with id=1 that getInstance() expects
         AiSetting::query()->delete();
         
-        AiSetting::create([
+        $setting = AiSetting::factory()->create([
             'id' => 1,
             'prompt_de' => 'Test German prompt',
             'prompt_en' => 'Test English prompt',
@@ -50,6 +50,9 @@ class AiSettingsPageTest extends TestCase
             'max_tokens' => 1500,
             'temperature' => 0.8,
         ]);
+
+        // Ensure the record is persisted and fresh
+        $setting->refresh();
 
         Livewire::test(AiSettings::class)
             ->assertFormSet([

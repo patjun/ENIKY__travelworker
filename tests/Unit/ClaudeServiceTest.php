@@ -118,6 +118,7 @@ class ClaudeServiceTest extends TestCase
         AiSetting::query()->delete();
         
         AiSetting::factory()->create([
+            'id' => 1,
             'prompt_de' => 'Title: {title}, Locations: {locations}, Language: {language}',
             'prompt_en' => AiSetting::getDefaultPromptEn(),
             'model' => 'claude-haiku-4-5',
