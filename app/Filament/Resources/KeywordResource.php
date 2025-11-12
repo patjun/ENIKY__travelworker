@@ -125,4 +125,8 @@ class KeywordResource extends Resource {
             'edit'   => Pages\EditKeyword::route( '/{record}/edit' ),
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool {
+        return false;
+    }
 }

@@ -83,4 +83,9 @@ class ChangeResource extends Resource
             'edit' => Pages\EditChange::route('/{record}/edit'),
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 }

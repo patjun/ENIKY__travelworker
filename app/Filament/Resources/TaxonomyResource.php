@@ -102,4 +102,9 @@ class TaxonomyResource extends Resource
             'edit' => Pages\EditTaxonomy::route('/{record}/edit'),
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 }
