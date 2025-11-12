@@ -290,7 +290,6 @@ class AttractionResource extends Resource
             Forms\Components\Section::make('Opening Hours')
                 ->description('Define seasonal opening hours that will be used for both German and English versions')
                 ->collapsible()
-                ->collapsed()
                 ->columnSpanFull()
                 ->schema([
                     Forms\Components\Repeater::make('manual_opening_hours')
@@ -483,16 +482,19 @@ class AttractionResource extends Resource
                                             'sunday' => 'Sunday / Sonntag',
                                         ])
                                         ->required()
+                                        ->reactive()
                                         ->columnSpan(1),
                                     Forms\Components\TimePicker::make('open_time')
                                         ->label('Opening Time')
                                         ->seconds(false)
                                         ->required()
+                                        ->reactive()
                                         ->columnSpan(1),
                                     Forms\Components\TimePicker::make('close_time')
                                         ->label('Closing Time')
                                         ->seconds(false)
                                         ->required()
+                                        ->reactive()
                                         ->columnSpan(1),
                                 ])
                                 ->columns(3)
@@ -500,7 +502,8 @@ class AttractionResource extends Resource
                                 ->addActionLabel('Add Time Slot')
                                 ->reorderable()
                                 ->collapsible()
-                                ->collapsed(),
+                                ->collapsed()
+                                ->itemLabel(fn (array $state): ?string => static::formatTimeSlotLabel($state)),
                         ])
                         ->columns(1)
                         ->defaultItems(1)
@@ -516,6 +519,7 @@ class AttractionResource extends Resource
                         ->addActionLabel('Add Season')
                         ->reorderable()
                         ->collapsible()
+                        ->collapsed()
                         ->itemLabel(fn (array $state): ?string => 
                             $state['is_year_round'] ?? false
                                 ? ($state['name'] ?: 'Year-Round / Ganzjährig')
@@ -615,6 +619,98 @@ class AttractionResource extends Resource
         
         [$month, $day] = explode('-', $date);
         return sprintf('%02d.%02d.', (int)$day, (int)$month);
+    }
+
+    /**
+     * Format time slot label with days and opening hours
+     */
+    protected static function formatTimeSlotLabel(array $state): ?string
+    {
+        $days = $state['days'] ?? [];
+        $openTime = $state['open_time'] ?? null;
+        $closeTime = $state['close_time'] ?? null;
+
+        if (empty($days) || !$openTime || !$closeTime) {
+            return 'Time Slot';
+        }
+
+        // Day abbreviations (German/English)
+        $dayAbbr = [
+            'monday' => 'Mo',
+            'tuesday' => 'Di',
+            'wednesday' => 'Mi',
+            'thursday' => 'Do',
+            'friday' => 'Fr',
+            'saturday' => 'Sa',
+            'sunday' => 'So',
+        ];
+
+        // Day order
+        $dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        
+        // Sort days by order
+        $sortedDays = array_intersect($dayOrder, $days);
+        $sortedDays = array_values($sortedDays);
+
+        if (empty($sortedDays)) {
+            return 'Time Slot';
+        }
+
+        // Format days
+        $dayLabels = array_map(fn($day) => $dayAbbr[$day] ?? $day, $sortedDays);
+        
+        // Try to group consecutive days (e.g., Mo-Fr)
+        $formattedDays = static::formatDayRange($sortedDays, $dayAbbr);
+
+        // Format times (remove seconds if present)
+        $openFormatted = preg_replace('/:\d{2}$/', '', $openTime);
+        $closeFormatted = preg_replace('/:\d{2}$/', '', $closeTime);
+
+        return $formattedDays . ': ' . $openFormatted . '-' . $closeFormatted;
+    }
+
+    /**
+     * Format day range, grouping consecutive days
+     */
+    protected static function formatDayRange(array $days, array $dayAbbr): string
+    {
+        if (empty($days)) {
+            return '';
+        }
+
+        $dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        
+        // Find consecutive ranges
+        $ranges = [];
+        $currentRange = [$days[0]];
+        
+        for ($i = 1; $i < count($days); $i++) {
+            $currentIndex = array_search($days[$i - 1], $dayOrder);
+            $nextIndex = array_search($days[$i], $dayOrder);
+            
+            // Check if consecutive (handling week wrap-around)
+            if ($nextIndex === $currentIndex + 1 || ($currentIndex === 6 && $nextIndex === 0)) {
+                $currentRange[] = $days[$i];
+            } else {
+                $ranges[] = $currentRange;
+                $currentRange = [$days[$i]];
+            }
+        }
+        $ranges[] = $currentRange;
+
+        // Format ranges
+        $formatted = [];
+        foreach ($ranges as $range) {
+            if (count($range) === 1) {
+                $formatted[] = $dayAbbr[$range[0]];
+            } elseif (count($range) === 2) {
+                $formatted[] = $dayAbbr[$range[0]] . ', ' . $dayAbbr[$range[1]];
+            } else {
+                $formatted[] = $dayAbbr[$range[0]] . '-' . $dayAbbr[end($range)];
+            }
+        }
+
+        return implode(', ', $formatted);
     }
 
     /**
