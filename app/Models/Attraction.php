@@ -22,7 +22,7 @@ class Attraction extends Model
         'opening_hours', 'accessibility', 'main_image_url', 'is_claimed',
         'price_level', 'additional_categories', 'opening_hours_html', 'structured_data',
         'contact_info_html', 'rating_html', 'accessibility_html', 'manual_opening_hours',
-        'en_name', 'en_street', 'en_zip', 'en_email', 'en_website',
+        'en_name', 'en_website',
         'en_website_opening_hours', 'en_website_pricing',
         'en_description', 'en_category', 'en_opening_hours', 'en_accessibility',
         'en_main_image_url', 'en_price_level', 'en_additional_categories',
@@ -108,8 +108,8 @@ class Attraction extends Model
     public function generateContactInfoHtml($language = 'de')
     {
         $name = $language === 'en' ? ($this->en_name ?: $this->name) : $this->name;
-        $street = $language === 'en' ? ($this->en_street ?: $this->street) : $this->street;
-        $zip = $language === 'en' ? ($this->en_zip ?: $this->zip) : $this->zip;
+        $street = $this->street;
+        $zip = $this->zip;
 
         // Load city relationship if not loaded
         if (! $this->relationLoaded('city')) {
@@ -121,7 +121,7 @@ class Attraction extends Model
         $country = $cityModel && $cityModel->country ? ($language === 'en' ? $cityModel->country->name_en : $cityModel->country->name_de) : null;
 
         $website = $language === 'en' ? ($this->en_website ?: $this->website) : $this->website;
-        $email = $language === 'en' ? ($this->en_email ?: $this->email) : $this->email;
+        $email = $this->email;
 
         $html = "<div class=\"widget contact-info\">\n";
 
@@ -365,8 +365,8 @@ class Attraction extends Model
     public function generateStructuredData($language = 'de')
     {
         $name = $language === 'en' ? ($this->en_name ?: $this->name) : $this->name;
-        $street = $language === 'en' ? ($this->en_street ?: $this->street) : $this->street;
-        $zip = $language === 'en' ? ($this->en_zip ?: $this->zip) : $this->zip;
+        $street = $this->street;
+        $zip = $this->zip;
 
         // Load city relationship if not loaded
         if (! $this->relationLoaded('city')) {
@@ -377,7 +377,7 @@ class Attraction extends Model
         $city = $cityModel ? ($language === 'en' ? $cityModel->name_en : $cityModel->name_de) : null;
         $country = $cityModel && $cityModel->country ? ($language === 'en' ? $cityModel->country->name_en : $cityModel->country->name_de) : null;
 
-        $email = $language === 'en' ? ($this->en_email ?: $this->email) : $this->email;
+        $email = $this->email;
         $website = $language === 'en' ? ($this->en_website ?: $this->website) : $this->website;
         $description = $language === 'en' ? ($this->en_description ?: $this->description) : $this->description;
         $category = $language === 'en' ? ($this->en_category ?: $this->category) : $this->category;

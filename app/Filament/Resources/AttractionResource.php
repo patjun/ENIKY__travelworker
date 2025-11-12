@@ -140,37 +140,6 @@ class AttractionResource extends Resource
                                                         }
                                                     }),
                                             ]),
-                                            Forms\Components\Select::make('city_id')
-                                                ->label('City')
-                                                ->relationship('city', 'name_de')
-                                                ->searchable(['name_de', 'name_en'])
-                                                ->preload()
-                                                ->required()
-                                                ->createOptionForm([
-                                                    Forms\Components\Select::make('country_id')
-                                                        ->label('Country')
-                                                        ->relationship('country', 'name_de')
-                                                        ->required()
-                                                        ->searchable(['name_de', 'name_en'])
-                                                        ->preload(),
-                                                    Forms\Components\TextInput::make('name_de')
-                                                        ->label('Name (DE)')
-                                                        ->required()
-                                                        ->maxLength(255),
-                                                    Forms\Components\TextInput::make('name_en')
-                                                        ->label('Name (EN)')
-                                                        ->required()
-                                                        ->maxLength(255),
-                                                ]),
-                                            Forms\Components\TextInput::make('street')
-                                                ->required()
-                                                ->label('Street'),
-                                            Forms\Components\TextInput::make('zip')
-                                                ->required()
-                                                ->label('ZIP'),
-                                            Forms\Components\TextInput::make('email')
-                                                ->label('Email')
-                                                ->email(),
                                             Forms\Components\TextInput::make('website')
                                                 ->required()
                                                 ->label('Website')
@@ -224,118 +193,6 @@ class AttractionResource extends Resource
                                                 ->label('Name (EN)')
                                                 ->required()
                                                 ->live(),
-                                            Forms\Components\Actions::make([
-                                                Forms\Components\Actions\Action::make('search_address_en')
-                                                    ->label('Search Address')
-                                                    ->icon('heroicon-o-magnifying-glass')
-                                                    ->color('primary')
-                                                    ->action(function (Set $set, Get $get) {
-                                                        $searchQuery = $get('en_name') ?: $get('name');
-
-                                                        if (empty($searchQuery)) {
-                                                            \Filament\Notifications\Notification::make()
-                                                                ->title('Error')
-                                                                ->body('Please enter a name or address.')
-                                                                ->warning()
-                                                                ->send();
-
-                                                            return;
-                                                        }
-
-                                                        // Use Nominatim (OpenStreetMap) for geocoding with English language preference
-                                                        $url = 'https://nominatim.openstreetmap.org/search?'.http_build_query([
-                                                            'q' => $searchQuery,
-                                                            'format' => 'json',
-                                                            'limit' => 1,
-                                                            'addressdetails' => 1,
-                                                            'accept-language' => 'en',
-                                                        ]);
-
-                                                        $ch = curl_init();
-                                                        curl_setopt($ch, CURLOPT_URL, $url);
-                                                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                                                        curl_setopt($ch, CURLOPT_USERAGENT, 'TravelWorker Attraction Finder');
-                                                        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-
-                                                        $response = curl_exec($ch);
-                                                        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                                                        curl_close($ch);
-
-                                                        if ($httpCode === 200 && $response) {
-                                                            $results = json_decode($response, true);
-
-                                                            if (! empty($results) && isset($results[0])) {
-                                                                $result = $results[0];
-                                                                $lat = (float) $result['lat'];
-                                                                $lng = (float) $result['lon'];
-
-                                                                // Update coordinates (shared between languages)
-                                                                $set('latitude', $lat);
-                                                                $set('longitude', $lng);
-                                                                $set('map', ['lat' => $lat, 'lng' => $lng]);
-
-                                                                // Update English address fields
-                                                                $address = $result['address'] ?? [];
-                                                                if (isset($address['road'])) {
-                                                                    $houseNumber = $address['house_number'] ?? '';
-                                                                    $set('en_street', trim($address['road'].' '.$houseNumber));
-                                                                }
-                                                                if (isset($address['postcode'])) {
-                                                                    $set('en_zip', $address['postcode']);
-                                                                }
-
-                                                                \Filament\Notifications\Notification::make()
-                                                                    ->title('Address Found')
-                                                                    ->body('Address data and coordinates have been successfully updated.')
-                                                                    ->success()
-                                                                    ->send();
-                                                            } else {
-                                                                \Filament\Notifications\Notification::make()
-                                                                    ->title('No Results')
-                                                                    ->body('No results found for this search.')
-                                                                    ->warning()
-                                                                    ->send();
-                                                            }
-                                                        } else {
-                                                            \Filament\Notifications\Notification::make()
-                                                                ->title('Error')
-                                                                ->body('Address search failed. Please try again.')
-                                                                ->danger()
-                                                                ->send();
-                                                        }
-                                                    }),
-                                            ]),
-                                            Forms\Components\Select::make('city_id')
-                                                ->label('City')
-                                                ->relationship('city', 'name_en')
-                                                ->searchable(['name_de', 'name_en'])
-                                                ->preload()
-                                                ->required()
-                                                ->createOptionForm([
-                                                    Forms\Components\Select::make('country_id')
-                                                        ->label('Country')
-                                                        ->relationship('country', 'name_de')
-                                                        ->required()
-                                                        ->searchable(['name_de', 'name_en'])
-                                                        ->preload(),
-                                                    Forms\Components\TextInput::make('name_de')
-                                                        ->label('Name (DE)')
-                                                        ->required()
-                                                        ->maxLength(255),
-                                                    Forms\Components\TextInput::make('name_en')
-                                                        ->label('Name (EN)')
-                                                        ->required()
-                                                        ->maxLength(255),
-                                                ]),
-                                            Forms\Components\TextInput::make('en_street')
-                                                ->required()
-                                                ->label('Street (EN)'),
-                                            Forms\Components\TextInput::make('en_zip')
-                                                ->required()
-                                                ->label('ZIP (EN)'),
-                                            Forms\Components\TextInput::make('en_email')
-                                                ->label('Email (EN)')
-                                                ->email(),
                                             Forms\Components\TextInput::make('en_website')
                                                 ->label('Website (EN)')
                                                 ->required()
@@ -378,6 +235,37 @@ class AttractionResource extends Resource
                                 ]),
                         ]),
                 ]),
+            Forms\Components\Select::make('city_id')
+                ->label('City')
+                ->relationship('city', 'name_de')
+                ->searchable(['name_de', 'name_en'])
+                ->preload()
+                ->required()
+                ->createOptionForm([
+                    Forms\Components\Select::make('country_id')
+                        ->label('Country')
+                        ->relationship('country', 'name_de')
+                        ->required()
+                        ->searchable(['name_de', 'name_en'])
+                        ->preload(),
+                    Forms\Components\TextInput::make('name_de')
+                        ->label('Name (DE)')
+                        ->required()
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('name_en')
+                        ->label('Name (EN)')
+                        ->required()
+                        ->maxLength(255),
+                ]),
+            Forms\Components\TextInput::make('street')
+                ->required()
+                ->label('Street'),
+            Forms\Components\TextInput::make('zip')
+                ->required()
+                ->label('ZIP'),
+            Forms\Components\TextInput::make('email')
+                ->label('Email')
+                ->email(),
             Forms\Components\TextInput::make('rating_value')
                 ->label('Rating Value')
                 ->numeric()
