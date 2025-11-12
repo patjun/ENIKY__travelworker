@@ -65,6 +65,14 @@ class AttractionSeederTest extends TestCase
         // Verify we have the expected number of attractions
         $expectedAttractionsCount = 11; // Based on the seeder data
         $this->assertEquals($expectedAttractionsCount, Attraction::count());
+
+        // Verify manual_opening_hours are properly seeded
+        $berlinCafe = Attraction::where('name', 'Museumsinsel Café')->first();
+        $this->assertNotNull($berlinCafe->manual_opening_hours);
+        $this->assertIsArray($berlinCafe->manual_opening_hours);
+        $this->assertCount(2, $berlinCafe->manual_opening_hours); // Should have 2 seasons
+        $this->assertEquals('Wintersaison', $berlinCafe->manual_opening_hours[0]['name']);
+        $this->assertEquals('10-01', $berlinCafe->manual_opening_hours[0]['start_date']);
     }
     
     public function test_attraction_seeder_handles_missing_cities_gracefully(): void

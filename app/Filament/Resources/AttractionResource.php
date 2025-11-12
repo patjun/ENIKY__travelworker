@@ -288,44 +288,242 @@ class AttractionResource extends Resource
                 ->preload()
                 ->columnSpanFull(),
             Forms\Components\Section::make('Opening Hours')
-                ->description('Define opening hours that will be used for both German and English versions')
+                ->description('Define seasonal opening hours that will be used for both German and English versions')
                 ->collapsible()
                 ->collapsed()
                 ->columnSpanFull()
                 ->schema([
                     Forms\Components\Repeater::make('manual_opening_hours')
-                        ->label('Time Slots')
+                        ->label('Seasons')
                         ->schema([
-                            Forms\Components\Select::make('days')
-                                ->label('Days')
-                                ->multiple()
-                                ->options([
-                                    'monday' => 'Monday / Montag',
-                                    'tuesday' => 'Tuesday / Dienstag',
-                                    'wednesday' => 'Wednesday / Mittwoch',
-                                    'thursday' => 'Thursday / Donnerstag',
-                                    'friday' => 'Friday / Freitag',
-                                    'saturday' => 'Saturday / Samstag',
-                                    'sunday' => 'Sunday / Sonntag',
+                            Forms\Components\Placeholder::make('year_round_notice')
+                                ->label('')
+                                ->content(function (Get $get) {
+                                    $allSeasons = $get('../../manual_opening_hours') ?? [];
+                                    $hasYearRound = false;
+                                    
+                                    foreach ($allSeasons as $season) {
+                                        if (isset($season['is_year_round']) && $season['is_year_round']) {
+                                            $hasYearRound = true;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if ($hasYearRound && count($allSeasons) > 1) {
+                                        return new HtmlString('⚠️ <strong>Notice:</strong> You have a Year-Round season. It doesn\'t make sense to have multiple seasons when one is year-round. Consider removing either the year-round season or the seasonal ones.');
+                                    }
+                                    
+                                    return '';
+                                })
+                                ->visible(function (Get $get) {
+                                    $allSeasons = $get('../../manual_opening_hours') ?? [];
+                                    $hasYearRound = false;
+                                    
+                                    foreach ($allSeasons as $season) {
+                                        if (isset($season['is_year_round']) && $season['is_year_round']) {
+                                            $hasYearRound = true;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    return $hasYearRound && count($allSeasons) > 1;
+                                })
+                                ->extraAttributes(['class' => 'text-warning-600 text-sm']),
+                            Forms\Components\Grid::make(4)
+                                ->schema([
+                                    Forms\Components\TextInput::make('name')
+                                        ->label('Season Name (Optional)')
+                                        ->placeholder('e.g. Winter Season, Summer Hours')
+                                        ->columnSpan(4),
+                                    Forms\Components\Toggle::make('is_year_round')
+                                        ->label('Year-Round')
+                                        ->helperText(function (Get $get) {
+                                            $allSeasons = $get('../../manual_opening_hours') ?? [];
+                                            $seasonCount = count($allSeasons);
+                                            
+                                            if ($seasonCount > 1) {
+                                                return '⚠️ Year-Round is only allowed when you have a single season. Remove other seasons first.';
+                                            }
+                                            
+                                            return 'This season applies all year (repeats every year)';
+                                        })
+                                        ->default(false)
+                                        ->reactive()
+                                        ->disabled(function (Get $get) {
+                                            $allSeasons = $get('../../manual_opening_hours') ?? [];
+                                            $seasonCount = count(array_filter($allSeasons, function($season) {
+                                                return !empty($season); // Filter out empty entries
+                                            }));
+                                            
+                                            // Disable if there's more than one season
+                                            return $seasonCount > 1;
+                                        })
+                                        ->columnSpan(4),
+                                    
+                                    // Start Date
+                                    Forms\Components\Select::make('start_month')
+                                        ->label('Start Month')
+                                        ->options([
+                                            '01' => 'January / Januar',
+                                            '02' => 'February / Februar',
+                                            '03' => 'March / März',
+                                            '04' => 'April / April',
+                                            '05' => 'May / Mai',
+                                            '06' => 'June / Juni',
+                                            '07' => 'July / Juli',
+                                            '08' => 'August / August',
+                                            '09' => 'September / September',
+                                            '10' => 'October / Oktober',
+                                            '11' => 'November / November',
+                                            '12' => 'December / Dezember',
+                                        ])
+                                        ->hidden(fn (Get $get) => $get('is_year_round'))
+                                        ->required(fn (Get $get) => ! $get('is_year_round'))
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                            static::updateStartDate($get, $set);
+                                            static::checkSeasonOverlaps($get, $set);
+                                        })
+                                        ->dehydrated(false)
+                                        ->columnSpan(1),
+                                    Forms\Components\Select::make('start_day')
+                                        ->label('Start Day')
+                                        ->options(fn () => array_combine(
+                                            array_map(fn($i) => sprintf('%02d', $i), range(1, 31)),
+                                            range(1, 31)
+                                        ))
+                                        ->hidden(fn (Get $get) => $get('is_year_round'))
+                                        ->required(fn (Get $get) => ! $get('is_year_round'))
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                            static::updateStartDate($get, $set);
+                                            static::checkSeasonOverlaps($get, $set);
+                                        })
+                                        ->dehydrated(false)
+                                        ->columnSpan(1),
+                                    
+                                    // End Date
+                                    Forms\Components\Select::make('end_month')
+                                        ->label('End Month')
+                                        ->options([
+                                            '01' => 'January / Januar',
+                                            '02' => 'February / Februar',
+                                            '03' => 'March / März',
+                                            '04' => 'April / April',
+                                            '05' => 'May / Mai',
+                                            '06' => 'June / Juni',
+                                            '07' => 'July / Juli',
+                                            '08' => 'August / August',
+                                            '09' => 'September / September',
+                                            '10' => 'October / Oktober',
+                                            '11' => 'November / November',
+                                            '12' => 'December / Dezember',
+                                        ])
+                                        ->hidden(fn (Get $get) => $get('is_year_round'))
+                                        ->required(fn (Get $get) => ! $get('is_year_round'))
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                            static::updateEndDate($get, $set);
+                                            static::checkSeasonOverlaps($get, $set);
+                                        })
+                                        ->dehydrated(false)
+                                        ->columnSpan(1),
+                                    Forms\Components\Select::make('end_day')
+                                        ->label('End Day')
+                                        ->options(fn () => array_combine(
+                                            array_map(fn($i) => sprintf('%02d', $i), range(1, 31)),
+                                            range(1, 31)
+                                        ))
+                                        ->hidden(fn (Get $get) => $get('is_year_round'))
+                                        ->required(fn (Get $get) => ! $get('is_year_round'))
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                            static::updateEndDate($get, $set);
+                                            static::checkSeasonOverlaps($get, $set);
+                                        })
+                                        ->dehydrated(false)
+                                        ->columnSpan(1),
+                                    
+                                    // Hidden fields that store the actual MM-DD values
+                                    Forms\Components\Hidden::make('start_date')
+                                        ->afterStateHydrated(function ($state, Forms\Set $set) {
+                                            if ($state && strpos($state, '-') !== false) {
+                                                [$month, $day] = explode('-', $state);
+                                                $set('start_month', $month);
+                                                $set('start_day', $day);
+                                            }
+                                        }),
+                                    Forms\Components\Hidden::make('end_date')
+                                        ->afterStateHydrated(function ($state, Forms\Set $set) {
+                                            if ($state && strpos($state, '-') !== false) {
+                                                [$month, $day] = explode('-', $state);
+                                                $set('end_month', $month);
+                                                $set('end_day', $day);
+                                            }
+                                        }),
+                                ]),
+                            Forms\Components\Placeholder::make('overlap_warning')
+                                ->label('')
+                                ->content(fn (Forms\Get $get) => static::getOverlapWarning($get))
+                                ->visible(fn (Forms\Get $get) => static::hasOverlap($get))
+                                ->extraAttributes(['class' => 'text-warning-600 text-sm']),
+                            Forms\Components\Repeater::make('time_slots')
+                                ->label('Time Slots')
+                                ->schema([
+                                    Forms\Components\Select::make('days')
+                                        ->label('Days')
+                                        ->multiple()
+                                        ->options([
+                                            'monday' => 'Monday / Montag',
+                                            'tuesday' => 'Tuesday / Dienstag',
+                                            'wednesday' => 'Wednesday / Mittwoch',
+                                            'thursday' => 'Thursday / Donnerstag',
+                                            'friday' => 'Friday / Freitag',
+                                            'saturday' => 'Saturday / Samstag',
+                                            'sunday' => 'Sunday / Sonntag',
+                                        ])
+                                        ->required()
+                                        ->columnSpan(1),
+                                    Forms\Components\TimePicker::make('open_time')
+                                        ->label('Opening Time')
+                                        ->seconds(false)
+                                        ->required()
+                                        ->columnSpan(1),
+                                    Forms\Components\TimePicker::make('close_time')
+                                        ->label('Closing Time')
+                                        ->seconds(false)
+                                        ->required()
+                                        ->columnSpan(1),
                                 ])
-                                ->required()
-                                ->columnSpan(1),
-                            Forms\Components\TimePicker::make('open_time')
-                                ->label('Opening Time')
-                                ->seconds(false)
-                                ->required()
-                                ->columnSpan(1),
-                            Forms\Components\TimePicker::make('close_time')
-                                ->label('Closing Time')
-                                ->seconds(false)
-                                ->required()
-                                ->columnSpan(1),
+                                ->columns(3)
+                                ->defaultItems(0)
+                                ->addActionLabel('Add Time Slot')
+                                ->reorderable()
+                                ->collapsible()
+                                ->collapsed(),
                         ])
-                        ->columns(3)
-                        ->defaultItems(0)
-                        ->addActionLabel('Add Time Slot')
+                        ->columns(1)
+                        ->defaultItems(1)
+                        ->default([
+                            [
+                                'name' => null,
+                                'is_year_round' => true,
+                                'start_date' => null,
+                                'end_date' => null,
+                                'time_slots' => [],
+                            ],
+                        ])
+                        ->addActionLabel('Add Season')
                         ->reorderable()
-                        ->collapsible(),
+                        ->collapsible()
+                        ->itemLabel(fn (array $state): ?string => 
+                            $state['is_year_round'] ?? false
+                                ? ($state['name'] ?: 'Year-Round / Ganzjährig')
+                                : ($state['name'] ?: 'Season') . 
+                                  (isset($state['start_date']) && isset($state['end_date']) 
+                                    ? ' (' . static::formatDateForLabel($state['start_date']) . ' - ' . static::formatDateForLabel($state['end_date']) . ')' 
+                                    : '')
+                        ),
                 ]),
 
             Forms\Components\TextInput::make('latitude')
@@ -404,6 +602,131 @@ class AttractionResource extends Resource
                 ])
                 ->dehydrated(false),
         ];
+    }
+
+    /**
+     * Format date for repeater item label
+     */
+    protected static function formatDateForLabel(string $date): string
+    {
+        if (strpos($date, '-') === false) {
+            return $date;
+        }
+        
+        [$month, $day] = explode('-', $date);
+        return sprintf('%02d.%02d.', (int)$day, (int)$month);
+    }
+
+    /**
+     * Update start_date from start_month and start_day
+     */
+    protected static function updateStartDate(Get $get, Set $set): void
+    {
+        $month = $get('start_month');
+        $day = $get('start_day');
+        
+        if ($month && $day) {
+            $set('start_date', $month . '-' . $day);
+        }
+    }
+
+    /**
+     * Update end_date from end_month and end_day
+     */
+    protected static function updateEndDate(Get $get, Set $set): void
+    {
+        $month = $get('end_month');
+        $day = $get('end_day');
+        
+        if ($month && $day) {
+            $set('end_date', $month . '-' . $day);
+        }
+    }
+
+    /**
+     * Check for overlapping season date ranges
+     */
+    protected static function checkSeasonOverlaps(Get $get, Set $set): void
+    {
+        // This is called on individual field updates
+        // The actual overlap checking is done in hasOverlap() and getOverlapWarning()
+    }
+
+    /**
+     * Check if there are any overlapping seasons
+     */
+    protected static function hasOverlap(Get $get): bool
+    {
+        $seasons = $get('../../manual_opening_hours') ?? [];
+        
+        if (empty($seasons) || count($seasons) < 2) {
+            return false;
+        }
+
+        // Filter out year-round and incomplete seasons
+        $validSeasons = array_filter($seasons, function ($season) {
+            return ! ($season['is_year_round'] ?? false) 
+                && ! empty($season['start_date']) 
+                && ! empty($season['end_date']);
+        });
+
+        if (count($validSeasons) < 2) {
+            return false;
+        }
+
+        // Check each pair of seasons for overlap
+        $validSeasons = array_values($validSeasons);
+        for ($i = 0; $i < count($validSeasons); $i++) {
+            for ($j = $i + 1; $j < count($validSeasons); $j++) {
+                if (static::seasonsOverlap($validSeasons[$i], $validSeasons[$j])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get overlap warning message
+     */
+    protected static function getOverlapWarning(Get $get): HtmlString
+    {
+        return new HtmlString('⚠️ <strong>Warning:</strong> Some seasons have overlapping date ranges. This may cause unexpected behavior.');
+    }
+
+    /**
+     * Check if two seasons overlap
+     */
+    protected static function seasonsOverlap(array $season1, array $season2): bool
+    {
+        $start1 = $season1['start_date'];
+        $end1 = $season1['end_date'];
+        $start2 = $season2['start_date'];
+        $end2 = $season2['end_date'];
+
+        // Helper function to check if a date is within a range
+        $inRange = function ($date, $start, $end) {
+            if ($start <= $end) {
+                // Range within same year
+                return $date >= $start && $date <= $end;
+            } else {
+                // Range spans year boundary
+                return $date >= $start || $date <= $end;
+            }
+        };
+
+        // Check if any boundary of season1 is within season2's range
+        if ($inRange($start1, $start2, $end2) || $inRange($end1, $start2, $end2)) {
+            return true;
+        }
+
+        // Check if any boundary of season2 is within season1's range
+        if ($inRange($start2, $start1, $end1) || $inRange($end2, $start1, $end1)) {
+            return true;
+        }
+
+        return false;
     }
 
     public static function table(Table $table): Table

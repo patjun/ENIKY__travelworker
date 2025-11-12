@@ -495,9 +495,17 @@ class AttractionResourceTest extends TestCase
             'place_id' => 'test_place_id',
             'manual_opening_hours' => [
                 [
-                    'days' => ['monday', 'tuesday'],
-                    'open_time' => '09:00',
-                    'close_time' => '17:00',
+                    'name' => null,
+                    'is_year_round' => true,
+                    'start_date' => null,
+                    'end_date' => null,
+                    'time_slots' => [
+                        [
+                            'days' => ['monday', 'tuesday'],
+                            'open_time' => '09:00',
+                            'close_time' => '17:00',
+                        ],
+                    ],
                 ],
             ],
         ];
@@ -510,5 +518,182 @@ class AttractionResourceTest extends TestCase
         $this->assertDatabaseHas(Attraction::class, [
             'name' => 'Test Attraction',
         ]);
+        
+        $attraction = Attraction::where('name', 'Test Attraction')->first();
+        $this->assertNotNull($attraction->manual_opening_hours);
+        $this->assertIsArray($attraction->manual_opening_hours);
+        $this->assertArrayHasKey('time_slots', $attraction->manual_opening_hours[0]);
+    }
+
+    public function test_can_create_attraction_with_seasonal_opening_hours(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $city = City::factory()->create();
+
+        $attractionData = [
+            'name' => 'Seasonal Attraction',
+            'en_name' => 'Seasonal Attraction EN',
+            'city_id' => $city->id,
+            'street' => 'Test Street',
+            'zip' => '12345',
+            'website' => 'https://example.com',
+            'en_website' => 'https://example.com',
+            'rating_value' => 4.5,
+            'rating_votes_count' => 100,
+            'latitude' => 52.520008,
+            'longitude' => 13.404954,
+            'place_id' => 'test_place_id',
+            'manual_opening_hours' => [
+                [
+                    'name' => 'Winter Season',
+                    'is_year_round' => false,
+                    'start_date' => '11-01',
+                    'end_date' => '03-31',
+                    'time_slots' => [
+                        [
+                            'days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                            'open_time' => '09:00',
+                            'close_time' => '17:00',
+                        ],
+                    ],
+                ],
+                [
+                    'name' => 'Summer Season',
+                    'is_year_round' => false,
+                    'start_date' => '04-01',
+                    'end_date' => '10-31',
+                    'time_slots' => [
+                        [
+                            'days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                            'open_time' => '08:00',
+                            'close_time' => '20:00',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm($attractionData)
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $attraction = Attraction::where('name', 'Seasonal Attraction')->first();
+        $this->assertNotNull($attraction);
+        $this->assertCount(2, $attraction->manual_opening_hours);
+        $this->assertEquals('Winter Season', $attraction->manual_opening_hours[0]['name']);
+        $this->assertEquals('11-01', $attraction->manual_opening_hours[0]['start_date']);
+    }
+
+    public function test_attraction_generates_opening_hours_html_with_seasons(): void
+    {
+        $city = City::factory()->create();
+        $attraction = Attraction::factory()->create([
+            'city_id' => $city->id,
+            'manual_opening_hours' => [
+                [
+                    'name' => 'Winter',
+                    'is_year_round' => false,
+                    'start_date' => '11-01',
+                    'end_date' => '03-31',
+                    'time_slots' => [
+                        [
+                            'days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                            'open_time' => '09:00',
+                            'close_time' => '17:00',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $attraction->generateWidgets();
+
+        $this->assertNotNull($attraction->opening_hours_html);
+        $this->assertStringContainsString('details', $attraction->opening_hours_html);
+        $this->assertStringContainsString('Winter', $attraction->opening_hours_html);
+    }
+
+    public function test_attraction_generates_structured_data_with_valid_from_through(): void
+    {
+        $city = City::factory()->create();
+        $attraction = Attraction::factory()->create([
+            'city_id' => $city->id,
+            'name' => 'Test Attraction',
+            'en_name' => 'Test Attraction EN',
+            'manual_opening_hours' => [
+                [
+                    'name' => 'Summer',
+                    'is_year_round' => false,
+                    'start_date' => '04-01',
+                    'end_date' => '10-31',
+                    'time_slots' => [
+                        [
+                            'days' => ['monday', 'tuesday'],
+                            'open_time' => '09:00',
+                            'close_time' => '17:00',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $attraction->generateWidgets();
+
+        $this->assertNotNull($attraction->structured_data);
+        $structuredData = json_decode(strip_tags($attraction->structured_data), true);
+        $this->assertArrayHasKey('openingHoursSpecification', $structuredData);
+        
+        $spec = $structuredData['openingHoursSpecification'][0];
+        $this->assertArrayHasKey('validFrom', $spec);
+        $this->assertArrayHasKey('validThrough', $spec);
+        $this->assertEquals('--04-01', $spec['validFrom']);
+        $this->assertEquals('--10-31', $spec['validThrough']);
+    }
+
+    public function test_attraction_opens_next_season_when_no_current_season(): void
+    {
+        $city = City::factory()->create();
+        
+        // Create seasons where none is currently active (assuming test runs when neither is active)
+        // Winter: Nov 1 - Mar 31, Summer: Apr 1 - Oct 31
+        $attraction = Attraction::factory()->create([
+            'city_id' => $city->id,
+            'manual_opening_hours' => [
+                [
+                    'name' => 'Winter Past',
+                    'is_year_round' => false,
+                    'start_date' => '01-01',
+                    'end_date' => '01-15',
+                    'time_slots' => [
+                        [
+                            'days' => ['monday'],
+                            'open_time' => '09:00',
+                            'close_time' => '17:00',
+                        ],
+                    ],
+                ],
+                [
+                    'name' => 'Summer Future',
+                    'is_year_round' => false,
+                    'start_date' => '12-15',
+                    'end_date' => '12-31',
+                    'time_slots' => [
+                        [
+                            'days' => ['monday'],
+                            'open_time' => '08:00',
+                            'close_time' => '20:00',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $attraction->generateWidgets();
+
+        $this->assertNotNull($attraction->opening_hours_html);
+        // The HTML should contain the details element with 'open' attribute
+        $this->assertStringContainsString('<details', $attraction->opening_hours_html);
+        $this->assertStringContainsString('open', $attraction->opening_hours_html);
     }
 }

@@ -34,6 +34,21 @@ class AttractionSeeder extends Seeder
                         'en_website' => 'https://www.brandenburggate-hotel.de',
                         'en_description' => 'Luxury hotel near Brandenburg Gate in the heart of Berlin',
                         'en_category' => 'Hotel',
+                        'manual_opening_hours' => [
+                            [
+                                'name' => null,
+                                'is_year_round' => true,
+                                'start_date' => null,
+                                'end_date' => null,
+                                'time_slots' => [
+                                    [
+                                        'days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+                                        'open_time' => '00:00',
+                                        'close_time' => '23:59',
+                                    ],
+                                ],
+                            ],
+                        ],
                     ],
                     [
                         'name' => 'Museumsinsel Café',
@@ -51,6 +66,44 @@ class AttractionSeeder extends Seeder
                         'en_website' => 'https://www.museumsinsel-cafe.de',
                         'en_description' => 'Charming café located on Museum Island with traditional German cuisine',
                         'en_category' => 'Restaurant',
+                        'manual_opening_hours' => [
+                            [
+                                'name' => 'Wintersaison',
+                                'is_year_round' => false,
+                                'start_date' => '10-01',
+                                'end_date' => '03-31',
+                                'time_slots' => [
+                                    [
+                                        'days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                                        'open_time' => '09:00',
+                                        'close_time' => '18:00',
+                                    ],
+                                    [
+                                        'days' => ['saturday', 'sunday'],
+                                        'open_time' => '10:00',
+                                        'close_time' => '17:00',
+                                    ],
+                                ],
+                            ],
+                            [
+                                'name' => 'Sommersaison',
+                                'is_year_round' => false,
+                                'start_date' => '04-01',
+                                'end_date' => '09-30',
+                                'time_slots' => [
+                                    [
+                                        'days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                                        'open_time' => '08:00',
+                                        'close_time' => '20:00',
+                                    ],
+                                    [
+                                        'days' => ['saturday', 'sunday'],
+                                        'open_time' => '09:00',
+                                        'close_time' => '19:00',
+                                    ],
+                                ],
+                            ],
+                        ],
                     ],
                 ],
             ],
@@ -74,6 +127,21 @@ class AttractionSeeder extends Seeder
                         'en_website' => 'https://www.marienplatz-hotel.de',
                         'en_description' => 'Historic hotel in the center of Munich overlooking Marienplatz',
                         'en_category' => 'Hotel',
+                        'manual_opening_hours' => [
+                            [
+                                'name' => null,
+                                'is_year_round' => true,
+                                'start_date' => null,
+                                'end_date' => null,
+                                'time_slots' => [
+                                    [
+                                        'days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+                                        'open_time' => '00:00',
+                                        'close_time' => '23:59',
+                                    ],
+                                ],
+                            ],
+                        ],
                     ],
                     [
                         'name' => 'Augustiner Bräu München',
@@ -91,6 +159,26 @@ class AttractionSeeder extends Seeder
                         'en_website' => 'https://www.augustiner-braeu.de',
                         'en_description' => 'Traditional Bavarian brewery and restaurant serving authentic beer and food',
                         'en_category' => 'Restaurant',
+                        'manual_opening_hours' => [
+                            [
+                                'name' => null,
+                                'is_year_round' => true,
+                                'start_date' => null,
+                                'end_date' => null,
+                                'time_slots' => [
+                                    [
+                                        'days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+                                        'open_time' => '10:00',
+                                        'close_time' => '23:00',
+                                    ],
+                                    [
+                                        'days' => ['sunday'],
+                                        'open_time' => '10:00',
+                                        'close_time' => '22:00',
+                                    ],
+                                ],
+                            ],
+                        ],
                     ],
                 ],
             ],
