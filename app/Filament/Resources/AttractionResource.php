@@ -46,141 +46,6 @@ class AttractionResource extends Resource
             Forms\Components\Tabs::make('Languages')
                 ->columnSpanFull()
                 ->tabs([
-                    Forms\Components\Tabs\Tab::make('German')
-                        ->label(fn (Get $get) => ($get('name') ?? 'Neue Attraktion').' - DE')
-                        ->schema([
-                            Forms\Components\Grid::make(2)
-                                ->schema([
-                                    Forms\Components\Section::make('Grunddaten')
-                                        ->columnSpan(1)
-                                        ->schema([
-                                            Forms\Components\TextInput::make('name')
-                                                ->label('Name')
-                                                ->default('Neue Attraktion')
-                                                ->required()
-                                                ->live(),
-                                            Forms\Components\Actions::make([
-                                                Forms\Components\Actions\Action::make('search_address')
-                                                    ->label('Search Address')
-                                                    ->icon('heroicon-o-magnifying-glass')
-                                                    ->color('primary')
-                                                    ->action(function (Set $set, Get $get) {
-                                                        $searchQuery = $get('name');
-
-                                                        if (empty($searchQuery)) {
-                                                            \Filament\Notifications\Notification::make()
-                                                                ->title('Error')
-                                                                ->body('Please enter a name or address.')
-                                                                ->warning()
-                                                                ->send();
-
-                                                            return;
-                                                        }
-
-                                                        // Use Nominatim (OpenStreetMap) for geocoding
-                                                        $url = 'https://nominatim.openstreetmap.org/search?'.http_build_query([
-                                                            'q' => $searchQuery,
-                                                            'format' => 'json',
-                                                            'limit' => 1,
-                                                            'addressdetails' => 1,
-                                                            'accept-language' => 'de',
-                                                        ]);
-
-                                                        $ch = curl_init();
-                                                        curl_setopt($ch, CURLOPT_URL, $url);
-                                                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                                                        curl_setopt($ch, CURLOPT_USERAGENT, 'TravelWorker Attraction Finder');
-                                                        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-
-                                                        $response = curl_exec($ch);
-                                                        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                                                        curl_close($ch);
-
-                                                        if ($httpCode === 200 && $response) {
-                                                            $results = json_decode($response, true);
-
-                                                            if (! empty($results) && isset($results[0])) {
-                                                                $result = $results[0];
-                                                                $lat = (float) $result['lat'];
-                                                                $lng = (float) $result['lon'];
-
-                                                                // Update coordinates
-                                                                $set('latitude', $lat);
-                                                                $set('longitude', $lng);
-                                                                $set('map', ['lat' => $lat, 'lng' => $lng]);
-
-                                                                // Update address fields
-                                                                $address = $result['address'] ?? [];
-                                                                if (isset($address['road'])) {
-                                                                    $houseNumber = $address['house_number'] ?? '';
-                                                                    $set('street', trim($address['road'].' '.$houseNumber));
-                                                                }
-                                                                if (isset($address['postcode'])) {
-                                                                    $set('zip', $address['postcode']);
-                                                                }
-
-                                                                \Filament\Notifications\Notification::make()
-                                                                    ->title('Adresse gefunden')
-                                                                    ->body('Die Adressdaten und Koordinaten wurden erfolgreich aktualisiert.')
-                                                                    ->success()
-                                                                    ->send();
-                                                            } else {
-                                                                \Filament\Notifications\Notification::make()
-                                                                    ->title('Keine Ergebnisse')
-                                                                    ->body('Für diese Suche wurden keine Ergebnisse gefunden.')
-                                                                    ->warning()
-                                                                    ->send();
-                                                            }
-                                                        } else {
-                                                            \Filament\Notifications\Notification::make()
-                                                                ->title('Fehler')
-                                                                ->body('Die Adresssuche ist fehlgeschlagen. Bitte versuchen Sie es erneut.')
-                                                                ->danger()
-                                                                ->send();
-                                                        }
-                                                    }),
-                                            ]),
-                                            Forms\Components\TextInput::make('website')
-                                                ->required()
-                                                ->label('Website')
-                                                ->url(),
-                                            Forms\Components\TextInput::make('website_opening_hours')
-                                                ->label('Website Opening Hours')
-                                                ->url(),
-                                            Forms\Components\TextInput::make('website_pricing')
-                                                ->label('Website Pricing')
-                                                ->url(),
-                                        ]),
-                                    Forms\Components\Section::make('Widgets')
-                                        ->columnSpan(1)
-                                        ->schema([
-                                            Forms\Components\Placeholder::make('contact_info_preview')
-                                                ->label('Contact Info Widget Preview')
-                                                ->content(fn ($record) => $record && $record->contact_info_html
-                                                    ? new HtmlString($record->contact_info_html)
-                                                    : 'Widget wird nach dem Speichern generiert'
-                                                ),
-                                            Forms\Components\Placeholder::make('rating_preview')
-                                                ->label('Rating Widget Preview')
-                                                ->content(fn ($record) => $record && $record->rating_html
-                                                    ? new HtmlString($record->rating_html)
-                                                    : 'Widget wird nach dem Speichern generiert'
-                                                ),
-                                            Forms\Components\Placeholder::make('opening_hours_preview')
-                                                ->label('Opening Hours Widget Preview')
-                                                ->content(fn ($record) => $record && $record->opening_hours_html
-                                                    ? new HtmlString($record->opening_hours_html)
-                                                    : 'Widget wird nach dem Speichern generiert'
-                                                ),
-                                            Forms\Components\Placeholder::make('accessibility_preview')
-                                                ->label('Accessibility Widget Preview')
-                                                ->content(fn ($record) => $record && $record->accessibility_html
-                                                    ? new HtmlString($record->accessibility_html)
-                                                    : 'Widget wird nach dem Speichern generiert'
-                                                ),
-                                        ]),
-                                ]),
-                        ]),
                     Forms\Components\Tabs\Tab::make('English')
                         ->label(fn (Get $get) => ($get('en_name') ?? 'New Attraction').' - EN')
                         ->schema([
@@ -234,6 +99,60 @@ class AttractionResource extends Resource
                                         ]),
                                 ]),
                         ]),
+                    Forms\Components\Tabs\Tab::make('German')
+                        ->label(fn (Get $get) => ($get('name') ?? 'Neue Attraktion').' - DE')
+                        ->schema([
+                            Forms\Components\Grid::make(2)
+                                ->schema([
+                                    Forms\Components\Section::make('Grunddaten')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            Forms\Components\TextInput::make('name')
+                                                ->label('Name')
+                                                ->default('Neue Attraktion')
+                                                ->required()
+                                                ->live(),
+                                            Forms\Components\TextInput::make('website')
+                                                ->required()
+                                                ->label('Website')
+                                                ->url(),
+                                            Forms\Components\TextInput::make('website_opening_hours')
+                                                ->label('Website Opening Hours')
+                                                ->url(),
+                                            Forms\Components\TextInput::make('website_pricing')
+                                                ->label('Website Pricing')
+                                                ->url(),
+                                        ]),
+                                    Forms\Components\Section::make('Widgets')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            Forms\Components\Placeholder::make('contact_info_preview')
+                                                ->label('Contact Info Widget Preview')
+                                                ->content(fn ($record) => $record && $record->contact_info_html
+                                                    ? new HtmlString($record->contact_info_html)
+                                                    : 'Widget wird nach dem Speichern generiert'
+                                                ),
+                                            Forms\Components\Placeholder::make('rating_preview')
+                                                ->label('Rating Widget Preview')
+                                                ->content(fn ($record) => $record && $record->rating_html
+                                                    ? new HtmlString($record->rating_html)
+                                                    : 'Widget wird nach dem Speichern generiert'
+                                                ),
+                                            Forms\Components\Placeholder::make('opening_hours_preview')
+                                                ->label('Opening Hours Widget Preview')
+                                                ->content(fn ($record) => $record && $record->opening_hours_html
+                                                    ? new HtmlString($record->opening_hours_html)
+                                                    : 'Widget wird nach dem Speichern generiert'
+                                                ),
+                                            Forms\Components\Placeholder::make('accessibility_preview')
+                                                ->label('Accessibility Widget Preview')
+                                                ->content(fn ($record) => $record && $record->accessibility_html
+                                                    ? new HtmlString($record->accessibility_html)
+                                                    : 'Widget wird nach dem Speichern generiert'
+                                                ),
+                                        ]),
+                                ]),
+                        ]),
                 ]),
             Forms\Components\Select::make('city_id')
                 ->label('City')
@@ -257,6 +176,87 @@ class AttractionResource extends Resource
                         ->required()
                         ->maxLength(255),
                 ]),
+            Forms\Components\Actions::make([
+                Forms\Components\Actions\Action::make('search_address')
+                    ->label('Search Address')
+                    ->icon('heroicon-o-magnifying-glass')
+                    ->color('primary')
+                    ->action(function (Set $set, Get $get) {
+                        $searchQuery = $get('en_name');
+
+                        if (empty($searchQuery)) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error')
+                                ->body('Please enter a name or address.')
+                                ->warning()
+                                ->send();
+
+                            return;
+                        }
+
+                        // Use Nominatim (OpenStreetMap) for geocoding
+                        $url = 'https://nominatim.openstreetmap.org/search?'.http_build_query([
+                            'q' => $searchQuery,
+                            'format' => 'json',
+                            'limit' => 1,
+                            'addressdetails' => 1,
+                            'accept-language' => 'en',
+                        ]);
+
+                        $ch = curl_init();
+                        curl_setopt($ch, CURLOPT_URL, $url);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($ch, CURLOPT_USERAGENT, 'TravelWorker Attraction Finder');
+                        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+
+                        $response = curl_exec($ch);
+                        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                        curl_close($ch);
+
+                        if ($httpCode === 200 && $response) {
+                            $results = json_decode($response, true);
+
+                            if (! empty($results) && isset($results[0])) {
+                                $result = $results[0];
+                                $lat = (float) $result['lat'];
+                                $lng = (float) $result['lon'];
+
+                                // Update coordinates
+                                $set('latitude', $lat);
+                                $set('longitude', $lng);
+                                $set('map', ['lat' => $lat, 'lng' => $lng]);
+
+                                // Update address fields
+                                $address = $result['address'] ?? [];
+                                if (isset($address['road'])) {
+                                    $houseNumber = $address['house_number'] ?? '';
+                                    $set('street', trim($address['road'].' '.$houseNumber));
+                                }
+                                if (isset($address['postcode'])) {
+                                    $set('zip', $address['postcode']);
+                                }
+
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Address Found')
+                                    ->body('Address data and coordinates have been successfully updated.')
+                                    ->success()
+                                    ->send();
+                            } else {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('No Results')
+                                    ->body('No results were found for this search.')
+                                    ->warning()
+                                    ->send();
+                            }
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error')
+                                ->body('Address search failed. Please try again.')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+            ]),
             Forms\Components\TextInput::make('street')
                 ->required()
                 ->label('Street'),
