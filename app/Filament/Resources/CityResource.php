@@ -119,14 +119,17 @@ class CityResource extends Resource
             return false;
         }
 
-        // Editor kann nicht löschen, aber bearbeiten
-        if ($user->hasRole('editor')) {
-            return $user->can('edit cities');
+        // Super Admin, Admin und Editor können alles bearbeiten
+        if ($user->hasAnyRole(['super_admin', 'admin', 'editor'])) {
+            return $user->can('edit cities') || $user->can('edit own cities');
         }
 
-        // Super Admin und Admin können alles bearbeiten
-        if ($user->hasAnyRole(['super_admin', 'admin'])) {
-            return $user->can('edit cities');
+        // Prüfe ob User die Berechtigung "edit own cities" hat
+        if ($user->can('edit own cities')) {
+            // TODO: Wenn user_id Feld hinzugefügt wird, hier Prüfung auf eigene Cities einbauen
+            // Aktuell können alle Benutzer mit "edit own cities" alle Cities bearbeiten,
+            // bis das user_id Feld implementiert ist
+            return true;
         }
 
         return false;

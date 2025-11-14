@@ -463,6 +463,64 @@ class PermissionTest extends TestCase
         $this->assertFalse(CityResource::canEdit($city));
     }
 
+    // Edit own cities permission tests
+    public function test_super_admin_has_edit_own_cities_permission(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $this->assertTrue($this->superAdmin->can('edit own cities'));
+    }
+
+    public function test_admin_has_edit_own_cities_permission(): void
+    {
+        $this->actingAs($this->admin);
+        $this->assertTrue($this->admin->can('edit own cities'));
+    }
+
+    public function test_editor_has_edit_own_cities_permission(): void
+    {
+        $this->actingAs($this->editor);
+        $this->assertTrue($this->editor->can('edit own cities'));
+    }
+
+    public function test_author_does_not_have_edit_own_cities_permission(): void
+    {
+        $this->actingAs($this->author);
+        $this->assertFalse($this->author->can('edit own cities'));
+    }
+
+    public function test_attractions_author_does_not_have_edit_own_cities_permission(): void
+    {
+        $this->actingAs($this->attractionsAuthor);
+        $this->assertFalse($this->attractionsAuthor->can('edit own cities'));
+    }
+
+    public function test_super_admin_can_edit_cities_with_edit_own_cities_permission(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $city = City::factory()->create();
+        // Super Admin sollte Cities bearbeiten können, auch mit edit own cities
+        $this->assertTrue($this->superAdmin->can('edit own cities'));
+        $this->assertTrue(CityResource::canEdit($city));
+    }
+
+    public function test_admin_can_edit_cities_with_edit_own_cities_permission(): void
+    {
+        $this->actingAs($this->admin);
+        $city = City::factory()->create();
+        // Admin sollte Cities bearbeiten können, auch mit edit own cities
+        $this->assertTrue($this->admin->can('edit own cities'));
+        $this->assertTrue(CityResource::canEdit($city));
+    }
+
+    public function test_editor_can_edit_cities_with_edit_own_cities_permission(): void
+    {
+        $this->actingAs($this->editor);
+        $city = City::factory()->create();
+        // Editor sollte Cities bearbeiten können, auch mit edit own cities
+        $this->assertTrue($this->editor->can('edit own cities'));
+        $this->assertTrue(CityResource::canEdit($city));
+    }
+
     public function test_super_admin_can_delete_cities(): void
     {
         $this->actingAs($this->superAdmin);
