@@ -126,12 +126,32 @@ class AccessibilityAttributeResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->can('view accessibility_attributes') ?? false;
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $user->can('view accessibility_attributes');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->can('create accessibility_attributes') ?? false;
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $user->can('create accessibility_attributes');
     }
 
     public static function canEdit($record): bool
@@ -141,13 +161,18 @@ class AccessibilityAttributeResource extends Resource
             return false;
         }
 
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
         // Editor kann nicht löschen, aber bearbeiten
         if ($user->hasRole('editor')) {
             return $user->can('edit accessibility_attributes');
         }
 
-        // Super Admin und Admin können alles bearbeiten
-        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+        // Admin kann alles bearbeiten
+        if ($user->hasRole('admin')) {
             return $user->can('edit accessibility_attributes');
         }
 
@@ -161,13 +186,18 @@ class AccessibilityAttributeResource extends Resource
             return false;
         }
 
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
         // Editor kann nicht löschen
         if ($user->hasRole('editor')) {
             return false;
         }
 
-        // Super Admin und Admin können alles löschen
-        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+        // Admin kann alles löschen
+        if ($user->hasRole('admin')) {
             return $user->can('delete accessibility_attributes');
         }
 
@@ -176,6 +206,16 @@ class AccessibilityAttributeResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()?->can('view accessibility_attributes') ?? false;
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $user->can('view accessibility_attributes');
     }
 }

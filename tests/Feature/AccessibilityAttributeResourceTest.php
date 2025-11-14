@@ -55,7 +55,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_authenticated_users_can_render_accessibility_attribute_list_page(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $response = $this->get(AccessibilityAttributeResource::getUrl('index'));
 
@@ -64,7 +64,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_authenticated_users_can_render_accessibility_attribute_create_page(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $response = $this->get(AccessibilityAttributeResource::getUrl('create'));
 
@@ -73,7 +73,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_authenticated_users_can_render_accessibility_attribute_edit_page(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $accessibilityAttribute = AccessibilityAttribute::factory()->create();
 
         $response = $this->get(AccessibilityAttributeResource::getUrl('edit', ['record' => $accessibilityAttribute]));
@@ -85,7 +85,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_can_list_accessibility_attributes(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $accessibilityAttributes = AccessibilityAttribute::factory()->count(10)->create();
 
@@ -95,7 +95,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_can_search_accessibility_attributes_by_placeholder(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $targetAttribute = AccessibilityAttribute::factory()->create(['placeholder' => 'wheelchair_access']);
         $otherAttribute = AccessibilityAttribute::factory()->create(['placeholder' => 'hearing_loop']);
@@ -108,7 +108,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_can_search_accessibility_attributes_by_english_name(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $targetAttribute = AccessibilityAttribute::factory()->create(['name_en' => 'Wheelchair Accessible']);
         $otherAttribute = AccessibilityAttribute::factory()->create(['name_en' => 'Hearing Loop Available']);
@@ -121,7 +121,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_can_search_accessibility_attributes_by_german_name(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $targetAttribute = AccessibilityAttribute::factory()->create(['name_de' => 'Rollstuhlzugänglich']);
         $otherAttribute = AccessibilityAttribute::factory()->create(['name_de' => 'Induktionsschleife verfügbar']);
@@ -134,7 +134,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_can_sort_accessibility_attributes_by_placeholder(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $attributeA = AccessibilityAttribute::factory()->create(['placeholder' => 'aaa_access']);
         $attributeB = AccessibilityAttribute::factory()->create(['placeholder' => 'zzz_access']);
@@ -148,7 +148,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_can_create_accessibility_attribute(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $newData = AccessibilityAttribute::factory()->make();
 
@@ -172,7 +172,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_accessibility_attribute_create_form_validation_placeholder_required(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateAccessibilityAttribute::class)
             ->fillForm([
@@ -187,7 +187,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_accessibility_attribute_create_form_validation_name_en_required(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateAccessibilityAttribute::class)
             ->fillForm([
@@ -202,7 +202,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_accessibility_attribute_create_form_validation_name_de_required(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateAccessibilityAttribute::class)
             ->fillForm([
@@ -217,7 +217,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_accessibility_attribute_create_form_validation_description_en_required(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateAccessibilityAttribute::class)
             ->fillForm([
@@ -232,7 +232,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_accessibility_attribute_create_form_validation_placeholder_unique(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $existingAttribute = AccessibilityAttribute::factory()->create(['placeholder' => 'existing_placeholder']);
 
@@ -249,7 +249,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_accessibility_attribute_create_form_validation_placeholder_max_length(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateAccessibilityAttribute::class)
             ->fillForm([
@@ -264,7 +264,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_accessibility_attribute_create_form_validation_name_en_max_length(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateAccessibilityAttribute::class)
             ->fillForm([
@@ -279,7 +279,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_accessibility_attribute_create_form_validation_name_de_max_length(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateAccessibilityAttribute::class)
             ->fillForm([
@@ -296,7 +296,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_can_retrieve_accessibility_attribute_data_in_edit_form(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $accessibilityAttribute = AccessibilityAttribute::factory()->create();
 
@@ -313,7 +313,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_can_save_accessibility_attribute(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $accessibilityAttribute = AccessibilityAttribute::factory()->create();
         $newData = AccessibilityAttribute::factory()->make();
@@ -340,7 +340,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_accessibility_attribute_edit_form_validation(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $accessibilityAttribute = AccessibilityAttribute::factory()->create();
 
@@ -364,7 +364,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_accessibility_attribute_edit_form_placeholder_unique_validation_ignores_current_record(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $accessibilityAttribute = AccessibilityAttribute::factory()->create(['placeholder' => 'original_placeholder']);
         $otherAttribute = AccessibilityAttribute::factory()->create(['placeholder' => 'other_placeholder']);
@@ -398,7 +398,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_can_delete_accessibility_attribute(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $accessibilityAttribute = AccessibilityAttribute::factory()->create();
 
@@ -414,7 +414,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_can_edit_accessibility_attribute_from_table(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $accessibilityAttribute = AccessibilityAttribute::factory()->create();
 
@@ -427,7 +427,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_can_delete_accessibility_attribute_from_table(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $accessibilityAttribute = AccessibilityAttribute::factory()->create();
 
@@ -439,7 +439,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_can_bulk_delete_accessibility_attributes(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $accessibilityAttributes = AccessibilityAttribute::factory()->count(3)->create();
 
@@ -455,7 +455,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_create_form_displays_all_required_fields(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateAccessibilityAttribute::class)
             ->assertFormExists()
@@ -467,7 +467,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_edit_form_displays_all_required_fields(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $accessibilityAttribute = AccessibilityAttribute::factory()->create();
 
@@ -485,7 +485,7 @@ class AccessibilityAttributeResourceTest extends TestCase
 
     public function test_table_displays_correct_columns(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $accessibilityAttribute = AccessibilityAttribute::factory()->create();
 

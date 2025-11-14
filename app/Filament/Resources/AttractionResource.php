@@ -160,40 +160,9 @@ class AttractionResource extends Resource
                 ->schema([
                     Forms\Components\Grid::make(2)
                         ->schema([
-                            Forms\Components\Select::make('city_id')
-                                ->label('City')
-                                ->relationship('city', 'name_de')
-                                ->searchable(['name_de', 'name_en'])
-                                ->preload()
-                                ->required()
-                                ->columnSpan(2)
-                                ->createOptionForm([
-                                    Forms\Components\Select::make('country_id')
-                                        ->label('Country')
-                                        ->relationship('country', 'name_de')
-                                        ->required()
-                                        ->searchable(['name_de', 'name_en'])
-                                        ->preload(),
-                                    Forms\Components\TextInput::make('name_de')
-                                        ->label('Name (DE)')
-                                        ->required()
-                                        ->maxLength(255),
-                                    Forms\Components\TextInput::make('name_en')
-                                        ->label('Name (EN)')
-                                        ->required()
-                                        ->maxLength(255),
-                                ]),
-                            Forms\Components\TextInput::make('street')
-                                ->required()
-                                ->label('Street')
-                                ->columnSpan(1),
-                            Forms\Components\TextInput::make('zip')
-                                ->required()
-                                ->label('ZIP')
-                                ->columnSpan(1),
                             Forms\Components\Actions::make([
                                 Forms\Components\Actions\Action::make('search_address')
-                                    ->label('Search Address')
+                                    ->label('Search Address based on Attraction Name')
                                     ->icon('heroicon-o-magnifying-glass')
                                     ->color('primary')
                                     ->action(function (Set $set, Get $get) {
@@ -273,6 +242,37 @@ class AttractionResource extends Resource
                                     }),
                             ])
                                 ->columnSpan(2),
+                            Forms\Components\Select::make('city_id')
+                                ->label('City')
+                                ->relationship('city', 'name_de')
+                                ->searchable(['name_de', 'name_en'])
+                                ->preload()
+                                ->required()
+                                ->columnSpan(2)
+                                ->createOptionForm([
+                                    Forms\Components\Select::make('country_id')
+                                        ->label('Country')
+                                        ->relationship('country', 'name_de')
+                                        ->required()
+                                        ->searchable(['name_de', 'name_en'])
+                                        ->preload(),
+                                    Forms\Components\TextInput::make('name_de')
+                                        ->label('Name (DE)')
+                                        ->required()
+                                        ->maxLength(255),
+                                    Forms\Components\TextInput::make('name_en')
+                                        ->label('Name (EN)')
+                                        ->required()
+                                        ->maxLength(255),
+                                ]),
+                            Forms\Components\TextInput::make('street')
+                                ->required()
+                                ->label('Street')
+                                ->columnSpan(1),
+                            Forms\Components\TextInput::make('zip')
+                                ->required()
+                                ->label('ZIP')
+                                ->columnSpan(1),
                             Forms\Components\TextInput::make('latitude')
                                 ->label('Latitude')
                                 ->required()

@@ -60,7 +60,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_authenticated_users_can_render_attraction_list_page(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $response = $this->get(AttractionResource::getUrl('index'));
 
@@ -69,7 +69,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_authenticated_users_can_render_attraction_create_page(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $response = $this->get(AttractionResource::getUrl('create'));
 
@@ -78,7 +78,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_authenticated_users_can_render_attraction_edit_page(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $attraction = Attraction::factory()->create();
 
         $response = $this->get(AttractionResource::getUrl('edit', ['record' => $attraction]));
@@ -90,7 +90,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_can_list_attractions(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $attractions = Attraction::factory()->count(5)->create();
 
         Livewire::test(ListAttractions::class)
@@ -99,7 +99,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_can_search_attractions_by_name(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $attraction1 = Attraction::factory()->create(['en_name' => 'Brandenburg Gate']);
         $attraction2 = Attraction::factory()->create(['en_name' => 'Eiffel Tower']);
         $attraction3 = Attraction::factory()->create(['en_name' => 'Colosseum']);
@@ -112,7 +112,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_can_filter_attractions_by_city(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $berlin = City::factory()->create(['name_de' => 'Berlin']);
         $paris = City::factory()->create(['name_de' => 'Paris']);
         
@@ -127,7 +127,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_can_filter_attractions_by_country(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $germany = Country::factory()->create(['name_de' => 'Deutschland', 'code' => 'DE']);
         $france = Country::factory()->create(['name_de' => 'Frankreich', 'code' => 'FR']);
         
@@ -147,7 +147,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_can_create_attraction(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city = City::factory()->create();
 
         $newAttractionData = [
@@ -180,7 +180,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_create_attraction_validates_required_fields(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateAttraction::class)
             ->fillForm([
@@ -216,7 +216,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_create_attraction_validates_email_format(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city = City::factory()->create();
 
         Livewire::test(CreateAttraction::class)
@@ -243,7 +243,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_create_attraction_validates_url_format(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city = City::factory()->create();
 
         Livewire::test(CreateAttraction::class)
@@ -270,7 +270,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_create_attraction_validates_rating_range(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city = City::factory()->create();
 
         Livewire::test(CreateAttraction::class)
@@ -299,7 +299,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_can_retrieve_attraction_data_for_editing(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $attraction = Attraction::factory()->create();
 
         Livewire::test(EditAttraction::class, [
@@ -316,7 +316,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_can_save_attraction_changes(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $attraction = Attraction::factory()->create();
         $newCity = City::factory()->create();
 
@@ -351,7 +351,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_can_delete_attraction(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $attraction = Attraction::factory()->create();
 
         Livewire::test(EditAttraction::class, [
@@ -367,7 +367,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_can_create_city_from_attraction_form(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $country = Country::factory()->create();
 
         Livewire::test(CreateAttraction::class)
@@ -399,7 +399,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_can_associate_accessibility_attributes(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city = City::factory()->create();
         $accessibilityAttributes = AccessibilityAttribute::factory()->count(3)->create();
 
@@ -438,7 +438,7 @@ class AttractionResourceTest extends TestCase
     public function test_dataforseo_update_action_fails_without_place_id(): void
     {
         Queue::fake();
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $attraction = Attraction::factory()->create(['place_id' => null]);
 
         Livewire::test(ListAttractions::class)
@@ -457,7 +457,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_city_select_is_searchable_and_preloaded(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateAttraction::class)
             ->assertFormFieldExists('city_id', function ($field): bool {
@@ -467,7 +467,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_accessibility_attributes_select_is_multiple(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateAttraction::class)
             ->assertFormFieldExists('accessibilityAttributes', function ($field): bool {
@@ -477,7 +477,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_opening_hours_repeater_has_correct_schema(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city = City::factory()->create();
 
         $openingHoursData = [
@@ -527,7 +527,7 @@ class AttractionResourceTest extends TestCase
 
     public function test_can_create_attraction_with_seasonal_opening_hours(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city = City::factory()->create();
 
         $attractionData = [

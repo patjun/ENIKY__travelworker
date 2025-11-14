@@ -56,7 +56,7 @@ class CityResourceTest extends TestCase
 
     public function test_authenticated_users_can_render_city_list_page(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $response = $this->get(CityResource::getUrl('index'));
 
@@ -65,7 +65,7 @@ class CityResourceTest extends TestCase
 
     public function test_authenticated_users_can_render_city_create_page(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $response = $this->get(CityResource::getUrl('create'));
 
@@ -74,7 +74,7 @@ class CityResourceTest extends TestCase
 
     public function test_authenticated_users_can_render_city_edit_page(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city = City::factory()->create();
 
         $response = $this->get(CityResource::getUrl('edit', ['record' => $city]));
@@ -86,7 +86,7 @@ class CityResourceTest extends TestCase
 
     public function test_can_list_cities(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         // Create a specific country to avoid unique constraint issues
         $country = Country::factory()->create(['code' => 'T1']);
@@ -98,7 +98,7 @@ class CityResourceTest extends TestCase
 
     public function test_can_search_cities_by_name(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city1 = City::factory()->create(['name_de' => 'München', 'name_en' => 'Munich']);
         $city2 = City::factory()->create(['name_de' => 'Berlin', 'name_en' => 'Berlin']);
         $city3 = City::factory()->create(['name_de' => 'Hamburg', 'name_en' => 'Hamburg']);
@@ -111,7 +111,7 @@ class CityResourceTest extends TestCase
 
     public function test_can_filter_cities_by_country(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $germany = Country::factory()->create(['name_de' => 'Deutschland', 'code' => 'T2']);
         $austria = Country::factory()->create(['name_de' => 'Österreich', 'code' => 'T3']);
         
@@ -128,7 +128,7 @@ class CityResourceTest extends TestCase
 
     public function test_can_create_city(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $country = Country::factory()->create();
 
         $newCityData = [
@@ -147,7 +147,7 @@ class CityResourceTest extends TestCase
 
     public function test_create_city_validates_required_fields(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateCity::class)
             ->fillForm([
@@ -165,7 +165,7 @@ class CityResourceTest extends TestCase
 
     public function test_create_city_validates_country_exists(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateCity::class)
             ->fillForm([
@@ -179,7 +179,7 @@ class CityResourceTest extends TestCase
 
     public function test_create_city_validates_max_length(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $country = Country::factory()->create();
 
         Livewire::test(CreateCity::class)
@@ -199,7 +199,7 @@ class CityResourceTest extends TestCase
 
     public function test_can_retrieve_city_data_for_editing(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city = City::factory()->create();
 
         Livewire::test(EditCity::class, [
@@ -214,7 +214,7 @@ class CityResourceTest extends TestCase
 
     public function test_can_save_city_changes(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city = City::factory()->create();
         $country = Country::factory()->create();
 
@@ -239,7 +239,7 @@ class CityResourceTest extends TestCase
 
     public function test_edit_city_validates_required_fields(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city = City::factory()->create();
 
         Livewire::test(EditCity::class, [
@@ -260,7 +260,7 @@ class CityResourceTest extends TestCase
 
     public function test_can_delete_city(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city = City::factory()->create();
 
         Livewire::test(EditCity::class, [
@@ -275,7 +275,7 @@ class CityResourceTest extends TestCase
 
     public function test_can_delete_city_from_table(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $city = City::factory()->create();
 
         Livewire::test(ListCities::class)
@@ -286,7 +286,7 @@ class CityResourceTest extends TestCase
 
     public function test_can_bulk_delete_cities(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $cities = City::factory()->count(3)->create();
 
         Livewire::test(ListCities::class)
@@ -301,7 +301,7 @@ class CityResourceTest extends TestCase
 
     public function test_country_select_is_searchable_and_preloaded(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateCity::class)
             ->assertFormFieldExists('country_id', function ($field): bool {
@@ -311,7 +311,7 @@ class CityResourceTest extends TestCase
 
     public function test_form_has_correct_field_labels(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $component = Livewire::test(CreateCity::class);
 

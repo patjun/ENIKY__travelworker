@@ -17,7 +17,7 @@ class AiSettingsPageTest extends TestCase
     {
         parent::setUp();
 
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         \Filament\Facades\Filament::setCurrentPanel(
             \Filament\Facades\Filament::getPanel('admin')

@@ -24,7 +24,7 @@ class ListicleResourceTest extends TestCase
         parent::setUp();
 
         // Authenticate as a user for Filament access
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         // Set the current panel for Filament testing
         \Filament\Facades\Filament::setCurrentPanel(

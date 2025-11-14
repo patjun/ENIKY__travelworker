@@ -55,7 +55,7 @@ class CountryResourceTest extends TestCase
 
     public function test_authenticated_users_can_render_country_list_page(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $response = $this->get(CountryResource::getUrl('index'));
 
@@ -64,7 +64,7 @@ class CountryResourceTest extends TestCase
 
     public function test_authenticated_users_can_render_country_create_page(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         // Test with Livewire instead of direct HTTP request
         Livewire::test(CreateCountry::class)->assertSuccessful();
@@ -72,7 +72,7 @@ class CountryResourceTest extends TestCase
 
     public function test_authenticated_users_can_render_country_edit_page(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $country = Country::factory()->create();
 
         // Test with Livewire instead of direct HTTP request
@@ -85,7 +85,7 @@ class CountryResourceTest extends TestCase
 
     public function test_can_list_countries(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $countries = Country::factory()->count(10)->create();
 
@@ -95,7 +95,7 @@ class CountryResourceTest extends TestCase
 
     public function test_can_search_countries_by_name(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $germany = Country::factory()->create(['name_de' => 'Deutschland', 'name_en' => 'Germany', 'code' => 'DE']);
         $austria = Country::factory()->create(['name_de' => 'Österreich', 'name_en' => 'Austria', 'code' => 'AT']);
         $switzerland = Country::factory()->create(['name_de' => 'Schweiz', 'name_en' => 'Switzerland', 'code' => 'CH']);
@@ -108,7 +108,7 @@ class CountryResourceTest extends TestCase
 
     public function test_can_search_countries_by_code(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $germany = Country::factory()->create(['name_de' => 'Deutschland', 'name_en' => 'Germany', 'code' => 'DE']);
         $austria = Country::factory()->create(['name_de' => 'Österreich', 'name_en' => 'Austria', 'code' => 'AT']);
 
@@ -120,7 +120,7 @@ class CountryResourceTest extends TestCase
 
     public function test_countries_are_sorted_by_german_name_by_default(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         // Create countries with specific names to test sorting
         $countryZ = Country::factory()->create(['name_de' => 'Zypern', 'code' => 'CY']);
@@ -137,7 +137,7 @@ class CountryResourceTest extends TestCase
 
     public function test_can_create_country(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $newCountryData = [
             'name_de' => 'Frankreich',
@@ -155,7 +155,7 @@ class CountryResourceTest extends TestCase
 
     public function test_create_country_validates_required_fields(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateCountry::class)
             ->fillForm([
@@ -173,7 +173,7 @@ class CountryResourceTest extends TestCase
 
     public function test_create_country_validates_max_length(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateCountry::class)
             ->fillForm([
@@ -191,7 +191,7 @@ class CountryResourceTest extends TestCase
 
     public function test_create_country_validates_code_length(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateCountry::class)
             ->fillForm([
@@ -205,7 +205,7 @@ class CountryResourceTest extends TestCase
 
     public function test_create_country_validates_unique_code(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         // Create an existing country
         Country::factory()->create(['code' => 'DE']);
@@ -222,7 +222,7 @@ class CountryResourceTest extends TestCase
 
     public function test_create_country_code_is_automatically_uppercase(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateCountry::class)
             ->fillForm([
@@ -245,7 +245,7 @@ class CountryResourceTest extends TestCase
 
     public function test_can_retrieve_country_data_for_editing(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $country = Country::factory()->create();
 
         Livewire::test(EditCountry::class, [
@@ -260,7 +260,7 @@ class CountryResourceTest extends TestCase
 
     public function test_can_save_country_changes(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $country = Country::factory()->create();
 
         $updatedData = [
@@ -284,7 +284,7 @@ class CountryResourceTest extends TestCase
 
     public function test_edit_country_validates_required_fields(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $country = Country::factory()->create();
 
         Livewire::test(EditCountry::class, [
@@ -305,7 +305,7 @@ class CountryResourceTest extends TestCase
 
     public function test_edit_country_validates_unique_code_except_current_record(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $existingCountry = Country::factory()->create(['code' => 'FR']);
         $editingCountry = Country::factory()->create(['code' => 'ES']);
@@ -337,7 +337,7 @@ class CountryResourceTest extends TestCase
 
     public function test_can_delete_country(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $country = Country::factory()->create();
 
         Livewire::test(EditCountry::class, [
@@ -352,7 +352,7 @@ class CountryResourceTest extends TestCase
 
     public function test_can_delete_country_from_table(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $country = Country::factory()->create();
 
         Livewire::test(ListCountries::class)
@@ -363,7 +363,7 @@ class CountryResourceTest extends TestCase
 
     public function test_can_bulk_delete_countries(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         $countries = Country::factory()->count(3)->create();
 
         Livewire::test(ListCountries::class)
@@ -378,7 +378,7 @@ class CountryResourceTest extends TestCase
 
     public function test_form_has_correct_field_labels(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         $component = Livewire::test(CreateCountry::class);
 
@@ -389,7 +389,7 @@ class CountryResourceTest extends TestCase
 
     public function test_code_field_has_helper_text(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
 
         Livewire::test(CreateCountry::class)
             ->assertFormFieldExists('code', function ($field): bool {
@@ -401,7 +401,7 @@ class CountryResourceTest extends TestCase
 
     public function test_table_displays_all_required_columns(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $country = Country::factory()->create([
             'name_de' => 'Deutschland',
@@ -418,7 +418,7 @@ class CountryResourceTest extends TestCase
 
     public function test_table_displays_cities_count(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->createUserWithRole('admin'));
         
         $country = Country::factory()->create([
             'name_de' => 'Deutschland',
