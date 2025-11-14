@@ -1107,6 +1107,43 @@ class PermissionTest extends TestCase
         $this->assertFalse(UserResource::canDelete($user));
     }
 
+    // Super Admin - Complete User Permissions Tests
+    public function test_super_admin_has_view_users_permission(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $this->assertTrue($this->superAdmin->can('view users'));
+    }
+
+    public function test_super_admin_has_create_users_permission(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $this->assertTrue($this->superAdmin->can('create users'));
+    }
+
+    public function test_super_admin_has_edit_users_permission(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $this->assertTrue($this->superAdmin->can('edit users'));
+    }
+
+    public function test_super_admin_has_delete_users_permission(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $this->assertTrue($this->superAdmin->can('delete users'));
+    }
+
+    public function test_super_admin_has_manage_users_permission(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $this->assertTrue($this->superAdmin->can('manage users'));
+    }
+
+    public function test_super_admin_can_access_user_resource_navigation(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $this->assertTrue(UserResource::shouldRegisterNavigation());
+    }
+
     // Roles Tests
     public function test_super_admin_can_view_roles(): void
     {
