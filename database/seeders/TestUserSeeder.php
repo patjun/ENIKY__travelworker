@@ -15,7 +15,7 @@ class TestUserSeeder extends Seeder
     public function run(): void
     {
         // Definiere die Rollen für die Test-User
-        $roles = ['super_admin', 'admin', 'editor', 'author'];
+        $roles = ['super_admin', 'admin', 'editor', 'author', 'attractions-author'];
 
         foreach ($roles as $roleName) {
             // Prüfe ob die Rolle existiert
