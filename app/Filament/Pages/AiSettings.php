@@ -18,15 +18,20 @@ class AiSettings extends Page implements HasForms
 
     protected static string $view = 'filament.pages.ai-settings';
 
-    protected static ?string $navigationLabel = 'AI-Einstellungen';
+    protected static ?string $navigationLabel = 'AI-Settings';
 
-    protected static ?string $title = 'AI-Einstellungen';
+    protected static ?string $title = 'AI-Settings';
 
     protected static ?string $navigationGroup = 'Settings';
 
     protected static ?int $navigationSort = 10;
 
     public ?array $data = [];
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view ai_settings') ?? false;
+    }
 
     public function mount(): void
     {
@@ -40,38 +45,38 @@ class AiSettings extends Page implements HasForms
             ->schema([
                 Forms\Components\Tabs::make('Tabs')
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('Deutsch')
-                            ->schema([
-                                Forms\Components\Textarea::make('prompt_de')
-                                    ->label('Prompt für deutsches Intro')
-                                    ->rows(10)
-                                    ->helperText('Verfügbare Platzhalter: {title}, {locations}, {language}')
-                                    ->required(),
-                            ]),
                         Forms\Components\Tabs\Tab::make('English')
                             ->schema([
                                 Forms\Components\Textarea::make('prompt_en')
-                                    ->label('Prompt für englisches Intro')
+                                    ->label('Prompt for English Intro')
                                     ->rows(10)
                                     ->helperText('Available placeholders: {title}, {locations}, {language}')
                                     ->required(),
                             ]),
-                        Forms\Components\Tabs\Tab::make('Allgemeine Einstellungen')
+                        Forms\Components\Tabs\Tab::make('Deutsch')
+                            ->schema([
+                                Forms\Components\Textarea::make('prompt_de')
+                                    ->label('Prompt for German Intro')
+                                    ->rows(10)
+                                    ->helperText('Available placeholders: {title}, {locations}, {language}')
+                                    ->required(),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('General Settings')
                             ->schema([
                                 Forms\Components\Select::make('model')
-                                    ->label('Claude Modell')
+                                    ->label('Claude Model')
                                     ->options([
-                                        'claude-sonnet-4-5' => 'Claude 3.5 Sonnet (Empfohlen)',
-                                        'claude-haiku-4-5' => 'Claude 3.5 Haiku (Schneller)',
+                                        'claude-sonnet-4-5' => 'Claude 3.5 Sonnet (Recommended)',
+                                        'claude-haiku-4-5' => 'Claude 3.5 Haiku (Faster)',
                                     ])
                                     ->required(),
                                 Forms\Components\TextInput::make('max_tokens')
-                                    ->label('Maximale Tokens')
+                                    ->label('Max Tokens')
                                     ->numeric()
                                     ->minValue(100)
                                     ->maxValue(4096)
                                     ->required()
-                                    ->helperText('Maximale Anzahl an Tokens, die generiert werden sollen (100-4096)'),
+                                    ->helperText('Maximum number of tokens to generate (100-4096)'),
                                 Forms\Components\TextInput::make('temperature')
                                     ->label('Temperature')
                                     ->numeric()
@@ -79,7 +84,7 @@ class AiSettings extends Page implements HasForms
                                     ->maxValue(1)
                                     ->step(0.1)
                                     ->required()
-                                    ->helperText('Kreativität der Antworten (0 = konservativ, 1 = kreativ)'),
+                                    ->helperText('Creativity of responses (0 = conservative, 1 = creative)'),
                             ]),
                     ])
                     ->columnSpanFull(),
@@ -89,6 +94,15 @@ class AiSettings extends Page implements HasForms
 
     public function save(): void
     {
+        if (!auth()->user()?->can('edit ai_settings')) {
+            Notification::make()
+                ->danger()
+                ->title('Access Denied')
+                ->body('You do not have permission to edit AI settings.')
+                ->send();
+            return;
+        }
+
         $data = $this->form->getState();
 
         $settings = AiSetting::getInstance();
@@ -96,8 +110,8 @@ class AiSettings extends Page implements HasForms
 
         Notification::make()
             ->success()
-            ->title('Einstellungen gespeichert')
-            ->body('Die AI-Einstellungen wurden erfolgreich gespeichert.')
+            ->title('Settings saved')
+            ->body('AI Settings have been successfully saved.')
             ->send();
     }
 
@@ -105,7 +119,7 @@ class AiSettings extends Page implements HasForms
     {
         return [
             Forms\Components\Actions\Action::make('save')
-                ->label('Speichern')
+                ->label('Save')
                 ->submit('save'),
         ];
     }

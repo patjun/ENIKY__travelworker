@@ -46,10 +46,36 @@ class RolePermissionSeeder extends Seeder
             'create countries',
             'edit countries',
             'delete countries',
+            'view accessibility_attributes',
+            'create accessibility_attributes',
+            'edit accessibility_attributes',
+            'delete accessibility_attributes',
+            
+            // Keywords & Changes
+            'view keywords',
+            'manage keywords',
+            'view changes',
+            'manage changes',
             
             // Settings
             'view settings',
             'edit settings',
+            'view ai_settings',
+            'edit ai_settings',
+            'view backups',
+            'manage backups',
+            'view users',
+            'create users',
+            'edit users',
+            'delete users',
+            'view roles',
+            'create roles',
+            'edit roles',
+            'delete roles',
+            'view permissions',
+            'create permissions',
+            'edit permissions',
+            'delete permissions',
             'manage users',
             'manage roles',
         ];
@@ -63,6 +89,7 @@ class RolePermissionSeeder extends Seeder
         $admin = Role::firstOrCreate(['name' => 'admin']);
         $editor = Role::firstOrCreate(['name' => 'editor']);
         $author = Role::firstOrCreate(['name' => 'author']);
+        $attractionsAuthor = Role::firstOrCreate(['name' => 'attractions-author']);
 
         // Weise Berechtigungen zu
         // Super Admin hat alle Berechtigungen
@@ -76,7 +103,14 @@ class RolePermissionSeeder extends Seeder
             'view attractions', 'create attractions', 'edit attractions', 'delete attractions',
             'view cities', 'create cities', 'edit cities', 'delete cities',
             'view countries', 'create countries', 'edit countries', 'delete countries',
-            'view settings', 'edit settings', 'manage users',
+            'view accessibility_attributes', 'create accessibility_attributes', 'edit accessibility_attributes', 'delete accessibility_attributes',
+            'view keywords', 'manage keywords',
+            'view changes', 'manage changes',
+            'view settings', 'edit settings',
+            'view ai_settings', 'edit ai_settings',
+            'view backups', 'manage backups',
+            'view users', 'create users', 'edit users', 'delete users',
+            'manage users',
         ]);
 
         // Editor kann Inhalte bearbeiten, aber nicht löschen
@@ -87,15 +121,28 @@ class RolePermissionSeeder extends Seeder
             'view attractions', 'create attractions', 'edit attractions',
             'view cities', 'create cities', 'edit cities',
             'view countries', 'create countries', 'edit countries',
+            'view accessibility_attributes', 'create accessibility_attributes', 'edit accessibility_attributes',
+            'view keywords', 'manage keywords',
+            'view changes', 'manage changes',
+            'view ai_settings',
         ]);
 
-        // Author kann nur eigene Inhalte erstellen und bearbeiten
+        // Author kann nur eigene Listicles erstellen und bearbeiten
         $author->givePermissionTo([
             'view posts', 'create posts', 'edit posts',
             'view pages', 'create pages', 'edit pages',
             'view listicles', 'create listicles', 'edit listicles',
+            'view cities',
+            'view countries',
+            'view accessibility_attributes',
+        ]);
+
+        // Attractions Author kann nur eigene Attractions erstellen und bearbeiten
+        $attractionsAuthor->givePermissionTo([
             'view attractions', 'create attractions', 'edit attractions',
-            'view cities', 'view countries',
+            'view cities',
+            'view countries',
+            'view accessibility_attributes',
         ]);
 
         // Weise dem ersten User die Super-Admin-Rolle zu

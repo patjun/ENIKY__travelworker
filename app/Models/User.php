@@ -45,7 +45,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        // Nur Benutzer mit der Rolle 'admin' oder 'super_admin' können auf das Panel zugreifen
-        return $this->hasAnyRole(['admin', 'super_admin']);
+        // Alle Benutzer mit einer Rolle können auf das Panel zugreifen
+        return $this->hasAnyRole(['super_admin', 'admin', 'editor', 'author', 'attractions-author']);
     }
 }

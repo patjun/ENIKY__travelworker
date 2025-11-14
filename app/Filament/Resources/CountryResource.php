@@ -73,11 +73,13 @@ class CountryResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn ($record) => static::canDelete($record)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()?->hasAnyRole(['super_admin', 'admin']) ?? false),
                 ]),
             ])
             ->defaultSort('name_de');
@@ -97,5 +99,60 @@ class CountryResource extends Resource
             'create' => Pages\CreateCountry::route('/create'),
             'edit' => Pages\EditCountry::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view countries') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('create countries') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Editor kann nicht löschen, aber bearbeiten
+        if ($user->hasRole('editor')) {
+            return $user->can('edit countries');
+        }
+
+        // Super Admin und Admin können alles bearbeiten
+        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+            return $user->can('edit countries');
+        }
+
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Editor kann nicht löschen
+        if ($user->hasRole('editor')) {
+            return false;
+        }
+
+        // Super Admin und Admin können alles löschen
+        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+            return $user->can('delete countries');
+        }
+
+        return false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->can('view countries') ?? false;
     }
 }

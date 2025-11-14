@@ -347,11 +347,13 @@ class ListicleResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn ($record) => static::canDelete($record)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()?->hasAnyRole(['super_admin', 'admin']) ?? false),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -371,5 +373,60 @@ class ListicleResource extends Resource
             'create' => Pages\CreateListicle::route('/create'),
             'edit' => Pages\EditListicle::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view listicles') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('create listicles') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin und Admin können alles bearbeiten
+        if ($user->hasAnyRole(['super_admin', 'admin', 'editor'])) {
+            return $user->can('edit listicles');
+        }
+
+        // Author kann nur eigene Listicles bearbeiten
+        if ($user->hasRole('author')) {
+            return $user->can('edit listicles') && $record->user_id === $user->id;
+        }
+
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Editor kann nicht löschen
+        if ($user->hasRole('editor')) {
+            return false;
+        }
+
+        // Super Admin und Admin können alles löschen
+        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+            return $user->can('delete listicles');
+        }
+
+        return false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->can('view listicles') ?? false;
     }
 }

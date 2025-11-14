@@ -88,4 +88,39 @@ class ChangeResource extends Resource
     {
         return false;
     }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view changes') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('manage changes') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->can('manage changes') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Editor kann nicht löschen
+        if ($user->hasRole('editor')) {
+            return false;
+        }
+
+        // Super Admin und Admin können löschen
+        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+            return $user->can('manage changes');
+        }
+
+        return false;
+    }
 }

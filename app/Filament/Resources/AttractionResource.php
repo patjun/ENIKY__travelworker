@@ -154,131 +154,208 @@ class AttractionResource extends Resource
                                 ]),
                         ]),
                 ]),
-            Forms\Components\Select::make('city_id')
-                ->label('City')
-                ->relationship('city', 'name_de')
-                ->searchable(['name_de', 'name_en'])
-                ->preload()
-                ->required()
-                ->createOptionForm([
-                    Forms\Components\Select::make('country_id')
-                        ->label('Country')
-                        ->relationship('country', 'name_de')
-                        ->required()
-                        ->searchable(['name_de', 'name_en'])
-                        ->preload(),
-                    Forms\Components\TextInput::make('name_de')
-                        ->label('Name (DE)')
-                        ->required()
-                        ->maxLength(255),
-                    Forms\Components\TextInput::make('name_en')
-                        ->label('Name (EN)')
-                        ->required()
-                        ->maxLength(255),
+            Forms\Components\Section::make('Location & Address')
+                ->description('Geographical location and address information')
+                ->collapsible()
+                ->schema([
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\Select::make('city_id')
+                                ->label('City')
+                                ->relationship('city', 'name_de')
+                                ->searchable(['name_de', 'name_en'])
+                                ->preload()
+                                ->required()
+                                ->columnSpan(2)
+                                ->createOptionForm([
+                                    Forms\Components\Select::make('country_id')
+                                        ->label('Country')
+                                        ->relationship('country', 'name_de')
+                                        ->required()
+                                        ->searchable(['name_de', 'name_en'])
+                                        ->preload(),
+                                    Forms\Components\TextInput::make('name_de')
+                                        ->label('Name (DE)')
+                                        ->required()
+                                        ->maxLength(255),
+                                    Forms\Components\TextInput::make('name_en')
+                                        ->label('Name (EN)')
+                                        ->required()
+                                        ->maxLength(255),
+                                ]),
+                            Forms\Components\TextInput::make('street')
+                                ->required()
+                                ->label('Street')
+                                ->columnSpan(1),
+                            Forms\Components\TextInput::make('zip')
+                                ->required()
+                                ->label('ZIP')
+                                ->columnSpan(1),
+                            Forms\Components\Actions::make([
+                                Forms\Components\Actions\Action::make('search_address')
+                                    ->label('Search Address')
+                                    ->icon('heroicon-o-magnifying-glass')
+                                    ->color('primary')
+                                    ->action(function (Set $set, Get $get) {
+                                        $searchQuery = $get('en_name');
+
+                                        if (empty($searchQuery)) {
+                                            \Filament\Notifications\Notification::make()
+                                                ->title('Error')
+                                                ->body('Please enter a name or address.')
+                                                ->warning()
+                                                ->send();
+
+                                            return;
+                                        }
+
+                                        // Use Nominatim (OpenStreetMap) for geocoding
+                                        $url = 'https://nominatim.openstreetmap.org/search?'.http_build_query([
+                                            'q' => $searchQuery,
+                                            'format' => 'json',
+                                            'limit' => 1,
+                                            'addressdetails' => 1,
+                                            'accept-language' => 'en',
+                                        ]);
+
+                                        $ch = curl_init();
+                                        curl_setopt($ch, CURLOPT_URL, $url);
+                                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                                        curl_setopt($ch, CURLOPT_USERAGENT, 'TravelWorker Attraction Finder');
+                                        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+
+                                        $response = curl_exec($ch);
+                                        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                                        curl_close($ch);
+
+                                        if ($httpCode === 200 && $response) {
+                                            $results = json_decode($response, true);
+
+                                            if (! empty($results) && isset($results[0])) {
+                                                $result = $results[0];
+                                                $lat = (float) $result['lat'];
+                                                $lng = (float) $result['lon'];
+
+                                                // Update coordinates
+                                                $set('latitude', $lat);
+                                                $set('longitude', $lng);
+                                                $set('map', ['lat' => $lat, 'lng' => $lng]);
+
+                                                // Update address fields
+                                                $address = $result['address'] ?? [];
+                                                if (isset($address['road'])) {
+                                                    $houseNumber = $address['house_number'] ?? '';
+                                                    $set('street', trim($address['road'].' '.$houseNumber));
+                                                }
+                                                if (isset($address['postcode'])) {
+                                                    $set('zip', $address['postcode']);
+                                                }
+
+                                                \Filament\Notifications\Notification::make()
+                                                    ->title('Address Found')
+                                                    ->body('Address data and coordinates have been successfully updated.')
+                                                    ->success()
+                                                    ->send();
+                                            } else {
+                                                \Filament\Notifications\Notification::make()
+                                                    ->title('No Results')
+                                                    ->body('No results were found for this search.')
+                                                    ->warning()
+                                                    ->send();
+                                            }
+                                        } else {
+                                            \Filament\Notifications\Notification::make()
+                                                ->title('Error')
+                                                ->body('Address search failed. Please try again.')
+                                                ->danger()
+                                                ->send();
+                                        }
+                                    }),
+                            ])
+                                ->columnSpan(2),
+                            Forms\Components\TextInput::make('latitude')
+                                ->label('Latitude')
+                                ->required()
+                                ->live()
+                                ->numeric()
+                                ->columnSpan(1)
+                                ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                    $lng = $get('longitude');
+                                    if ($state && $lng) {
+                                        $set('map', ['lat' => (float) $state, 'lng' => (float) $lng]);
+                                    }
+                                }),
+                            Forms\Components\TextInput::make('longitude')
+                                ->label('Longitude')
+                                ->required()
+                                ->live()
+                                ->numeric()
+                                ->columnSpan(1)
+                                ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                    $lat = $get('latitude');
+                                    if ($state && $lat) {
+                                        $set('map', ['lat' => (float) $lat, 'lng' => (float) $state]);
+                                    }
+                                }),
+                            Map::make('map')
+                                ->label('Map')
+                                ->columnSpan(2)
+                                ->afterStateUpdated(function (Set $set, ?array $state): void {
+                                    $set('latitude', $state['lat']);
+                                    $set('longitude', $state['lng']);
+                                })
+                                ->afterStateHydrated(function ($state, $record, Set $set): void {
+                                    if (! is_null($record)) {
+                                        $set('map', ['lat' => $record->latitude, 'lng' => $record->longitude]);
+                                    } elseif (is_array($state) && isset($state['lat']) && isset($state['lng']) && $state['lat'] !== 0 && $state['lng'] !== 0) {
+                                        $set('map', ['lat' => $state['lat'], 'lng' => $state['lng']]);
+                                    } else {
+                                        $set('map', ['lat' => 52.520008, 'lng' => 13.404954]);
+                                    }
+                                })
+                                ->liveLocation()
+                                ->showMarker()
+                                ->markerColor('#22c55eff')
+                                ->showFullscreenControl()
+                                ->showZoomControl()
+                                ->draggable()
+                                ->tilesUrl('https://tile.openstreetmap.de/{z}/{x}/{y}.png')
+                                ->zoom(13)
+                                ->detectRetina()
+                                ->extraTileControl([])
+                                ->extraControl([
+                                    'zoomDelta' => 1,
+                                    'zoomSnap' => 2,
+                                ]),
+                        ]),
                 ]),
-            Forms\Components\Actions::make([
-                Forms\Components\Actions\Action::make('search_address')
-                    ->label('Search Address')
-                    ->icon('heroicon-o-magnifying-glass')
-                    ->color('primary')
-                    ->action(function (Set $set, Get $get) {
-                        $searchQuery = $get('en_name');
-
-                        if (empty($searchQuery)) {
-                            \Filament\Notifications\Notification::make()
-                                ->title('Error')
-                                ->body('Please enter a name or address.')
-                                ->warning()
-                                ->send();
-
-                            return;
-                        }
-
-                        // Use Nominatim (OpenStreetMap) for geocoding
-                        $url = 'https://nominatim.openstreetmap.org/search?'.http_build_query([
-                            'q' => $searchQuery,
-                            'format' => 'json',
-                            'limit' => 1,
-                            'addressdetails' => 1,
-                            'accept-language' => 'en',
-                        ]);
-
-                        $ch = curl_init();
-                        curl_setopt($ch, CURLOPT_URL, $url);
-                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                        curl_setopt($ch, CURLOPT_USERAGENT, 'TravelWorker Attraction Finder');
-                        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-
-                        $response = curl_exec($ch);
-                        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                        curl_close($ch);
-
-                        if ($httpCode === 200 && $response) {
-                            $results = json_decode($response, true);
-
-                            if (! empty($results) && isset($results[0])) {
-                                $result = $results[0];
-                                $lat = (float) $result['lat'];
-                                $lng = (float) $result['lon'];
-
-                                // Update coordinates
-                                $set('latitude', $lat);
-                                $set('longitude', $lng);
-                                $set('map', ['lat' => $lat, 'lng' => $lng]);
-
-                                // Update address fields
-                                $address = $result['address'] ?? [];
-                                if (isset($address['road'])) {
-                                    $houseNumber = $address['house_number'] ?? '';
-                                    $set('street', trim($address['road'].' '.$houseNumber));
-                                }
-                                if (isset($address['postcode'])) {
-                                    $set('zip', $address['postcode']);
-                                }
-
-                                \Filament\Notifications\Notification::make()
-                                    ->title('Address Found')
-                                    ->body('Address data and coordinates have been successfully updated.')
-                                    ->success()
-                                    ->send();
-                            } else {
-                                \Filament\Notifications\Notification::make()
-                                    ->title('No Results')
-                                    ->body('No results were found for this search.')
-                                    ->warning()
-                                    ->send();
-                            }
-                        } else {
-                            \Filament\Notifications\Notification::make()
-                                ->title('Error')
-                                ->body('Address search failed. Please try again.')
-                                ->danger()
-                                ->send();
-                        }
-                    }),
-            ]),
-            Forms\Components\TextInput::make('street')
-                ->required()
-                ->label('Street'),
-            Forms\Components\TextInput::make('zip')
-                ->required()
-                ->label('ZIP'),
-            Forms\Components\TextInput::make('email')
-                ->label('Email')
-                ->email(),
-            Forms\Components\TextInput::make('rating_value')
-                ->label('Rating Value')
-                ->numeric()
-                ->required()
-                ->minValue(0)
-                ->maxValue(5)
-                ->step(0.1),
-            Forms\Components\TextInput::make('rating_votes_count')
-                ->label('Rating Count')
-                ->numeric()
-                ->required()
-                ->minValue(0)
-                ->step(1),
+            Forms\Components\Section::make('Contact & Rating')
+                ->description('Contact information and rating details')
+                ->collapsible()
+                ->schema([
+                    Forms\Components\Grid::make(3)
+                        ->schema([
+                            Forms\Components\TextInput::make('email')
+                                ->label('Email')
+                                ->email()
+                                ->columnSpan(1),
+                            Forms\Components\TextInput::make('rating_value')
+                                ->label('Rating Value')
+                                ->numeric()
+                                ->required()
+                                ->minValue(0)
+                                ->maxValue(5)
+                                ->step(0.1)
+                                ->columnSpan(1),
+                            Forms\Components\TextInput::make('rating_votes_count')
+                                ->label('Rating Count')
+                                ->numeric()
+                                ->required()
+                                ->minValue(0)
+                                ->step(1)
+                                ->columnSpan(1),
+                        ]),
+                ]),
             Forms\Components\Select::make('accessibilityAttributes')
                 ->label('Accessibility Attributes')
                 ->helperText('Select the accessibility features available at this attraction')
@@ -529,82 +606,28 @@ class AttractionResource extends Resource
                                     : '')
                         ),
                 ]),
-
-            Forms\Components\TextInput::make('latitude')
-                ->label('Latitude')
-                ->required()
-                ->live()
-                ->numeric()
-                ->afterStateUpdated(function ($state, Set $set, Get $get) {
-                    $lng = $get('longitude');
-                    if ($state && $lng) {
-                        $set('map', ['lat' => (float) $state, 'lng' => (float) $lng]);
-                    }
-                }),
-            Forms\Components\TextInput::make('longitude')
-                ->label('Longitude')
-                ->required()
-                ->live()
-                ->numeric()
-                ->afterStateUpdated(function ($state, Set $set, Get $get) {
-                    $lat = $get('latitude');
-                    if ($state && $lat) {
-                        $set('map', ['lat' => (float) $lat, 'lng' => (float) $state]);
-                    }
-                }),
-            Map::make('map')
-                ->label('Map')
-                ->columnSpanFull()
-                ->afterStateUpdated(function (Set $set, ?array $state): void {
-                    $set('latitude', $state['lat']);
-                    $set('longitude', $state['lng']);
-                })
-                ->afterStateHydrated(function ($state, $record, Set $set): void {
-                    // ray()->clearAll();
-                    // ray($state, $record);
-
-                    if (! is_null($record)) {
-                        // ray('using record');
-                        $set('map', ['lat' => $record->latitude, 'lng' => $record->longitude]);
-                    } elseif (is_array($state) && isset($state['lat']) && isset($state['lng']) && $state['lat'] !== 0 && $state['lng'] !== 0) {
-                        // ray('using state');
-                        $set('map', ['lat' => $state['lat'], 'lng' => $state['lng']]);
-                    } else {
-                        // ray('using default');
-                        $set('map', ['lat' => 52.520008, 'lng' => 13.404954]);
-                    }
-                })
-                ->liveLocation()
-                ->showMarker()
-                ->markerColor('#22c55eff')
-                ->showFullscreenControl()
-                ->showZoomControl()
-                ->draggable()
-                ->tilesUrl('https://tile.openstreetmap.de/{z}/{x}/{y}.png')
-                ->zoom(13)
-                ->detectRetina()
-                // ->showMyLocationButton()
-                ->extraTileControl([])
-                ->extraControl([
-                    'zoomDelta' => 1,
-                    'zoomSnap' => 2,
+            Forms\Components\Section::make('Google Places')
+                ->description('Google Places API integration')
+                ->collapsible()
+                ->collapsed()
+                ->schema([
+                    Forms\Components\TextInput::make('place_id')
+                        ->label('Google Places ID')
+                        ->helperText('Enter the Place ID manually or use the finder below')
+                        ->required()
+                        ->suffixAction(
+                            Forms\Components\Actions\Action::make('clearPlaceId')
+                                ->icon('heroicon-o-x-mark')
+                                ->action(fn (Set $set) => $set('place_id', null))
+                        ),
+                    Forms\Components\ViewField::make('place_id_finder')
+                        ->label('Place ID Finder')
+                        ->view('filament.forms.components.place-id-finder')
+                        ->viewData([
+                            'fieldName' => 'place_id',
+                        ])
+                        ->dehydrated(false),
                 ]),
-            Forms\Components\TextInput::make('place_id')
-                ->label('Google Places ID')
-                ->helperText('Enter the Place ID manually or use the finder below')
-                ->required()
-                ->suffixAction(
-                    Forms\Components\Actions\Action::make('clearPlaceId')
-                        ->icon('heroicon-o-x-mark')
-                        ->action(fn (Set $set) => $set('place_id', null))
-                ),
-            Forms\Components\ViewField::make('place_id_finder')
-                ->label('Place ID Finder')
-                ->view('filament.forms.components.place-id-finder')
-                ->viewData([
-                    'fieldName' => 'place_id',
-                ])
-                ->dehydrated(false),
         ];
     }
 
@@ -928,6 +951,8 @@ class AttractionResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn ($record) => static::canDelete($record)),
                 Tables\Actions\Action::make('load_dataforseo')
                     ->label('Update')
                     ->icon('heroicon-o-arrow-path')
@@ -936,6 +961,7 @@ class AttractionResource extends Resource
                     ->modalHeading('Update')
                     ->modalDescription('Möchten Sie die DataForSEO Daten für diese Attraktion laden? Der Prozess wird im Hintergrund ausgeführt.')
                     ->modalSubmitActionLabel('Ja, in Queue einreihen')
+                    ->visible(fn () => auth()->user()?->hasAnyRole(['super_admin', 'admin', 'editor']) ?? false)
                     ->action(function (Attraction $record) {
                         if (empty($record->place_id)) {
                             Notification::make()
@@ -962,6 +988,8 @@ class AttractionResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()?->hasAnyRole(['super_admin', 'admin']) ?? false),
                     Tables\Actions\BulkAction::make('bulk_load_dataforseo')
                         ->label('Update')
                         ->icon('heroicon-o-arrow-path')
@@ -970,6 +998,7 @@ class AttractionResource extends Resource
                         ->modalHeading('Update für ausgewählte Attraktionen')
                         ->modalDescription('Möchten Sie die Daten für alle ausgewählten Attraktionen aktualisieren? Der Prozess wird im Hintergrund ausgeführt.')
                         ->modalSubmitActionLabel('Ja, alle in Queue einreihen')
+                        ->visible(fn () => auth()->user()?->hasAnyRole(['super_admin', 'admin', 'editor']) ?? false)
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
                             $processed = 0;
                             $skipped = 0;
@@ -1031,5 +1060,61 @@ class AttractionResource extends Resource
             'create' => Pages\CreateAttraction::route('/create'),
             'edit' => Pages\EditAttraction::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view attractions') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('create attractions') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin, Admin und Editor können alles bearbeiten
+        if ($user->hasAnyRole(['super_admin', 'admin', 'editor'])) {
+            return $user->can('edit attractions');
+        }
+
+        // Attractions Author kann alle Attractions bearbeiten
+        // TODO: Wenn user_id Feld hinzugefügt wird, hier Prüfung auf eigene Attractions einbauen
+        if ($user->hasRole('attractions-author')) {
+            return $user->can('edit attractions');
+        }
+
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Editor kann nicht löschen
+        if ($user->hasRole('editor')) {
+            return false;
+        }
+
+        // Super Admin und Admin können alles löschen
+        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+            return $user->can('delete attractions');
+        }
+
+        return false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->can('view attractions') ?? false;
     }
 }
