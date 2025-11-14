@@ -93,26 +93,76 @@ class RoleResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->can('view roles') ?? false;
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $user->can('view roles');
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->can('create roles') ?? false;
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $user->can('create roles');
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()?->can('edit roles') ?? false;
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $user->can('edit roles');
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->can('delete roles') ?? false;
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $user->can('delete roles');
     }
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()?->can('view roles') ?? false;
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $user->can('view roles');
     }
 }

@@ -1280,6 +1280,43 @@ class PermissionTest extends TestCase
         $role->delete();
     }
 
+    // Super Admin - Complete Role Permissions Tests
+    public function test_super_admin_has_view_roles_permission(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $this->assertTrue($this->superAdmin->can('view roles'));
+    }
+
+    public function test_super_admin_has_create_roles_permission(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $this->assertTrue($this->superAdmin->can('create roles'));
+    }
+
+    public function test_super_admin_has_edit_roles_permission(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $this->assertTrue($this->superAdmin->can('edit roles'));
+    }
+
+    public function test_super_admin_has_delete_roles_permission(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $this->assertTrue($this->superAdmin->can('delete roles'));
+    }
+
+    public function test_super_admin_has_manage_roles_permission(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $this->assertTrue($this->superAdmin->can('manage roles'));
+    }
+
+    public function test_super_admin_can_access_role_resource_navigation(): void
+    {
+        $this->actingAs($this->superAdmin);
+        $this->assertTrue(RoleResource::shouldRegisterNavigation());
+    }
+
     // Permissions Tests
     public function test_super_admin_can_view_permissions(): void
     {
