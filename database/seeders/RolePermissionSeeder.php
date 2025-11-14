@@ -37,6 +37,7 @@ class RolePermissionSeeder extends Seeder
             'view attractions',
             'create attractions',
             'edit attractions',
+            'edit own attractions',
             'delete attractions',
             'view cities',
             'create cities',
@@ -93,10 +94,11 @@ class RolePermissionSeeder extends Seeder
 
         // Weise Berechtigungen zu
         // Super Admin hat alle Berechtigungen
-        $superAdmin->givePermissionTo(Permission::all());
+        // syncPermissions stellt sicher, dass nur die gewünschten Berechtigungen zugewiesen sind
+        $superAdmin->syncPermissions(Permission::all());
 
         // Admin hat fast alle Berechtigungen außer Rollenverwaltung
-        $admin->givePermissionTo([
+        $admin->syncPermissions([
             'view posts', 'create posts', 'edit posts', 'delete posts',
             'view pages', 'create pages', 'edit pages', 'delete pages',
             'view listicles', 'create listicles', 'edit listicles', 'delete listicles',
@@ -114,7 +116,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Editor kann Inhalte bearbeiten, aber nicht löschen
-        $editor->givePermissionTo([
+        $editor->syncPermissions([
             'view posts', 'create posts', 'edit posts',
             'view pages', 'create pages', 'edit pages',
             'view listicles', 'create listicles', 'edit listicles',
@@ -128,7 +130,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Author kann nur eigene Listicles erstellen und bearbeiten
-        $author->givePermissionTo([
+        $author->syncPermissions([
             'view posts', 'create posts', 'edit posts',
             'view pages', 'create pages', 'edit pages',
             'view listicles', 'create listicles', 'edit listicles',
@@ -138,8 +140,8 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Attractions Author kann nur eigene Attractions erstellen und bearbeiten
-        $attractionsAuthor->givePermissionTo([
-            'view attractions', 'create attractions', 'edit attractions',
+        $attractionsAuthor->syncPermissions([
+            'view attractions', 'create attractions', 'edit own attractions',
             'view cities',
             'view countries',
             'view accessibility_attributes',

@@ -1084,10 +1084,17 @@ class AttractionResource extends Resource
             return $user->can('edit attractions');
         }
 
-        // Attractions Author kann alle Attractions bearbeiten
-        // TODO: Wenn user_id Feld hinzugefügt wird, hier Prüfung auf eigene Attractions einbauen
+        // Attractions Author kann nur eigene Attractions bearbeiten
         if ($user->hasRole('attractions-author')) {
-            return $user->can('edit attractions');
+            // Prüfe ob User die Berechtigung "edit own attractions" hat
+            if (!$user->can('edit own attractions')) {
+                return false;
+            }
+            
+            // TODO: Wenn user_id Feld hinzugefügt wird, hier Prüfung auf eigene Attractions einbauen
+            // Aktuell können alle Attractions-Autoren alle Attractions bearbeiten,
+            // bis das user_id Feld implementiert ist
+            return true;
         }
 
         return false;

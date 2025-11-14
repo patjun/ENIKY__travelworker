@@ -39,7 +39,8 @@
 | **Attractions** |
 | view attractions | ✅ | ✅ | ✅ | ❌ | ✅ |
 | create attractions | ✅ | ✅ | ✅ | ❌ | ✅ |
-| edit attractions | ✅ | ✅ | ✅ | ❌ | ✅ (nur eigene) |
+| edit attractions | ✅ | ✅ | ✅ | ❌ | ❌ |
+| edit own attractions | ✅ | ✅ | ✅ | ❌ | ✅ |
 | delete attractions | ✅ | ✅ | ❌ | ❌ | ❌ |
 | DataForSEO Update | ✅ | ✅ | ✅ | ❌ | ❌ |
 | **Cities** |
@@ -109,6 +110,6 @@
 1. **Super Admin**: Hat automatisch alle Berechtigungen, auch wenn neue hinzugefügt werden
 2. **Editor**: Kann Inhalte bearbeiten, aber keine Löschfunktionen verwenden
 3. **Author**: Kann nur eigene Listicles erstellen und bearbeiten, keine Attractions
-4. **Attractions Author**: Kann nur Attractions erstellen und bearbeiten, keine Listicles
-5. **Eigene Inhalte**: Die Prüfung auf "nur eigene" Inhalte funktioniert aktuell nur für Listicles (mit `user_id` Feld). Für Attractions wird dies implementiert, sobald ein `user_id` Feld hinzugefügt wird.
+4. **Attractions Author**: Kann nur Attractions erstellen und bearbeiten (nur eigene), keine Listicles
+5. **Eigene Inhalte**: Die Prüfung auf "nur eigene" Inhalte funktioniert aktuell nur für Listicles (mit `user_id` Feld). Für Attractions wird die Prüfung auf eigene Attractions implementiert, sobald ein `user_id` Feld hinzugefügt wird. Aktuell haben Attractions-Autoren mit der Berechtigung "edit own attractions" Zugriff auf alle Attractions.
 
