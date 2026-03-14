@@ -372,6 +372,7 @@ class AttractionSeeder extends Seeder
                         'en_rating_html' => '<div>Rating widget</div>',
                         'en_opening_hours_html' => '<div>Opening hours widget</div>',
                         'en_accessibility_html' => '<div>Accessibility widget</div>',
+                        'manual_opening_hours' => $locationData['manual_opening_hours'] ?? null,
                     ]);
                 }
             }

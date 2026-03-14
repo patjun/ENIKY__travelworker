@@ -12,6 +12,7 @@ use App\Models\Attraction;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
@@ -26,8 +27,8 @@ class AttractionResourceTest extends TestCase
         parent::setUp();
 
         // Set the current panel for Filament testing
-        \Filament\Facades\Filament::setCurrentPanel(
-            \Filament\Facades\Filament::getPanel('admin')
+        Filament::setCurrentPanel(
+            Filament::getPanel('admin')
         );
     }
 
@@ -115,7 +116,7 @@ class AttractionResourceTest extends TestCase
         $this->actingAs($this->createUserWithRole('admin'));
         $berlin = City::factory()->create(['name_de' => 'Berlin']);
         $paris = City::factory()->create(['name_de' => 'Paris']);
-        
+
         $berlinAttractions = Attraction::factory()->count(2)->create(['city_id' => $berlin->id]);
         $parisAttractions = Attraction::factory()->count(2)->create(['city_id' => $paris->id]);
 
@@ -130,10 +131,10 @@ class AttractionResourceTest extends TestCase
         $this->actingAs($this->createUserWithRole('admin'));
         $germany = Country::factory()->create(['name_de' => 'Deutschland', 'code' => 'DE']);
         $france = Country::factory()->create(['name_de' => 'Frankreich', 'code' => 'FR']);
-        
+
         $germanCity = City::factory()->create(['country_id' => $germany->id]);
         $frenchCity = City::factory()->create(['country_id' => $france->id]);
-        
+
         $germanAttractions = Attraction::factory()->count(2)->create(['city_id' => $germanCity->id]);
         $frenchAttractions = Attraction::factory()->count(2)->create(['city_id' => $frenchCity->id]);
 
@@ -429,10 +430,19 @@ class AttractionResourceTest extends TestCase
     }
 
     // ===== Table Action Tests =====
-    
+
     public function test_can_trigger_dataforseo_update_action(): void
     {
-        $this->markTestSkipped('DataForSEO update action has a bug - ProcessDataForSeoOrchestrator expects Location model but receives Attraction model');
+        Queue::fake();
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create(['place_id' => 'test_place_id_123']);
+
+        Livewire::test(ListAttractions::class)
+            ->callTableBulkAction('bulk_load_dataforseo', [$attraction]);
+
+        Queue::assertPushed(ProcessDataForSeoOrchestrator::class, function ($job) use ($attraction) {
+            return $job->location->id === $attraction->id;
+        });
     }
 
     public function test_dataforseo_update_action_fails_without_place_id(): void
@@ -442,15 +452,22 @@ class AttractionResourceTest extends TestCase
         $attraction = Attraction::factory()->create(['place_id' => null]);
 
         Livewire::test(ListAttractions::class)
-            ->callTableAction('load_dataforseo', $attraction);
+            ->callTableBulkAction('bulk_load_dataforseo', [$attraction]);
 
-        // No job should be dispatched due to missing place_id
         Queue::assertNotPushed(ProcessDataForSeoOrchestrator::class);
     }
 
     public function test_can_bulk_update_dataforseo(): void
     {
-        $this->markTestSkipped('Bulk DataForSEO update action has a bug - ProcessDataForSeoOrchestrator expects Location model but receives Attraction model');
+        Queue::fake();
+        $this->actingAs($this->createUserWithRole('admin'));
+        $withPlaceId = Attraction::factory()->count(2)->create(['place_id' => 'some_place_id']);
+        $withoutPlaceId = Attraction::factory()->create(['place_id' => null]);
+
+        Livewire::test(ListAttractions::class)
+            ->callTableBulkAction('bulk_load_dataforseo', [...$withPlaceId->all(), $withoutPlaceId]);
+
+        Queue::assertPushed(ProcessDataForSeoOrchestrator::class, 2);
     }
 
     // ===== Form Component Tests =====
@@ -518,7 +535,7 @@ class AttractionResourceTest extends TestCase
         $this->assertDatabaseHas(Attraction::class, [
             'name' => 'Test Attraction',
         ]);
-        
+
         $attraction = Attraction::where('name', 'Test Attraction')->first();
         $this->assertNotNull($attraction->manual_opening_hours);
         $this->assertIsArray($attraction->manual_opening_hours);
@@ -547,6 +564,10 @@ class AttractionResourceTest extends TestCase
                 [
                     'name' => 'Winter Season',
                     'is_year_round' => false,
+                    'start_month' => '11',
+                    'start_day' => '01',
+                    'end_month' => '03',
+                    'end_day' => '31',
                     'start_date' => '11-01',
                     'end_date' => '03-31',
                     'time_slots' => [
@@ -560,6 +581,10 @@ class AttractionResourceTest extends TestCase
                 [
                     'name' => 'Summer Season',
                     'is_year_round' => false,
+                    'start_month' => '04',
+                    'start_day' => '01',
+                    'end_month' => '10',
+                    'end_day' => '31',
                     'start_date' => '04-01',
                     'end_date' => '10-31',
                     'time_slots' => [
@@ -580,9 +605,14 @@ class AttractionResourceTest extends TestCase
 
         $attraction = Attraction::where('name', 'Seasonal Attraction')->first();
         $this->assertNotNull($attraction);
-        $this->assertCount(2, $attraction->manual_opening_hours);
-        $this->assertEquals('Winter Season', $attraction->manual_opening_hours[0]['name']);
-        $this->assertEquals('11-01', $attraction->manual_opening_hours[0]['start_date']);
+        $hours = collect($attraction->manual_opening_hours);
+        $winterSeason = $hours->firstWhere('name', 'Winter Season');
+        $summerSeason = $hours->firstWhere('name', 'Summer Season');
+        $this->assertNotNull($winterSeason, 'Winter Season not found in manual_opening_hours');
+        $this->assertNotNull($summerSeason, 'Summer Season not found in manual_opening_hours');
+        $this->assertEquals('11-01', $winterSeason['start_date']);
+        $this->assertEquals('03-31', $winterSeason['end_date']);
+        $this->assertEquals('04-01', $summerSeason['start_date']);
     }
 
     public function test_attraction_generates_opening_hours_html_with_seasons(): void
@@ -643,7 +673,7 @@ class AttractionResourceTest extends TestCase
         $this->assertNotNull($attraction->structured_data);
         $structuredData = json_decode(strip_tags($attraction->structured_data), true);
         $this->assertArrayHasKey('openingHoursSpecification', $structuredData);
-        
+
         $spec = $structuredData['openingHoursSpecification'][0];
         $this->assertArrayHasKey('validFrom', $spec);
         $this->assertArrayHasKey('validThrough', $spec);
@@ -654,7 +684,7 @@ class AttractionResourceTest extends TestCase
     public function test_attraction_opens_next_season_when_no_current_season(): void
     {
         $city = City::factory()->create();
-        
+
         // Create seasons where none is currently active (assuming test runs when neither is active)
         // Winter: Nov 1 - Mar 31, Summer: Apr 1 - Oct 31
         $attraction = Attraction::factory()->create([

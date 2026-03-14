@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -182,7 +183,6 @@ class Attraction extends Model
             $html .= "    </div>\n";
         }
 
-
         $html .= "  </div>\n";
         $html .= '</div>';
 
@@ -295,7 +295,7 @@ class Attraction extends Model
         }
 
         $seasons = $openingHours['seasons'];
-        
+
         if (empty($seasons)) {
             return null;
         }
@@ -324,7 +324,7 @@ class Attraction extends Model
 
         // Sort seasons
         $sortedSeasons = $this->sortSeasonsByDate($seasons);
-        
+
         // Find active season (current or next upcoming)
         $activeSeason = $this->getActiveOrNextSeason($sortedSeasons);
 
@@ -335,7 +335,7 @@ class Attraction extends Model
         $html .= "  <div class=\"opening-hours widget-content\">\n";
 
         foreach ($sortedSeasons as $season) {
-            $isActiveSeason = $activeSeason && 
+            $isActiveSeason = $activeSeason &&
                 ($season['is_year_round'] ?? false) === ($activeSeason['is_year_round'] ?? false) &&
                 ($season['start_date'] ?? null) === ($activeSeason['start_date'] ?? null) &&
                 ($season['end_date'] ?? null) === ($activeSeason['end_date'] ?? null);
@@ -347,14 +347,14 @@ class Attraction extends Model
             } else {
                 $dateRange = $this->formatDateRange($season['start_date'] ?? null, $season['end_date'] ?? null, $language);
                 if ($season['name']) {
-                    $seasonTitle = $season['name'] . ($dateRange ? ' (' . $dateRange . ')' : '');
+                    $seasonTitle = $season['name'].($dateRange ? ' ('.$dateRange.')' : '');
                 } else {
                     $seasonTitle = $dateRange;
                 }
             }
 
             // Use details element for collapsible seasons
-            $html .= "    <details class=\"season-block\"" . ($isActiveSeason ? ' open' : '') . ">\n";
+            $html .= '    <details class="season-block"'.($isActiveSeason ? ' open' : '').">\n";
             $html .= "      <summary class=\"season-header\">{$seasonTitle}</summary>\n";
             $html .= "      <div class=\"season-content\">\n";
 
@@ -399,7 +399,7 @@ class Attraction extends Model
         }
 
         $html .= "  </div>\n";
-        $html .= "</div>";
+        $html .= '</div>';
 
         return $html;
     }
@@ -472,7 +472,9 @@ class Attraction extends Model
             $structuredData['priceRange'] = $priceLevel;
         }
 
-        if ($openingHours && isset($openingHours['work_hours']['timetable'])) {
+        if ($openingHours && isset($openingHours['seasons'])) {
+            $structuredData['openingHoursSpecification'] = $this->generateOpeningHoursSpecification($openingHours);
+        } elseif ($openingHours && isset($openingHours['work_hours']['timetable'])) {
             $structuredData['openingHoursSpecification'] = $this->generateOpeningHoursSpecification($openingHours['work_hours']['timetable']);
         }
 
@@ -498,11 +500,11 @@ class Attraction extends Model
         // Check if we have the new seasons structure
         if (isset($openingHours['seasons'])) {
             $seasons = $openingHours['seasons'];
-            
+
             foreach ($seasons as $season) {
                 $timeSlots = $season['time_slots'] ?? [];
                 $timetable = $this->transformManualOpeningHoursToTimetable($timeSlots);
-                
+
                 $groupedDays = [];
 
                 // Collect all time slots for each day
@@ -534,10 +536,10 @@ class Attraction extends Model
                     // Add validFrom and validThrough for seasonal hours
                     if (! ($season['is_year_round'] ?? false)) {
                         if (! empty($season['start_date'])) {
-                            $spec['validFrom'] = '--' . $season['start_date'];
+                            $spec['validFrom'] = '--'.$season['start_date'];
                         }
                         if (! empty($season['end_date'])) {
-                            $spec['validThrough'] = '--' . $season['end_date'];
+                            $spec['validThrough'] = '--'.$season['end_date'];
                         }
                     }
 
@@ -703,19 +705,19 @@ class Attraction extends Model
 
         // First, check if there's a current active season
         $currentSeason = $this->getCurrentSeason($seasons);
-        
+
         // If there's a year-round season or currently active season, return it
         foreach ($seasons as $season) {
             if ($season['is_year_round'] ?? false) {
                 return $season;
             }
         }
-        
-        if ($currentSeason !== null && !($currentSeason['is_year_round'] ?? false)) {
+
+        if ($currentSeason !== null && ! ($currentSeason['is_year_round'] ?? false)) {
             // Check if it's actually in range
             $today = now();
             $todayMd = $today->format('m-d');
-            if (!empty($currentSeason['start_date']) && !empty($currentSeason['end_date'])) {
+            if (! empty($currentSeason['start_date']) && ! empty($currentSeason['end_date'])) {
                 if ($this->isDateInRange($todayMd, $currentSeason['start_date'], $currentSeason['end_date'])) {
                     return $currentSeason;
                 }
@@ -725,7 +727,7 @@ class Attraction extends Model
         // No current season, find the next upcoming one
         $today = now();
         $todayMd = $today->format('m-d');
-        
+
         $nextSeason = null;
         $minDaysUntilStart = PHP_INT_MAX;
 
@@ -739,7 +741,7 @@ class Attraction extends Model
             }
 
             $daysUntilStart = $this->calculateDaysUntilDate($todayMd, $season['start_date']);
-            
+
             if ($daysUntilStart > 0 && $daysUntilStart < $minDaysUntilStart) {
                 $minDaysUntilStart = $daysUntilStart;
                 $nextSeason = $season;
@@ -762,19 +764,19 @@ class Attraction extends Model
     {
         try {
             $currentYear = now()->year;
-            
+
             // Parse dates with current year
-            $from = \Carbon\Carbon::createFromFormat('m-d', $fromDate)->year($currentYear);
-            $to = \Carbon\Carbon::createFromFormat('m-d', $toDate)->year($currentYear);
-            
+            $from = Carbon::createFromFormat('m-d', $fromDate)->year($currentYear);
+            $to = Carbon::createFromFormat('m-d', $toDate)->year($currentYear);
+
             $diff = $from->diffInDays($to, false);
-            
+
             // If the target date is in the past this year, check next year
             if ($diff < 0) {
                 $to->addYear();
                 $diff = $from->diffInDays($to, false);
             }
-            
+
             return $diff;
         } catch (\Exception $e) {
             return PHP_INT_MAX;
@@ -836,16 +838,16 @@ class Attraction extends Model
 
         try {
             // Parse dates (using current year as dummy year)
-            $start = \Carbon\Carbon::createFromFormat('m-d', $startDate)->year(now()->year);
-            $end = \Carbon\Carbon::createFromFormat('m-d', $endDate)->year(now()->year);
+            $start = Carbon::createFromFormat('m-d', $startDate)->year(now()->year);
+            $end = Carbon::createFromFormat('m-d', $endDate)->year(now()->year);
 
             if ($language === 'en') {
-                return $start->format('M j') . ' - ' . $end->format('M j');
+                return $start->format('M j').' - '.$end->format('M j');
             } else {
-                return $start->format('d.m.') . ' - ' . $end->format('d.m.');
+                return $start->format('d.m.').' - '.$end->format('d.m.');
             }
         } catch (\Exception $e) {
-            return $startDate . ' - ' . $endDate;
+            return $startDate.' - '.$endDate;
         }
     }
 }

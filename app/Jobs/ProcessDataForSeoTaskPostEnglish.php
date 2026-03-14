@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Location;
+use App\Models\Attraction;
 use App\Services\DataForSeoService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,29 +16,30 @@ class ProcessDataForSeoTaskPostEnglish implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 300;
+
     public int $tries = 3;
 
     public function __construct(
-        public Location $location
+        public Attraction $location
     ) {
         //
     }
 
     public function handle(): void
     {
-        $dataForSeoService = new DataForSeoService();
+        $dataForSeoService = new DataForSeoService;
 
         try {
             // Increment attempt counter for English
             $this->location->increment('en_post_attempts');
             $this->location->update([
                 'job_status' => 'posting_task',
-                'en_job_status' => 'posting_task'
+                'en_job_status' => 'posting_task',
             ]);
 
             Log::info('Starting English DataForSEO task_post for location', [
                 'location_id' => $this->location->id,
-                'attempt' => $this->location->en_post_attempts
+                'attempt' => $this->location->en_post_attempts,
             ]);
 
             $taskResult = $dataForSeoService->getBusinessData(
@@ -48,11 +49,11 @@ class ProcessDataForSeoTaskPostEnglish implements ShouldQueue
             );
 
             if (isset($taskResult['error'])) {
-                throw new \Exception('English task creation failed: ' . $taskResult['error']);
+                throw new \Exception('English task creation failed: '.$taskResult['error']);
             }
 
             $taskId = $taskResult['tasks'][0]['id'] ?? null;
-            if (!$taskId) {
+            if (! $taskId) {
                 throw new \Exception('No English task ID received from DataForSEO');
             }
 
@@ -62,24 +63,24 @@ class ProcessDataForSeoTaskPostEnglish implements ShouldQueue
                 'task_post_output' => $taskResult,
                 'en_task_post_output' => $taskResult,
                 'job_status' => 'task_posted',
-                'en_job_status' => 'task_posted'
+                'en_job_status' => 'task_posted',
             ]);
 
             Log::info('English task posted successfully', [
                 'location_id' => $this->location->id,
-                'en_task_id' => $taskId
+                'en_task_id' => $taskId,
             ]);
 
         } catch (\Exception $e) {
             Log::error('English DataForSEO task_post failed', [
                 'location_id' => $this->location->id,
                 'attempt' => $this->location->en_post_attempts,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             $this->location->update([
                 'job_status' => 'failed',
-                'en_job_status' => 'failed'
+                'en_job_status' => 'failed',
             ]);
             throw $e;
         }

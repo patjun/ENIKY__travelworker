@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Location;
+use App\Models\Attraction;
 use App\Services\DataForSeoService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,44 +16,45 @@ class ProcessDataForSeoTaskGetEnglish implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 60;
+
     public int $tries = 3;
 
     public function __construct(
-        public Location $location
+        public Attraction $location
     ) {
         //
     }
 
     public function handle(): void
     {
-        $dataForSeoService = new DataForSeoService();
+        $dataForSeoService = new DataForSeoService;
 
         try {
             // Increment attempt counter for English
             $this->location->increment('en_get_attempts');
             $this->location->update([
                 'job_status' => 'getting_results',
-                'en_job_status' => 'getting_results'
+                'en_job_status' => 'getting_results',
             ]);
 
             Log::info('Getting English task results for location', [
                 'location_id' => $this->location->id,
                 'en_task_id' => $this->location->en_task_id,
-                'attempt' => $this->location->en_get_attempts
+                'attempt' => $this->location->en_get_attempts,
             ]);
 
             $taskId = $this->location->en_task_id;
-            if (!$taskId) {
+            if (! $taskId) {
                 throw new \Exception('No English task ID found for location');
             }
 
             $results = $dataForSeoService->getTaskResult($taskId);
 
             if (isset($results['error'])) {
-                throw new \Exception('Failed to get English results: ' . $results['error']);
+                throw new \Exception('Failed to get English results: '.$results['error']);
             }
 
-            $location = Location::find($this->location->id);
+            $location = Attraction::find($this->location->id);
 
             // Extract business data from results
             $businessData = $results['tasks'][0]['result'][0]['items'][0] ?? null;
@@ -64,7 +65,7 @@ class ProcessDataForSeoTaskGetEnglish implements ShouldQueue
                     'last_dataforseo_update' => now(),
                     'en_last_dataforseo_update' => now(),
                     'job_status' => 'completed',
-                    'en_job_status' => 'completed'
+                    'en_job_status' => 'completed',
                 ];
 
                 // Map coordinates (language-independent)
@@ -81,37 +82,37 @@ class ProcessDataForSeoTaskGetEnglish implements ShouldQueue
                 Log::info('Successfully extracted coordinates from English task', [
                     'location_id' => $location->id,
                     'latitude' => $updateData['latitude'] ?? 'not found',
-                    'longitude' => $updateData['longitude'] ?? 'not found'
+                    'longitude' => $updateData['longitude'] ?? 'not found',
                 ]);
             } else {
                 $location->update([
                     'last_dataforseo_update' => now(),
                     'en_last_dataforseo_update' => now(),
                     'job_status' => 'completed',
-                    'en_job_status' => 'completed'
+                    'en_job_status' => 'completed',
                 ]);
 
                 Log::warning('No business data found in English DataForSEO response', [
-                    'location_id' => $location->id
+                    'location_id' => $location->id,
                 ]);
             }
 
             Log::info('English DataForSEO task_get completed successfully', [
                 'location_id' => $location->id,
                 'en_task_id' => $taskId,
-                'attempt' => $location->en_get_attempts
+                'attempt' => $location->en_get_attempts,
             ]);
 
         } catch (\Exception $e) {
             Log::error('English DataForSEO task_get failed', [
                 'location_id' => $this->location->id,
                 'attempt' => $this->location->en_get_attempts,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             $this->location->update([
                 'job_status' => 'failed',
-                'en_job_status' => 'failed'
+                'en_job_status' => 'failed',
             ]);
             throw $e;
         }
