@@ -81,4 +81,9 @@ class PlanResource extends Resource
             'edit' => Pages\EditPlan::route('/{record}/edit'),
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 }

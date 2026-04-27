@@ -79,4 +79,59 @@ class PageResource extends Resource
             'edit' => Pages\EditPage::route('/{record}/edit'),
         ];
     }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view pages') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('create pages') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin, Admin und Editor können alles bearbeiten
+        if ($user->hasAnyRole(['super_admin', 'admin', 'editor'])) {
+            return $user->can('edit pages');
+        }
+
+        // Author kann Pages bearbeiten
+        if ($user->hasRole('author')) {
+            return $user->can('edit pages');
+        }
+
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Editor kann nicht löschen
+        if ($user->hasRole('editor')) {
+            return false;
+        }
+
+        // Super Admin und Admin können alles löschen
+        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+            return $user->can('delete pages');
+        }
+
+        return false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 }

@@ -16,7 +16,7 @@ class CityResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
 
-    protected static ?string $navigationGroup = 'Locations';
+    protected static ?string $navigationGroup = 'Places Management';
 
     protected static ?int $navigationSort = 20;
 
@@ -57,9 +57,9 @@ class CityResource extends Resource
                     ->label('Name (EN)')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('locations_count')
-                    ->counts('locations')
-                    ->label('Locations')
+                Tables\Columns\TextColumn::make('attractions_count')
+                    ->counts('attractions')
+                    ->label('Attractions')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -74,11 +74,13 @@ class CityResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn ($record) => static::canDelete($record)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()?->hasAnyRole(['super_admin', 'admin']) ?? false),
                 ]),
             ])
             ->defaultSort('name_de');
@@ -98,5 +100,63 @@ class CityResource extends Resource
             'create' => Pages\CreateCity::route('/create'),
             'edit' => Pages\EditCity::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view cities') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('create cities') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin, Admin und Editor können alles bearbeiten
+        if ($user->hasAnyRole(['super_admin', 'admin', 'editor'])) {
+            return $user->can('edit cities') || $user->can('edit own cities');
+        }
+
+        // Prüfe ob User die Berechtigung "edit own cities" hat
+        if ($user->can('edit own cities')) {
+            // TODO: Wenn user_id Feld hinzugefügt wird, hier Prüfung auf eigene Cities einbauen
+            // Aktuell können alle Benutzer mit "edit own cities" alle Cities bearbeiten,
+            // bis das user_id Feld implementiert ist
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Editor kann nicht löschen
+        if ($user->hasRole('editor')) {
+            return false;
+        }
+
+        // Super Admin und Admin können alles löschen
+        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+            return $user->can('delete cities');
+        }
+
+        return false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->can('view cities') ?? false;
     }
 }

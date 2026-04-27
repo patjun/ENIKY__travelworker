@@ -20,5 +20,25 @@ class DatabaseSeeder extends Seeder
                 'password' => bcrypt('abcd1234'),
             ]
         );
+
+        // Seed roles and permissions first
+        $this->call([
+            RolePermissionSeeder::class,
+        ]);
+
+        // Seed test users for each role
+        $this->call([
+            TestUserSeeder::class,
+        ]);
+
+        // Seed countries first as cities depend on them, then attractions depend on cities
+        $this->call([
+            AccessibilityAttributeSeeder::class,
+            CountrySeeder::class,
+            CitySeeder::class,
+            AttractionSeeder::class,
+            ListicleSeeder::class,
+        ]);
+
     }
 }

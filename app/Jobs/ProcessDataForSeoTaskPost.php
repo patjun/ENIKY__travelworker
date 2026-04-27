@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Location;
+use App\Models\Attraction;
 use App\Services\DataForSeoService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,17 +16,18 @@ class ProcessDataForSeoTaskPost implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 300;
+
     public int $tries = 3;
 
     public function __construct(
-        public Location $location
+        public Attraction $location
     ) {
         //
     }
 
     public function handle(): void
     {
-        $dataForSeoService = new DataForSeoService();
+        $dataForSeoService = new DataForSeoService;
 
         try {
             // Increment attempt counter
@@ -35,7 +36,7 @@ class ProcessDataForSeoTaskPost implements ShouldQueue
 
             Log::info('Starting DataForSEO task_post for location', [
                 'location_id' => $this->location->id,
-                'attempt' => $this->location->post_attempts
+                'attempt' => $this->location->post_attempts,
             ]);
 
             $taskResult = $dataForSeoService->getBusinessData(
@@ -45,18 +46,18 @@ class ProcessDataForSeoTaskPost implements ShouldQueue
             );
 
             if (isset($taskResult['error'])) {
-                throw new \Exception('Task creation failed: ' . $taskResult['error']);
+                throw new \Exception('Task creation failed: '.$taskResult['error']);
             }
 
             $taskId = $taskResult['tasks'][0]['id'] ?? null;
-            if (!$taskId) {
+            if (! $taskId) {
                 throw new \Exception('No task ID received from DataForSEO');
             }
 
             $this->location->update([
                 'task_id' => $taskId,
                 'task_post_output' => $taskResult,
-                'job_status' => 'task_posted'
+                'job_status' => 'task_posted',
             ]);
 
             Log::info('Task posted successfully', ['task_id' => $taskId]);
@@ -65,7 +66,7 @@ class ProcessDataForSeoTaskPost implements ShouldQueue
             Log::error('DataForSEO task_post failed', [
                 'location_id' => $this->location->id,
                 'attempt' => $this->location->post_attempts,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             $this->location->update(['job_status' => 'failed']);

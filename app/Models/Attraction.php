@@ -2,26 +2,28 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Location extends Model
+class Attraction extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'city_id', 'name', 'street', 'zip', 'latitude', 'longitude',
         'cid', 'place_id', 'task_id', 'task_post_output', 'task_get_output',
         'location_code', 'language_code', 'business_data', 'last_dataforseo_update',
-        'job_status', 'post_attempts', 'get_attempts', 'phone', 'email', 'website',
+        'job_status', 'post_attempts', 'get_attempts', 'email', 'website',
         'website_opening_hours', 'website_pricing',
         'description', 'category', 'rating_value', 'rating_votes_count',
         'opening_hours', 'accessibility', 'main_image_url', 'is_claimed',
         'price_level', 'additional_categories', 'opening_hours_html', 'structured_data',
         'contact_info_html', 'rating_html', 'accessibility_html', 'manual_opening_hours',
-        'en_name', 'en_street', 'en_zip', 'en_phone', 'en_email', 'en_website',
+        'en_name', 'en_website',
         'en_website_opening_hours', 'en_website_pricing',
         'en_description', 'en_category', 'en_opening_hours', 'en_accessibility',
         'en_main_image_url', 'en_price_level', 'en_additional_categories',
@@ -61,7 +63,7 @@ class Location extends Model
 
     public function accessibilityAttributes(): BelongsToMany
     {
-        return $this->belongsToMany(AccessibilityAttribute::class, 'location_accessibility_attribute');
+        return $this->belongsToMany(AccessibilityAttribute::class, 'attraction_accessibility_attribute');
     }
 
     public function generateWidgets(): void
@@ -71,9 +73,9 @@ class Location extends Model
 
         // Transform manual opening hours to timetable format if available
         if (! empty($this->manual_opening_hours)) {
-            $timetable = $this->transformManualOpeningHoursToTimetable($this->manual_opening_hours);
-            $this->opening_hours = ['work_hours' => ['timetable' => $timetable]];
-            $this->en_opening_hours = ['work_hours' => ['timetable' => $timetable]];
+            // Store seasons structure for later use in HTML generation
+            $this->opening_hours = ['seasons' => $this->manual_opening_hours];
+            $this->en_opening_hours = ['seasons' => $this->manual_opening_hours];
         }
 
         // Extract accessibility data from business_data if accessibility columns are empty
@@ -107,8 +109,8 @@ class Location extends Model
     public function generateContactInfoHtml($language = 'de')
     {
         $name = $language === 'en' ? ($this->en_name ?: $this->name) : $this->name;
-        $street = $language === 'en' ? ($this->en_street ?: $this->street) : $this->street;
-        $zip = $language === 'en' ? ($this->en_zip ?: $this->zip) : $this->zip;
+        $street = $this->street;
+        $zip = $this->zip;
 
         // Load city relationship if not loaded
         if (! $this->relationLoaded('city')) {
@@ -120,8 +122,7 @@ class Location extends Model
         $country = $cityModel && $cityModel->country ? ($language === 'en' ? $cityModel->country->name_en : $cityModel->country->name_de) : null;
 
         $website = $language === 'en' ? ($this->en_website ?: $this->website) : $this->website;
-        $phone = $language === 'en' ? ($this->en_phone ?: $this->phone) : $this->phone;
-        $email = $language === 'en' ? ($this->en_email ?: $this->email) : $this->email;
+        $email = $this->email;
 
         $html = "<div class=\"widget contact-info\">\n";
 
@@ -178,16 +179,6 @@ class Location extends Model
             $html .= "      <div class=\"icon\">✉️</div>\n";
             $html .= "      <div class=\"info\">\n";
             $html .= "        <a href=\"mailto:{$email}\" target=\"_blank\" rel=\"noopener\" class=\"link\">{$email}</a>\n";
-            $html .= "      </div>\n";
-            $html .= "    </div>\n";
-        }
-
-        // Phone section
-        if ($phone) {
-            $html .= "    <div class=\"item\">\n";
-            $html .= "      <div class=\"icon\">📞</div>\n";
-            $html .= "      <div class=\"info\">\n";
-            $html .= "        <a href=\"tel:{$phone}\" class=\"contact-link\">{$phone}</a>\n";
             $html .= "      </div>\n";
             $html .= "    </div>\n";
         }
@@ -299,11 +290,16 @@ class Location extends Model
     {
         $openingHours = $language === 'en' ? $this->en_opening_hours : $this->opening_hours;
 
-        if (! $openingHours || ! isset($openingHours['work_hours']['timetable'])) {
+        if (! $openingHours || ! isset($openingHours['seasons'])) {
             return null;
         }
 
-        $timetable = $openingHours['work_hours']['timetable'];
+        $seasons = $openingHours['seasons'];
+
+        if (empty($seasons)) {
+            return null;
+        }
+
         $dayNames = $language === 'en' ? [
             'monday' => 'Monday',
             'tuesday' => 'Tuesday',
@@ -324,48 +320,85 @@ class Location extends Model
 
         $closedText = $language === 'en' ? 'Closed' : 'Geschlossen';
         $openingHoursText = $language === 'en' ? 'Opening Hours' : 'Öffnungszeiten';
+        $dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+        // Sort seasons
+        $sortedSeasons = $this->sortSeasonsByDate($seasons);
+
+        // Find active season (current or next upcoming)
+        $activeSeason = $this->getActiveOrNextSeason($sortedSeasons);
 
         $html = "<div class=\"widget\">\n";
         $html .= "  <div class=\"header\">\n";
         $html .= "    <h3 class=\"title\">{$openingHoursText}</h3>\n";
         $html .= "  </div>\n";
+        $html .= "  <div class=\"opening-hours widget-content\">\n";
 
-        $dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        foreach ($sortedSeasons as $season) {
+            $isActiveSeason = $activeSeason &&
+                ($season['is_year_round'] ?? false) === ($activeSeason['is_year_round'] ?? false) &&
+                ($season['start_date'] ?? null) === ($activeSeason['start_date'] ?? null) &&
+                ($season['end_date'] ?? null) === ($activeSeason['end_date'] ?? null);
 
-        $html .= " <div class=\"opening-hours widget-content\">\n";
-        foreach ($dayOrder as $day) {
-            $dayLabel = $dayNames[$day];
-            $html .= "    <div class=\"day\">\n";
-
-            if (isset($timetable[$day]) && ! empty($timetable[$day])) {
-                foreach ($timetable[$day] as $index => $hours) {
-                    if ($language === 'en') {
-                        // 12-hour format for English
-                        $openTime = $this->formatTime12Hour($hours['open']['hour'], $hours['open']['minute']);
-                        $closeTime = $this->formatTime12Hour($hours['close']['hour'], $hours['close']['minute']);
-                    } else {
-                        // 24-hour format for German
-                        $openTime = sprintf('%02d:%02d', $hours['open']['hour'], $hours['open']['minute']);
-                        $closeTime = sprintf('%02d:%02d', $hours['close']['hour'], $hours['close']['minute']);
-                    }
-
-                    if ($index === 0) {
-                        $html .= "      <div class=\"timeline first\"><span class=\"name\">{$dayLabel}</span>\n";
-                        $html .= "      <span class=\"time\">{$openTime} - {$closeTime}</span></div>\n";
-                    } else {
-                        $html .= "      <div class=\"timeline\"><span class=\"name\"></span>\n";
-                        $html .= "      <span class=\"time\">{$openTime} - {$closeTime}</span></div>\n";
-                    }
-                }
+            // Generate season header
+            $seasonTitle = '';
+            if ($season['is_year_round'] ?? false) {
+                $seasonTitle = $season['name'] ?: ($language === 'en' ? 'Year-Round' : 'Ganzjährig');
             } else {
-                $html .= "      <div class=\"timeline\"><span class=\"name\">{$dayLabel}</span>\n";
-                $html .= "      <span class=\"closed\">{$closedText}</span></div>\n";
+                $dateRange = $this->formatDateRange($season['start_date'] ?? null, $season['end_date'] ?? null, $language);
+                if ($season['name']) {
+                    $seasonTitle = $season['name'].($dateRange ? ' ('.$dateRange.')' : '');
+                } else {
+                    $seasonTitle = $dateRange;
+                }
             }
 
-            $html .= "    </div>\n";
+            // Use details element for collapsible seasons
+            $html .= '    <details class="season-block"'.($isActiveSeason ? ' open' : '').">\n";
+            $html .= "      <summary class=\"season-header\">{$seasonTitle}</summary>\n";
+            $html .= "      <div class=\"season-content\">\n";
+
+            // Generate timetable for this season
+            $timeSlots = $season['time_slots'] ?? [];
+            $timetable = $this->transformManualOpeningHoursToTimetable($timeSlots);
+
+            foreach ($dayOrder as $day) {
+                $dayLabel = $dayNames[$day];
+                $html .= "        <div class=\"day\">\n";
+
+                if (isset($timetable[$day]) && ! empty($timetable[$day])) {
+                    foreach ($timetable[$day] as $index => $hours) {
+                        if ($language === 'en') {
+                            // 12-hour format for English
+                            $openTime = $this->formatTime12Hour($hours['open']['hour'], $hours['open']['minute']);
+                            $closeTime = $this->formatTime12Hour($hours['close']['hour'], $hours['close']['minute']);
+                        } else {
+                            // 24-hour format for German
+                            $openTime = sprintf('%02d:%02d', $hours['open']['hour'], $hours['open']['minute']);
+                            $closeTime = sprintf('%02d:%02d', $hours['close']['hour'], $hours['close']['minute']);
+                        }
+
+                        if ($index === 0) {
+                            $html .= "          <div class=\"timeline first\"><span class=\"name\">{$dayLabel}</span>\n";
+                            $html .= "          <span class=\"time\">{$openTime} - {$closeTime}</span></div>\n";
+                        } else {
+                            $html .= "          <div class=\"timeline\"><span class=\"name\"></span>\n";
+                            $html .= "          <span class=\"time\">{$openTime} - {$closeTime}</span></div>\n";
+                        }
+                    }
+                } else {
+                    $html .= "          <div class=\"timeline\"><span class=\"name\">{$dayLabel}</span>\n";
+                    $html .= "          <span class=\"closed\">{$closedText}</span></div>\n";
+                }
+
+                $html .= "        </div>\n";
+            }
+
+            $html .= "      </div>\n";
+            $html .= "    </details>\n";
         }
 
-        $html .= '  </div>';
+        $html .= "  </div>\n";
         $html .= '</div>';
 
         return $html;
@@ -374,8 +407,8 @@ class Location extends Model
     public function generateStructuredData($language = 'de')
     {
         $name = $language === 'en' ? ($this->en_name ?: $this->name) : $this->name;
-        $street = $language === 'en' ? ($this->en_street ?: $this->street) : $this->street;
-        $zip = $language === 'en' ? ($this->en_zip ?: $this->zip) : $this->zip;
+        $street = $this->street;
+        $zip = $this->zip;
 
         // Load city relationship if not loaded
         if (! $this->relationLoaded('city')) {
@@ -386,8 +419,7 @@ class Location extends Model
         $city = $cityModel ? ($language === 'en' ? $cityModel->name_en : $cityModel->name_de) : null;
         $country = $cityModel && $cityModel->country ? ($language === 'en' ? $cityModel->country->name_en : $cityModel->country->name_de) : null;
 
-        $phone = $language === 'en' ? ($this->en_phone ?: $this->phone) : $this->phone;
-        $email = $language === 'en' ? ($this->en_email ?: $this->email) : $this->email;
+        $email = $this->email;
         $website = $language === 'en' ? ($this->en_website ?: $this->website) : $this->website;
         $description = $language === 'en' ? ($this->en_description ?: $this->description) : $this->description;
         $category = $language === 'en' ? ($this->en_category ?: $this->category) : $this->category;
@@ -419,10 +451,6 @@ class Location extends Model
             }
         }
 
-        if ($phone) {
-            $structuredData['telephone'] = $phone;
-        }
-
         if ($email) {
             $structuredData['email'] = $email;
         }
@@ -444,7 +472,9 @@ class Location extends Model
             $structuredData['priceRange'] = $priceLevel;
         }
 
-        if ($openingHours && isset($openingHours['work_hours']['timetable'])) {
+        if ($openingHours && isset($openingHours['seasons'])) {
+            $structuredData['openingHoursSpecification'] = $this->generateOpeningHoursSpecification($openingHours);
+        } elseif ($openingHours && isset($openingHours['work_hours']['timetable'])) {
             $structuredData['openingHoursSpecification'] = $this->generateOpeningHoursSpecification($openingHours['work_hours']['timetable']);
         }
 
@@ -453,7 +483,7 @@ class Location extends Model
         return "<script type=\"application/ld+json\">\n{$jsonString}\n</script>";
     }
 
-    private function generateOpeningHoursSpecification($timetable)
+    private function generateOpeningHoursSpecification($openingHours)
     {
         $dayMapping = [
             'monday' => 'Monday',
@@ -466,33 +496,87 @@ class Location extends Model
         ];
 
         $specifications = [];
-        $groupedDays = [];
 
-        // Collect all time slots for each day
-        foreach ($timetable as $day => $timeSlots) {
-            if (! empty($timeSlots)) {
-                foreach ($timeSlots as $slot) {
-                    $timeKey = sprintf('%02d:%02d-%02d:%02d',
-                        $slot['open']['hour'],
-                        $slot['open']['minute'],
-                        $slot['close']['hour'],
-                        $slot['close']['minute']
-                    );
-                    $groupedDays[$timeKey][] = $dayMapping[$day];
+        // Check if we have the new seasons structure
+        if (isset($openingHours['seasons'])) {
+            $seasons = $openingHours['seasons'];
+
+            foreach ($seasons as $season) {
+                $timeSlots = $season['time_slots'] ?? [];
+                $timetable = $this->transformManualOpeningHoursToTimetable($timeSlots);
+
+                $groupedDays = [];
+
+                // Collect all time slots for each day
+                foreach ($timetable as $day => $timeSlots) {
+                    if (! empty($timeSlots)) {
+                        foreach ($timeSlots as $slot) {
+                            $timeKey = sprintf('%02d:%02d-%02d:%02d',
+                                $slot['open']['hour'],
+                                $slot['open']['minute'],
+                                $slot['close']['hour'],
+                                $slot['close']['minute']
+                            );
+                            $groupedDays[$timeKey][] = $dayMapping[$day];
+                        }
+                    }
+                }
+
+                // Create specifications from grouped days
+                foreach ($groupedDays as $timeRange => $days) {
+                    [$openTime, $closeTime] = explode('-', $timeRange);
+
+                    $spec = [
+                        '@type' => 'OpeningHoursSpecification',
+                        'dayOfWeek' => count($days) === 1 ? $days[0] : $days,
+                        'opens' => $openTime,
+                        'closes' => $closeTime,
+                    ];
+
+                    // Add validFrom and validThrough for seasonal hours
+                    if (! ($season['is_year_round'] ?? false)) {
+                        if (! empty($season['start_date'])) {
+                            $spec['validFrom'] = '--'.$season['start_date'];
+                        }
+                        if (! empty($season['end_date'])) {
+                            $spec['validThrough'] = '--'.$season['end_date'];
+                        }
+                    }
+
+                    $specifications[] = $spec;
                 }
             }
-        }
+        } else {
+            // Legacy support for old timetable structure
+            $timetable = $openingHours['work_hours']['timetable'] ?? [];
+            $groupedDays = [];
 
-        // Create specifications from grouped days
-        foreach ($groupedDays as $timeRange => $days) {
-            [$openTime, $closeTime] = explode('-', $timeRange);
+            // Collect all time slots for each day
+            foreach ($timetable as $day => $timeSlots) {
+                if (! empty($timeSlots)) {
+                    foreach ($timeSlots as $slot) {
+                        $timeKey = sprintf('%02d:%02d-%02d:%02d',
+                            $slot['open']['hour'],
+                            $slot['open']['minute'],
+                            $slot['close']['hour'],
+                            $slot['close']['minute']
+                        );
+                        $groupedDays[$timeKey][] = $dayMapping[$day];
+                    }
+                }
+            }
 
-            $specifications[] = [
-                '@type' => 'OpeningHoursSpecification',
-                'dayOfWeek' => count($days) === 1 ? $days[0] : $days,
-                'opens' => $openTime,
-                'closes' => $closeTime,
-            ];
+            // Create specifications from grouped days
+            foreach ($groupedDays as $timeRange => $days) {
+                [$openTime, $closeTime] = explode('-', $timeRange);
+
+                $specifications[] = [
+                    '@type' => 'OpeningHoursSpecification',
+                    'dayOfWeek' => count($days) === 1 ? $days[0] : $days,
+                    'opens' => $openTime,
+                    'closes' => $closeTime,
+                ];
+            }
         }
 
         return $specifications;
@@ -564,5 +648,206 @@ class Location extends Model
         }
 
         return $timetable;
+    }
+
+    /**
+     * Get the current active season based on today's date
+     */
+    private function getCurrentSeason(?array $seasons = null): ?array
+    {
+        if ($seasons === null) {
+            $seasons = $this->manual_opening_hours ?? [];
+        }
+
+        if (empty($seasons)) {
+            return null;
+        }
+
+        $today = now();
+        $todayMd = $today->format('m-d');
+
+        foreach ($seasons as $season) {
+            // Year-round seasons are always active
+            if ($season['is_year_round'] ?? false) {
+                return $season;
+            }
+
+            // Check if today falls within the season's date range
+            if (! empty($season['start_date']) && ! empty($season['end_date'])) {
+                if ($this->isDateInRange($todayMd, $season['start_date'], $season['end_date'])) {
+                    return $season;
+                }
+            }
+        }
+
+        // If no season matches, return year-round season if exists, otherwise first season
+        foreach ($seasons as $season) {
+            if ($season['is_year_round'] ?? false) {
+                return $season;
+            }
+        }
+
+        return $seasons[0] ?? null;
+    }
+
+    /**
+     * Get the season to display (current or next upcoming)
+     */
+    private function getActiveOrNextSeason(?array $seasons = null): ?array
+    {
+        if ($seasons === null) {
+            $seasons = $this->manual_opening_hours ?? [];
+        }
+
+        if (empty($seasons)) {
+            return null;
+        }
+
+        // First, check if there's a current active season
+        $currentSeason = $this->getCurrentSeason($seasons);
+
+        // If there's a year-round season or currently active season, return it
+        foreach ($seasons as $season) {
+            if ($season['is_year_round'] ?? false) {
+                return $season;
+            }
+        }
+
+        if ($currentSeason !== null && ! ($currentSeason['is_year_round'] ?? false)) {
+            // Check if it's actually in range
+            $today = now();
+            $todayMd = $today->format('m-d');
+            if (! empty($currentSeason['start_date']) && ! empty($currentSeason['end_date'])) {
+                if ($this->isDateInRange($todayMd, $currentSeason['start_date'], $currentSeason['end_date'])) {
+                    return $currentSeason;
+                }
+            }
+        }
+
+        // No current season, find the next upcoming one
+        $today = now();
+        $todayMd = $today->format('m-d');
+
+        $nextSeason = null;
+        $minDaysUntilStart = PHP_INT_MAX;
+
+        foreach ($seasons as $season) {
+            if ($season['is_year_round'] ?? false) {
+                continue; // Already checked above
+            }
+
+            if (empty($season['start_date'])) {
+                continue;
+            }
+
+            $daysUntilStart = $this->calculateDaysUntilDate($todayMd, $season['start_date']);
+
+            if ($daysUntilStart > 0 && $daysUntilStart < $minDaysUntilStart) {
+                $minDaysUntilStart = $daysUntilStart;
+                $nextSeason = $season;
+            }
+        }
+
+        // If we found a next season, return it
+        if ($nextSeason !== null) {
+            return $nextSeason;
+        }
+
+        // Otherwise, return the first season
+        return $seasons[0] ?? null;
+    }
+
+    /**
+     * Calculate days until a target date (handles year wrap-around)
+     */
+    private function calculateDaysUntilDate(string $fromDate, string $toDate): int
+    {
+        try {
+            $currentYear = now()->year;
+
+            // Parse dates with current year
+            $from = Carbon::createFromFormat('m-d', $fromDate)->year($currentYear);
+            $to = Carbon::createFromFormat('m-d', $toDate)->year($currentYear);
+
+            $diff = $from->diffInDays($to, false);
+
+            // If the target date is in the past this year, check next year
+            if ($diff < 0) {
+                $to->addYear();
+                $diff = $from->diffInDays($to, false);
+            }
+
+            return $diff;
+        } catch (\Exception $e) {
+            return PHP_INT_MAX;
+        }
+    }
+
+    /**
+     * Check if a date (MM-DD format) falls within a date range
+     * Handles ranges that span year boundary (e.g., 12-15 to 01-31)
+     */
+    private function isDateInRange(string $date, string $startDate, string $endDate): bool
+    {
+        // Handle leap year dates (02-29)
+        if ($date === '02-29' && ! now()->isLeapYear()) {
+            return false;
+        }
+
+        if ($startDate <= $endDate) {
+            // Range within same year (e.g., 03-01 to 10-31)
+            return $date >= $startDate && $date <= $endDate;
+        } else {
+            // Range spans year boundary (e.g., 12-01 to 02-28)
+            return $date >= $startDate || $date <= $endDate;
+        }
+    }
+
+    /**
+     * Sort seasons by start date
+     */
+    private function sortSeasonsByDate(array $seasons): array
+    {
+        usort($seasons, function ($a, $b) {
+            // Year-round seasons come first
+            if ($a['is_year_round'] ?? false) {
+                return -1;
+            }
+            if ($b['is_year_round'] ?? false) {
+                return 1;
+            }
+
+            // Sort by start date
+            $startA = $a['start_date'] ?? '01-01';
+            $startB = $b['start_date'] ?? '01-01';
+
+            return strcmp($startA, $startB);
+        });
+
+        return $seasons;
+    }
+
+    /**
+     * Format date range for display
+     */
+    private function formatDateRange(?string $startDate, ?string $endDate, string $language = 'de'): string
+    {
+        if (empty($startDate) || empty($endDate)) {
+            return '';
+        }
+
+        try {
+            // Parse dates (using current year as dummy year)
+            $start = Carbon::createFromFormat('m-d', $startDate)->year(now()->year);
+            $end = Carbon::createFromFormat('m-d', $endDate)->year(now()->year);
+
+            if ($language === 'en') {
+                return $start->format('M j').' - '.$end->format('M j');
+            } else {
+                return $start->format('d.m.').' - '.$end->format('d.m.');
+            }
+        } catch (\Exception $e) {
+            return $startDate.' - '.$endDate;
+        }
     }
 }

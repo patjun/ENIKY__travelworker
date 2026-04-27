@@ -25,6 +25,10 @@ class AccessibilityAttributeResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Accessibility Attributes';
 
+    protected static ?int $navigationSort = 40;
+
+    protected static ?string $navigationGroup = 'Places Management';
+
     public static function form(Form $form): Form
     {
         return $form
@@ -92,11 +96,13 @@ class AccessibilityAttributeResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn ($record) => static::canDelete($record)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()?->hasAnyRole(['super_admin', 'admin']) ?? false),
                 ]),
             ])
             ->defaultSort('placeholder', 'asc');
@@ -116,5 +122,100 @@ class AccessibilityAttributeResource extends Resource
             'create' => Pages\CreateAccessibilityAttribute::route('/create'),
             'edit' => Pages\EditAccessibilityAttribute::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $user->can('view accessibility_attributes');
+    }
+
+    public static function canCreate(): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $user->can('create accessibility_attributes');
+    }
+
+    public static function canEdit($record): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        // Editor kann nicht löschen, aber bearbeiten
+        if ($user->hasRole('editor')) {
+            return $user->can('edit accessibility_attributes');
+        }
+
+        // Admin kann alles bearbeiten
+        if ($user->hasRole('admin')) {
+            return $user->can('edit accessibility_attributes');
+        }
+
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        // Editor kann nicht löschen
+        if ($user->hasRole('editor')) {
+            return false;
+        }
+
+        // Admin kann alles löschen
+        if ($user->hasRole('admin')) {
+            return $user->can('delete accessibility_attributes');
+        }
+
+        return false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        // Super Admin hat vollen Zugriff
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $user->can('view accessibility_attributes');
     }
 }

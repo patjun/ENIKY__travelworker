@@ -5,6 +5,7 @@
 /vendor
 .env
 .env.backup
+.env.testing
 /.phpunit.cache
 docker-compose.override.yml
 Homestead.json
@@ -87,3 +88,7 @@ fabric.properties
 
 # testing
 /.phpunit.result.cache
+ 
+.DS_Store
+
+.env.testing

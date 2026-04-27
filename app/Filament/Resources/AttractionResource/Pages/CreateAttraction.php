@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\LocationResource\Pages;
+namespace App\Filament\Resources\AttractionResource\Pages;
 
-use App\Filament\Resources\LocationResource;
+use App\Filament\Resources\AttractionResource;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 
-class CreateLocation extends CreateRecord
+class CreateAttraction extends CreateRecord
 {
-    protected static string $resource = LocationResource::class;
+    protected static string $resource = AttractionResource::class;
 
     protected function getRedirectUrl(): string
     {

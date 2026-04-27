@@ -122,7 +122,7 @@
             >
                 <div class="p-4">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Suchen Sie nach einer Location
+                        Suchen Sie nach einer Attraktion
                     </label>
                     <input
                         x-ref="autocompleteInput"
@@ -131,7 +131,7 @@
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                     />
                     <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                        Wählen Sie eine Location aus der Liste. Die Place ID wird automatisch übernommen.
+                        Wählen Sie eine Attraktion aus der Liste. Die Place ID wird automatisch übernommen.
                     </p>
                 </div>
             </div>
@@ -149,7 +149,7 @@
                     </svg>
                     <div class="flex-1">
                         <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-1">
-                            Location ausgewählt
+                            Attraktion ausgewählt
                         </h4>
                         <p class="text-sm font-medium text-gray-700 dark:text-gray-300" x-text="selectedPlace?.name"></p>
                         <p class="text-xs text-gray-600 dark:text-gray-400 mt-1" x-text="selectedPlace?.address"></p>

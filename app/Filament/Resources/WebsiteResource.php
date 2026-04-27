@@ -77,4 +77,9 @@ class WebsiteResource extends Resource
             'edit' => Pages\EditWebsite::route('/{record}/edit'),
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 }

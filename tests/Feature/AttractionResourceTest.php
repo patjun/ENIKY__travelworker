@@ -1,0 +1,729 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Filament\Resources\AttractionResource;
+use App\Filament\Resources\AttractionResource\Pages\CreateAttraction;
+use App\Filament\Resources\AttractionResource\Pages\EditAttraction;
+use App\Filament\Resources\AttractionResource\Pages\ListAttractions;
+use App\Jobs\ProcessDataForSeoOrchestrator;
+use App\Models\AccessibilityAttribute;
+use App\Models\Attraction;
+use App\Models\City;
+use App\Models\Country;
+use App\Models\User;
+use Filament\Facades\Filament;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
+use Livewire\Livewire;
+use Tests\TestCase;
+
+class AttractionResourceTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Set the current panel for Filament testing
+        Filament::setCurrentPanel(
+            Filament::getPanel('admin')
+        );
+    }
+
+    // ===== Authentication Tests =====
+
+    public function test_unauthenticated_users_cannot_access_attraction_list_page(): void
+    {
+        $response = $this->get(AttractionResource::getUrl('index'));
+
+        $response->assertRedirect('/admin/login');
+    }
+
+    public function test_unauthenticated_users_cannot_access_attraction_create_page(): void
+    {
+        $response = $this->get(AttractionResource::getUrl('create'));
+
+        $response->assertRedirect('/admin/login');
+    }
+
+    public function test_unauthenticated_users_cannot_access_attraction_edit_page(): void
+    {
+        $attraction = Attraction::factory()->create();
+
+        $response = $this->get(AttractionResource::getUrl('edit', ['record' => $attraction]));
+
+        $response->assertRedirect('/admin/login');
+    }
+
+    // ===== Authenticated User Tests =====
+
+    public function test_authenticated_users_can_render_attraction_list_page(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+
+        $response = $this->get(AttractionResource::getUrl('index'));
+
+        $response->assertSuccessful();
+    }
+
+    public function test_authenticated_users_can_render_attraction_create_page(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+
+        $response = $this->get(AttractionResource::getUrl('create'));
+
+        $response->assertSuccessful();
+    }
+
+    public function test_authenticated_users_can_render_attraction_edit_page(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+
+        $response = $this->get(AttractionResource::getUrl('edit', ['record' => $attraction]));
+
+        $response->assertSuccessful();
+    }
+
+    // ===== List Page Functionality Tests =====
+
+    public function test_can_list_attractions(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attractions = Attraction::factory()->count(5)->create();
+
+        Livewire::test(ListAttractions::class)
+            ->assertCanSeeTableRecords($attractions);
+    }
+
+    public function test_can_search_attractions_by_name(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction1 = Attraction::factory()->create(['en_name' => 'Brandenburg Gate']);
+        $attraction2 = Attraction::factory()->create(['en_name' => 'Eiffel Tower']);
+        $attraction3 = Attraction::factory()->create(['en_name' => 'Colosseum']);
+
+        Livewire::test(ListAttractions::class)
+            ->searchTable('Brandenburg')
+            ->assertCanSeeTableRecords([$attraction1])
+            ->assertCanNotSeeTableRecords([$attraction2, $attraction3]);
+    }
+
+    public function test_can_filter_attractions_by_city(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $berlin = City::factory()->create(['name_de' => 'Berlin']);
+        $paris = City::factory()->create(['name_de' => 'Paris']);
+
+        $berlinAttractions = Attraction::factory()->count(2)->create(['city_id' => $berlin->id]);
+        $parisAttractions = Attraction::factory()->count(2)->create(['city_id' => $paris->id]);
+
+        Livewire::test(ListAttractions::class)
+            ->filterTable('city_id', $berlin->id)
+            ->assertCanSeeTableRecords($berlinAttractions)
+            ->assertCanNotSeeTableRecords($parisAttractions);
+    }
+
+    public function test_can_filter_attractions_by_country(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $germany = Country::factory()->create(['name_de' => 'Deutschland', 'code' => 'DE']);
+        $france = Country::factory()->create(['name_de' => 'Frankreich', 'code' => 'FR']);
+
+        $germanCity = City::factory()->create(['country_id' => $germany->id]);
+        $frenchCity = City::factory()->create(['country_id' => $france->id]);
+
+        $germanAttractions = Attraction::factory()->count(2)->create(['city_id' => $germanCity->id]);
+        $frenchAttractions = Attraction::factory()->count(2)->create(['city_id' => $frenchCity->id]);
+
+        Livewire::test(ListAttractions::class)
+            ->filterTable('country', $germany->id)
+            ->assertCanSeeTableRecords($germanAttractions)
+            ->assertCanNotSeeTableRecords($frenchAttractions);
+    }
+
+    // ===== Create Page Functionality Tests =====
+
+    public function test_can_create_attraction(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $city = City::factory()->create();
+
+        $newAttractionData = [
+            'name' => 'Test Attraction DE',
+            'en_name' => 'Test Attraction EN',
+            'city_id' => $city->id,
+            'street' => 'Test Street 123',
+            'zip' => '12345',
+            'website' => 'https://example.com',
+            'en_website' => 'https://example.com',
+            'rating_value' => 4.5,
+            'rating_votes_count' => 100,
+            'latitude' => 52.520008,
+            'longitude' => 13.404954,
+            'place_id' => 'test_place_id_123',
+        ];
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm($newAttractionData)
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas(Attraction::class, [
+            'name' => 'Test Attraction DE',
+            'en_name' => 'Test Attraction EN',
+            'city_id' => $city->id,
+            'place_id' => 'test_place_id_123',
+        ]);
+    }
+
+    public function test_create_attraction_validates_required_fields(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm([
+                'name' => '',
+                'en_name' => '',
+                'city_id' => null,
+                'street' => '',
+                'zip' => '',
+                'website' => '',
+                'en_website' => '',
+                'rating_value' => null,
+                'rating_votes_count' => null,
+                'latitude' => null,
+                'longitude' => null,
+                'place_id' => '',
+            ])
+            ->call('create')
+            ->assertHasFormErrors([
+                'name' => 'required',
+                'en_name' => 'required',
+                'city_id' => 'required',
+                'street' => 'required',
+                'zip' => 'required',
+                'website' => 'required',
+                'en_website' => 'required',
+                'rating_value' => 'required',
+                'rating_votes_count' => 'required',
+                'latitude' => 'required',
+                'longitude' => 'required',
+                'place_id' => 'required',
+            ]);
+    }
+
+    public function test_create_attraction_validates_email_format(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $city = City::factory()->create();
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm([
+                'name' => 'Test Attraction',
+                'en_name' => 'Test Attraction EN',
+                'city_id' => $city->id,
+                'email' => 'invalid-email',
+                'street' => 'Test Street',
+                'zip' => '12345',
+                'website' => 'https://example.com',
+                'en_website' => 'https://example.com',
+                'rating_value' => 4.5,
+                'rating_votes_count' => 100,
+                'latitude' => 52.520008,
+                'longitude' => 13.404954,
+                'place_id' => 'test_place_id',
+            ])
+            ->call('create')
+            ->assertHasFormErrors([
+                'email' => 'email',
+            ]);
+    }
+
+    public function test_create_attraction_validates_url_format(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $city = City::factory()->create();
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm([
+                'name' => 'Test Attraction',
+                'en_name' => 'Test Attraction EN',
+                'city_id' => $city->id,
+                'website' => 'invalid-url',
+                'en_website' => 'another-invalid-url',
+                'street' => 'Test Street',
+                'zip' => '12345',
+                'rating_value' => 4.5,
+                'rating_votes_count' => 100,
+                'latitude' => 52.520008,
+                'longitude' => 13.404954,
+                'place_id' => 'test_place_id',
+            ])
+            ->call('create')
+            ->assertHasFormErrors([
+                'website' => 'url',
+                'en_website' => 'url',
+            ]);
+    }
+
+    public function test_create_attraction_validates_rating_range(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $city = City::factory()->create();
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm([
+                'name' => 'Test Attraction',
+                'en_name' => 'Test Attraction EN',
+                'city_id' => $city->id,
+                'street' => 'Test Street',
+                'zip' => '12345',
+                'website' => 'https://example.com',
+                'en_website' => 'https://example.com',
+                'rating_value' => 6.0, // Above maximum
+                'rating_votes_count' => -1, // Below minimum
+                'latitude' => 52.520008,
+                'longitude' => 13.404954,
+                'place_id' => 'test_place_id',
+            ])
+            ->call('create')
+            ->assertHasFormErrors([
+                'rating_value' => 'max',
+                'rating_votes_count' => 'min',
+            ]);
+    }
+
+    // ===== Edit Page Functionality Tests =====
+
+    public function test_can_retrieve_attraction_data_for_editing(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+
+        Livewire::test(EditAttraction::class, [
+            'record' => $attraction->getRouteKey(),
+        ])
+            ->assertFormSet([
+                'name' => $attraction->name,
+                'en_name' => $attraction->en_name,
+                'city_id' => $attraction->city_id,
+                'street' => $attraction->street,
+                'place_id' => $attraction->place_id,
+            ]);
+    }
+
+    public function test_can_save_attraction_changes(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+        $newCity = City::factory()->create();
+
+        $updatedData = [
+            'name' => 'Updated Attraction DE',
+            'en_name' => 'Updated Attraction EN',
+            'city_id' => $newCity->id,
+            'street' => 'Updated Street 456',
+            'zip' => '54321',
+            'website' => 'https://updated-example.com',
+            'en_website' => 'https://updated-example.com',
+            'rating_value' => 3.8,
+            'rating_votes_count' => 250,
+            'latitude' => 51.5074,
+            'longitude' => -0.1278,
+            'place_id' => 'updated_place_id',
+        ];
+
+        Livewire::test(EditAttraction::class, [
+            'record' => $attraction->getRouteKey(),
+        ])
+            ->fillForm($updatedData)
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $attraction->refresh();
+        $this->assertEquals($updatedData['name'], $attraction->name);
+        $this->assertEquals($updatedData['en_name'], $attraction->en_name);
+        $this->assertEquals($updatedData['city_id'], $attraction->city_id);
+        $this->assertEquals($updatedData['place_id'], $attraction->place_id);
+    }
+
+    public function test_can_delete_attraction(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+
+        Livewire::test(EditAttraction::class, [
+            'record' => $attraction->getRouteKey(),
+        ])
+            ->callAction('delete');
+
+        // Since Attraction uses SoftDeletes, check that it's soft deleted
+        $this->assertSoftDeleted($attraction);
+    }
+
+    // ===== Relationship Tests =====
+
+    public function test_can_create_city_from_attraction_form(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $country = Country::factory()->create();
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm([
+                'name' => 'Test Attraction',
+                'en_name' => 'Test Attraction EN',
+                'street' => 'Test Street',
+                'zip' => '12345',
+                'website' => 'https://example.com',
+                'en_website' => 'https://example.com',
+                'rating_value' => 4.5,
+                'rating_votes_count' => 100,
+                'latitude' => 52.520008,
+                'longitude' => 13.404954,
+                'place_id' => 'test_place_id',
+            ])
+            ->callFormComponentAction('city_id', 'createOption', [
+                'country_id' => $country->id,
+                'name_de' => 'Neue Stadt',
+                'name_en' => 'New City',
+            ]);
+
+        $this->assertDatabaseHas(City::class, [
+            'country_id' => $country->id,
+            'name_de' => 'Neue Stadt',
+            'name_en' => 'New City',
+        ]);
+    }
+
+    public function test_can_associate_accessibility_attributes(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $city = City::factory()->create();
+        $accessibilityAttributes = AccessibilityAttribute::factory()->count(3)->create();
+
+        $attractionData = [
+            'name' => 'Accessible Attraction',
+            'en_name' => 'Accessible Attraction EN',
+            'city_id' => $city->id,
+            'street' => 'Test Street',
+            'zip' => '12345',
+            'website' => 'https://example.com',
+            'en_website' => 'https://example.com',
+            'rating_value' => 4.5,
+            'rating_votes_count' => 100,
+            'latitude' => 52.520008,
+            'longitude' => 13.404954,
+            'place_id' => 'test_place_id',
+            'accessibilityAttributes' => $accessibilityAttributes->pluck('id')->toArray(),
+        ];
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm($attractionData)
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $attraction = Attraction::where('name', 'Accessible Attraction')->first();
+        $this->assertCount(3, $attraction->accessibilityAttributes);
+    }
+
+    // ===== Table Action Tests =====
+
+    public function test_can_trigger_dataforseo_update_action(): void
+    {
+        Queue::fake();
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create(['place_id' => 'test_place_id_123']);
+
+        Livewire::test(ListAttractions::class)
+            ->callTableBulkAction('bulk_load_dataforseo', [$attraction]);
+
+        Queue::assertPushed(ProcessDataForSeoOrchestrator::class, function ($job) use ($attraction) {
+            return $job->location->id === $attraction->id;
+        });
+    }
+
+    public function test_dataforseo_update_action_fails_without_place_id(): void
+    {
+        Queue::fake();
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create(['place_id' => null]);
+
+        Livewire::test(ListAttractions::class)
+            ->callTableBulkAction('bulk_load_dataforseo', [$attraction]);
+
+        Queue::assertNotPushed(ProcessDataForSeoOrchestrator::class);
+    }
+
+    public function test_can_bulk_update_dataforseo(): void
+    {
+        Queue::fake();
+        $this->actingAs($this->createUserWithRole('admin'));
+        $withPlaceId = Attraction::factory()->count(2)->create(['place_id' => 'some_place_id']);
+        $withoutPlaceId = Attraction::factory()->create(['place_id' => null]);
+
+        Livewire::test(ListAttractions::class)
+            ->callTableBulkAction('bulk_load_dataforseo', [...$withPlaceId->all(), $withoutPlaceId]);
+
+        Queue::assertPushed(ProcessDataForSeoOrchestrator::class, 2);
+    }
+
+    // ===== Form Component Tests =====
+
+    public function test_city_select_is_searchable_and_preloaded(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+
+        Livewire::test(CreateAttraction::class)
+            ->assertFormFieldExists('city_id', function ($field): bool {
+                return $field->isSearchable() && $field->isPreloaded();
+            });
+    }
+
+    public function test_accessibility_attributes_select_is_multiple(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+
+        Livewire::test(CreateAttraction::class)
+            ->assertFormFieldExists('accessibilityAttributes', function ($field): bool {
+                return $field->isMultiple();
+            });
+    }
+
+    public function test_opening_hours_repeater_has_correct_schema(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $city = City::factory()->create();
+
+        $openingHoursData = [
+            'name' => 'Test Attraction',
+            'en_name' => 'Test Attraction EN',
+            'city_id' => $city->id,
+            'street' => 'Test Street',
+            'zip' => '12345',
+            'website' => 'https://example.com',
+            'en_website' => 'https://example.com',
+            'rating_value' => 4.5,
+            'rating_votes_count' => 100,
+            'latitude' => 52.520008,
+            'longitude' => 13.404954,
+            'place_id' => 'test_place_id',
+            'manual_opening_hours' => [
+                [
+                    'name' => null,
+                    'is_year_round' => true,
+                    'start_date' => null,
+                    'end_date' => null,
+                    'time_slots' => [
+                        [
+                            'days' => ['monday', 'tuesday'],
+                            'open_time' => '09:00',
+                            'close_time' => '17:00',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm($openingHoursData)
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas(Attraction::class, [
+            'name' => 'Test Attraction',
+        ]);
+
+        $attraction = Attraction::where('name', 'Test Attraction')->first();
+        $this->assertNotNull($attraction->manual_opening_hours);
+        $this->assertIsArray($attraction->manual_opening_hours);
+        $this->assertArrayHasKey('time_slots', $attraction->manual_opening_hours[0]);
+    }
+
+    public function test_can_create_attraction_with_seasonal_opening_hours(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $city = City::factory()->create();
+
+        $attractionData = [
+            'name' => 'Seasonal Attraction',
+            'en_name' => 'Seasonal Attraction EN',
+            'city_id' => $city->id,
+            'street' => 'Test Street',
+            'zip' => '12345',
+            'website' => 'https://example.com',
+            'en_website' => 'https://example.com',
+            'rating_value' => 4.5,
+            'rating_votes_count' => 100,
+            'latitude' => 52.520008,
+            'longitude' => 13.404954,
+            'place_id' => 'test_place_id',
+            'manual_opening_hours' => [
+                [
+                    'name' => 'Winter Season',
+                    'is_year_round' => false,
+                    'start_month' => '11',
+                    'start_day' => '01',
+                    'end_month' => '03',
+                    'end_day' => '31',
+                    'start_date' => '11-01',
+                    'end_date' => '03-31',
+                    'time_slots' => [
+                        [
+                            'days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                            'open_time' => '09:00',
+                            'close_time' => '17:00',
+                        ],
+                    ],
+                ],
+                [
+                    'name' => 'Summer Season',
+                    'is_year_round' => false,
+                    'start_month' => '04',
+                    'start_day' => '01',
+                    'end_month' => '10',
+                    'end_day' => '31',
+                    'start_date' => '04-01',
+                    'end_date' => '10-31',
+                    'time_slots' => [
+                        [
+                            'days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                            'open_time' => '08:00',
+                            'close_time' => '20:00',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm($attractionData)
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $attraction = Attraction::where('name', 'Seasonal Attraction')->first();
+        $this->assertNotNull($attraction);
+        $hours = collect($attraction->manual_opening_hours);
+        $winterSeason = $hours->firstWhere('name', 'Winter Season');
+        $summerSeason = $hours->firstWhere('name', 'Summer Season');
+        $this->assertNotNull($winterSeason, 'Winter Season not found in manual_opening_hours');
+        $this->assertNotNull($summerSeason, 'Summer Season not found in manual_opening_hours');
+        $this->assertEquals('11-01', $winterSeason['start_date']);
+        $this->assertEquals('03-31', $winterSeason['end_date']);
+        $this->assertEquals('04-01', $summerSeason['start_date']);
+    }
+
+    public function test_attraction_generates_opening_hours_html_with_seasons(): void
+    {
+        $city = City::factory()->create();
+        $attraction = Attraction::factory()->create([
+            'city_id' => $city->id,
+            'manual_opening_hours' => [
+                [
+                    'name' => 'Winter',
+                    'is_year_round' => false,
+                    'start_date' => '11-01',
+                    'end_date' => '03-31',
+                    'time_slots' => [
+                        [
+                            'days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                            'open_time' => '09:00',
+                            'close_time' => '17:00',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $attraction->generateWidgets();
+
+        $this->assertNotNull($attraction->opening_hours_html);
+        $this->assertStringContainsString('details', $attraction->opening_hours_html);
+        $this->assertStringContainsString('Winter', $attraction->opening_hours_html);
+    }
+
+    public function test_attraction_generates_structured_data_with_valid_from_through(): void
+    {
+        $city = City::factory()->create();
+        $attraction = Attraction::factory()->create([
+            'city_id' => $city->id,
+            'name' => 'Test Attraction',
+            'en_name' => 'Test Attraction EN',
+            'manual_opening_hours' => [
+                [
+                    'name' => 'Summer',
+                    'is_year_round' => false,
+                    'start_date' => '04-01',
+                    'end_date' => '10-31',
+                    'time_slots' => [
+                        [
+                            'days' => ['monday', 'tuesday'],
+                            'open_time' => '09:00',
+                            'close_time' => '17:00',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $attraction->generateWidgets();
+
+        $this->assertNotNull($attraction->structured_data);
+        $structuredData = json_decode(strip_tags($attraction->structured_data), true);
+        $this->assertArrayHasKey('openingHoursSpecification', $structuredData);
+
+        $spec = $structuredData['openingHoursSpecification'][0];
+        $this->assertArrayHasKey('validFrom', $spec);
+        $this->assertArrayHasKey('validThrough', $spec);
+        $this->assertEquals('--04-01', $spec['validFrom']);
+        $this->assertEquals('--10-31', $spec['validThrough']);
+    }
+
+    public function test_attraction_opens_next_season_when_no_current_season(): void
+    {
+        $city = City::factory()->create();
+
+        // Create seasons where none is currently active (assuming test runs when neither is active)
+        // Winter: Nov 1 - Mar 31, Summer: Apr 1 - Oct 31
+        $attraction = Attraction::factory()->create([
+            'city_id' => $city->id,
+            'manual_opening_hours' => [
+                [
+                    'name' => 'Winter Past',
+                    'is_year_round' => false,
+                    'start_date' => '01-01',
+                    'end_date' => '01-15',
+                    'time_slots' => [
+                        [
+                            'days' => ['monday'],
+                            'open_time' => '09:00',
+                            'close_time' => '17:00',
+                        ],
+                    ],
+                ],
+                [
+                    'name' => 'Summer Future',
+                    'is_year_round' => false,
+                    'start_date' => '12-15',
+                    'end_date' => '12-31',
+                    'time_slots' => [
+                        [
+                            'days' => ['monday'],
+                            'open_time' => '08:00',
+                            'close_time' => '20:00',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $attraction->generateWidgets();
+
+        $this->assertNotNull($attraction->opening_hours_html);
+        // The HTML should contain the details element with 'open' attribute
+        $this->assertStringContainsString('<details', $attraction->opening_hours_html);
+        $this->assertStringContainsString('open', $attraction->opening_hours_html);
+    }
+}

@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Location;
+use App\Models\Attraction;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -15,10 +15,11 @@ class ProcessDataForSeoOrchestrator implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 300;
+
     public int $tries = 3;
 
     public function __construct(
-        public Location $location
+        public Attraction $location
     ) {
         //
     }
@@ -28,23 +29,23 @@ class ProcessDataForSeoOrchestrator implements ShouldQueue
         try {
             $this->location->update([
                 'job_status' => 'orchestrating',
-                'en_job_status' => 'orchestrating'
+                'en_job_status' => 'orchestrating',
             ]);
 
             Log::info('Starting DataForSEO orchestration for location (English only)', ['location_id' => $this->location->id]);
 
             // Dispatch only English task (coordinates are language-independent)
-            \App\Jobs\ProcessDataForSeoTaskPostEnglish::dispatch($this->location);
+            ProcessDataForSeoTaskPostEnglish::dispatch($this->location);
 
         } catch (\Exception $e) {
             Log::error('DataForSEO orchestration failed', [
                 'location_id' => $this->location->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             $this->location->update([
                 'job_status' => 'failed',
-                'en_job_status' => 'failed'
+                'en_job_status' => 'failed',
             ]);
             throw $e;
         }
