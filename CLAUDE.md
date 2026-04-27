@@ -32,7 +32,8 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - Do not change the application's dependencies without approval.
 
 ## Frontend Bundling
-- If the user doesn't see a frontend change reflected in the UI, it could mean they need to run `npm run build`, `npm run dev`, or `composer run dev`. Ask them.
+- This project uses **Vite** (entry points in `vite.config.js`). For local development with HMR run `npm run dev`; for production assets run `npm run build`. Filament's own component assets are still managed via `php artisan filament:upgrade`.
+- If a frontend change is not visible in the UI, ask whether the user has run `npm run dev` (HMR) or `npm run build` (committed assets).
 
 ## Replies
 - Be concise in your explanations - focus on what's important rather than explaining obvious details.

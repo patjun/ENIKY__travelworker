@@ -7,36 +7,12 @@
 
         <title>Login</title>
 
-        <style>
-            html, body {
-                height: 100%;
-            }
-
-            body {
-                margin: 0;
-                font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-                background-color: #f7fafc;
-                color: #4a5568;
-            }
-
-            .login {
-                position: fixed;
-                top: 1.5rem;
-                right: 1.5rem;
-                font-size: 0.875rem;
-                font-weight: 600;
-            }
-
-            .login a {
-                color: inherit;
-                text-decoration: underline;
-            }
-        </style>
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body>
+    <body class="h-full m-0 font-sans bg-slate-50 text-slate-600">
         @if (Route::has('filament.admin.auth.login'))
-            <div class="login">
-                <a href="{{ route('filament.admin.auth.login') }}">Log in</a>
+            <div class="fixed top-6 right-6 text-sm font-semibold">
+                <a href="{{ route('filament.admin.auth.login') }}" class="text-accent underline hover:text-primary">Log in</a>
             </div>
         @endif
     </body>
