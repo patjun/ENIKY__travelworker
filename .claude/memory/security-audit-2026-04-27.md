@@ -16,6 +16,7 @@ type: project
 - Removed Laravel Mix and the entire `webpack-dev-server` / `webpack-notifier` / `sockjs` / `uuid` / `elliptic` / `create-ecdh` toolchain.
 - Introduced Vite 6 + Tailwind 3 + PostCSS 8 + Autoprefixer 10 + `@fontsource/inter` + axios as the new frontend stack. (Vite was rolled to ^6.0.0 instead of the originally-pinned ^5.0.0 to satisfy `laravel-vite-plugin@1`'s peer range while still hitting `npm audit` 0.)
 - Added a Filament v3 custom theme at `resources/css/filament/admin/theme.css` with a shared `tailwind.config.js` re-export so the branding tokens live in exactly one place. The theme uses Filament's panel preset (`vendor/filament/filament/tailwind.config.preset`).
+- The panel preset (`vendor/filament/filament/tailwind.config.preset`) requires `@tailwindcss/forms` and `@tailwindcss/typography` as peer dependencies; both are declared in `devDependencies`.
 
 ## Branding tokens (single source of truth: `tailwind.config.js`)
 - Primary: `#5cd0dd` (turquoise) — also mapped via `Color::hex('#5cd0dd')` in the AdminPanelProvider.

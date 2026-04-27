@@ -79,6 +79,8 @@ Replace the entire contents of `package.json` with:
     },
     "devDependencies": {
         "@fontsource/inter": "^5.0.0",
+        "@tailwindcss/forms": "^0.5.0",
+        "@tailwindcss/typography": "^0.5.0",
         "autoprefixer": "^10.4.0",
         "axios": "^1.6.4",
         "laravel-vite-plugin": "^1.0.0",
@@ -88,6 +90,8 @@ Replace the entire contents of `package.json` with:
     }
 }
 ```
+
+`@tailwindcss/forms` and `@tailwindcss/typography` are required by Filament's panel preset (`vendor/filament/filament/tailwind.config.preset`) as peer dependencies.
 
 - [ ] **Step 4: Commit Mix removal**
 
@@ -276,10 +280,12 @@ If the artisan command added duplicates or alternate entries, deduplicate to the
 
 - [ ] **Step 3: Reconcile any auto-edits to `package.json`**
 
-Open `package.json`. The artisan command may add a `tailwindcss-forms` plugin or similar; remove additions that are not in the Task 1 / Step 3 list. The expected `devDependencies` set is exactly:
+Open `package.json`. The artisan command may add additional plugins; reconcile against the Task 1 / Step 3 list. The expected `devDependencies` set is exactly:
 
 ```json
 "@fontsource/inter": "^5.0.0",
+"@tailwindcss/forms": "^0.5.0",
+"@tailwindcss/typography": "^0.5.0",
 "autoprefixer": "^10.4.0",
 "axios": "^1.6.4",
 "laravel-vite-plugin": "^1.0.0",
@@ -288,7 +294,7 @@ Open `package.json`. The artisan command may add a `tailwindcss-forms` plugin or
 "vite": "^5.0.0"
 ```
 
-If `package.json` changed, run `npm install` to refresh `package-lock.json`.
+`@tailwindcss/forms` and `@tailwindcss/typography` MUST stay — they are peer dependencies of Filament's panel preset. If `package.json` changed, run `npm install` to refresh `package-lock.json`.
 
 - [ ] **Step 4: Replace the generated `theme.css` with the spec form**
 

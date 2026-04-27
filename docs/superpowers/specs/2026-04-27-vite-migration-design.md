@@ -196,6 +196,8 @@ Strukturell unverändert (142 Zeilen Inhalt bleiben bestehen). Änderungen:
         "vite": "^5",
         "laravel-vite-plugin": "^1",
         "tailwindcss": "^3",
+        "@tailwindcss/forms": "^0.5",
+        "@tailwindcss/typography": "^0.5",
         "postcss": "^8",
         "autoprefixer": "^10",
         "@fontsource/inter": "^5",
@@ -203,6 +205,8 @@ Strukturell unverändert (142 Zeilen Inhalt bleiben bestehen). Änderungen:
     }
 }
 ```
+
+`@tailwindcss/forms` und `@tailwindcss/typography` sind Peer-Dependencies des Filament-Panel-Presets (`vendor/filament/filament/tailwind.config.preset`).
 
 ---
 
