@@ -107,7 +107,7 @@ Die `theme.css` startet mit:
 @import '@fontsource/inter/600.css';
 @import '@fontsource/inter/700.css';
 
-@import '/vendor/filament/filament/resources/css/theme.css';
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
 
 @config 'tailwind.config.js';
 ```
@@ -115,7 +115,7 @@ Die `theme.css` startet mit:
 Die Theme-spezifische `tailwind.config.js` erbt die Tokens aus der Root-Config:
 
 ```js
-import preset from '../../../../vendor/filament/support/tailwind.config.preset';
+import preset from '../../../../vendor/filament/filament/tailwind.config.preset';
 import frontendConfig from '../../../../tailwind.config.js';
 
 export default {

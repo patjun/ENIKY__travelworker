@@ -300,7 +300,7 @@ Replace the entire contents of `resources/css/filament/admin/theme.css` with:
 @import '@fontsource/inter/600.css';
 @import '@fontsource/inter/700.css';
 
-@import '/vendor/filament/filament/resources/css/theme.css';
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
 
 @config 'tailwind.config.js';
 ```
@@ -310,7 +310,7 @@ Replace the entire contents of `resources/css/filament/admin/theme.css` with:
 Replace the entire contents of `resources/css/filament/admin/tailwind.config.js` with:
 
 ```js
-import preset from '../../../../vendor/filament/support/tailwind.config.preset';
+import preset from '../../../../vendor/filament/filament/tailwind.config.preset';
 import frontendConfig from '../../../../tailwind.config.js';
 
 export default {
