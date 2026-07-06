@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Location;
 use App\Jobs\ProcessDataForSeoOrchestrator;
-use Illuminate\Console\Command;
+use App\Models\Attraction;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class CheckRecentLocationsCommand extends Command
 {
@@ -35,24 +35,25 @@ class CheckRecentLocationsCommand extends Command
         $this->info("Checking for locations that haven't been updated for more than {$days} days...");
 
         // Find locations that haven't been updated in the last X days (outdated)
-        $outdatedLocations = Location::where(function ($query) use ($days) {
+        $outdatedLocations = Attraction::where(function ($query) use ($days) {
             $query->where(function ($q) use ($days) {
                 // Check if last_dataforseo_update is older than X days OR is null
                 $q->where('last_dataforseo_update', '<', Carbon::now()->subDays($days))
-                  ->orWhereNull('last_dataforseo_update');
+                    ->orWhereNull('last_dataforseo_update');
             })
-            ->where(function ($q) use ($days) {
-                // Check if en_last_dataforseo_update is older than X days OR is null
-                $q->where('en_last_dataforseo_update', '<', Carbon::now()->subDays($days))
-                  ->orWhereNull('en_last_dataforseo_update');
-            });
+                ->where(function ($q) use ($days) {
+                    // Check if en_last_dataforseo_update is older than X days OR is null
+                    $q->where('en_last_dataforseo_update', '<', Carbon::now()->subDays($days))
+                        ->orWhereNull('en_last_dataforseo_update');
+                });
         })
-        ->whereNotNull('place_id')
-        ->where('place_id', '!=', '')
-        ->get();
+            ->whereNotNull('place_id')
+            ->where('place_id', '!=', '')
+            ->get();
 
         if ($outdatedLocations->isEmpty()) {
             $this->info('No outdated locations found that need updating.');
+
             return 0;
         }
 
@@ -63,8 +64,8 @@ class CheckRecentLocationsCommand extends Command
         $skippedJobs = 0;
 
         foreach ($outdatedLocations as $location) {
-            $canStartJob = !in_array($location->job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready']) &&
-                          !in_array($location->en_job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready']);
+            $canStartJob = ! in_array($location->job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready']) &&
+                          ! in_array($location->en_job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready']);
 
             $status = $canStartJob ? 'Ready for update' : 'Job already running';
 
@@ -95,30 +96,33 @@ class CheckRecentLocationsCommand extends Command
                 $lastUpdate,
                 $location->job_status ?: 'none',
                 $location->en_job_status ?: 'none',
-                $status
+                $status,
             ];
         }
 
         $this->table([
-            'ID', 'Name', 'City', 'Last DataForSEO Update', 'DE Status', 'EN Status', 'Action'
+            'ID', 'Name', 'City', 'Last DataForSEO Update', 'DE Status', 'EN Status', 'Action',
         ], $table);
 
         if ($isDryRun) {
             $this->warn("DRY RUN MODE: Would start {$jobsToStart} job(s), skip {$skippedJobs} job(s)");
+
             return 0;
         }
 
         if ($jobsToStart === 0) {
             $this->info('No jobs need to be started (all locations are already being processed).');
+
             return 0;
         }
 
         // Skip confirmation if force flag is set
-        if (!$isForced) {
+        if (! $isForced) {
             $confirm = $this->confirm("Do you want to start {$jobsToStart} ProcessDataForSeoOrchestrator job(s)?");
 
-            if (!$confirm) {
+            if (! $confirm) {
                 $this->info('Operation cancelled.');
+
                 return 0;
             }
         } else {
@@ -130,14 +134,14 @@ class CheckRecentLocationsCommand extends Command
         $progressBar = $this->output->createProgressBar($jobsToStart);
 
         foreach ($outdatedLocations as $location) {
-            $canStartJob = !in_array($location->job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready']) &&
-                          !in_array($location->en_job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready']);
+            $canStartJob = ! in_array($location->job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready']) &&
+                          ! in_array($location->en_job_status, ['processing', 'posting_task', 'checking_ready', 'getting_results', 'orchestrating', 'task_posted', 'task_ready']);
 
             if ($canStartJob) {
                 ProcessDataForSeoOrchestrator::dispatch($location);
                 $location->update([
                     'job_status' => 'pending',
-                    'en_job_status' => 'pending'
+                    'en_job_status' => 'pending',
                 ]);
                 $startedJobs++;
                 $progressBar->advance();
