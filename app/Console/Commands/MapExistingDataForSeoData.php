@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Location;
+use App\Models\Attraction;
 use Illuminate\Console\Command;
 
 class MapExistingDataForSeoData extends Command
@@ -26,7 +26,7 @@ class MapExistingDataForSeoData extends Command
      */
     public function handle()
     {
-        $locations = Location::whereNotNull('task_get_output')->get();
+        $locations = Attraction::whereNotNull('task_get_output')->get();
 
         $this->info("Found {$locations->count()} locations with DataForSEO data");
 
@@ -129,7 +129,7 @@ class MapExistingDataForSeoData extends Command
                         $updateData['additional_categories'] = $businessData['additional_categories'];
                     }
 
-                    if (!empty($updateData)) {
+                    if (! empty($updateData)) {
                         $location->update($updateData);
                         $mappedCount++;
                         $this->info("✓ Mapped data for location ID {$location->id}: {$location->name}");
