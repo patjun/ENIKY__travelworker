@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Jobs\UpdateLocationBusinessData;
-use App\Models\Location;
+use App\Models\Attraction;
 use Illuminate\Console\Command;
 
 class UpdateAllLocationBusinessData extends Command
@@ -16,12 +16,12 @@ class UpdateAllLocationBusinessData extends Command
     {
         $this->info('Starting location business data update...');
 
-        $query = Location::query()->whereNotNull('cid')->where('cid', '!=', '');
+        $query = Attraction::query()->whereNotNull('cid')->where('cid', '!=', '');
 
-        if (!$this->option('force')) {
+        if (! $this->option('force')) {
             $query->where(function ($q) {
                 $q->whereNull('last_dataforseo_update')
-                  ->orWhere('last_dataforseo_update', '<', now()->subDays(7));
+                    ->orWhere('last_dataforseo_update', '<', now()->subDays(7));
             });
         }
 
@@ -29,6 +29,7 @@ class UpdateAllLocationBusinessData extends Command
 
         if ($locations->isEmpty()) {
             $this->info('No locations need updating.');
+
             return 0;
         }
 

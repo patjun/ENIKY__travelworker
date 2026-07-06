@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Location;
+use App\Models\Attraction;
 use App\Services\AttractionSyncService;
 use Illuminate\Console\Command;
 
@@ -30,26 +30,28 @@ class SyncAttractionsToWordPress extends Command
         $language = $this->option('language');
 
         // Validate language option
-        if (!in_array($language, ['de', 'en', 'both'])) {
+        if (! in_array($language, ['de', 'en', 'both'])) {
             $this->error('Invalid language option. Use: de, en, or both');
+
             return Command::FAILURE;
         }
 
         $this->info('Starting WordPress synchronization...');
         $this->newLine();
 
-        $syncService = new AttractionSyncService();
+        $syncService = new AttractionSyncService;
         $languages = $language === 'both' ? ['de', 'en'] : [$language];
         $results = [];
 
         foreach ($languages as $lang) {
             $this->info("Syncing to WordPress ({$lang})...");
 
-            $locations = Location::whereNull('deleted_at')->get();
+            $locations = Attraction::whereNull('deleted_at')->get();
             $total = $locations->count();
 
             if ($total === 0) {
                 $this->warn("No locations found to sync for language: {$lang}");
+
                 continue;
             }
 
@@ -69,7 +71,7 @@ class SyncAttractionsToWordPress extends Command
                     $name = $lang === 'en' ? ($location->en_name ?: $location->name) : $location->name;
                     $errors[] = [
                         'id' => $location->id,
-                        'name' => $name
+                        'name' => $name,
                     ];
                 }
 
@@ -83,7 +85,7 @@ class SyncAttractionsToWordPress extends Command
                 'total' => $total,
                 'success' => $successCount,
                 'failed' => $errorCount,
-                'errors' => $errors
+                'errors' => $errors,
             ];
         }
 
@@ -97,7 +99,7 @@ class SyncAttractionsToWordPress extends Command
                 'Language' => strtoupper($lang),
                 'Total' => $stats['total'],
                 'Success' => $stats['success'],
-                'Failed' => $stats['failed']
+                'Failed' => $stats['failed'],
             ];
         }
 
@@ -109,7 +111,7 @@ class SyncAttractionsToWordPress extends Command
         // Display errors if any
         $hasErrors = false;
         foreach ($results as $lang => $stats) {
-            if (!empty($stats['errors'])) {
+            if (! empty($stats['errors'])) {
                 $hasErrors = true;
                 $this->newLine();
                 $this->error("Failed locations for {$lang}:");
@@ -123,10 +125,12 @@ class SyncAttractionsToWordPress extends Command
 
         if ($hasErrors) {
             $this->warn('Synchronization completed with errors. Check logs for details.');
+
             return Command::FAILURE;
         }
 
         $this->info('Synchronization completed successfully!');
+
         return Command::SUCCESS;
     }
 }
