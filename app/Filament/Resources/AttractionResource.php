@@ -51,7 +51,7 @@ class AttractionResource extends Resource
                 ->columnSpanFull()
                 ->tabs([
                     Forms\Components\Tabs\Tab::make('English')
-                        ->label(fn (Get $get) => ($get('en_name') ?? 'New Attraction').' - EN')
+                        ->label(fn (Get $get) => '🇬🇧 EN · '.($get('en_name') ?? 'New Attraction'))
                         ->schema([
                             Forms\Components\Grid::make(2)
                                 ->schema([
@@ -104,7 +104,7 @@ class AttractionResource extends Resource
                                 ]),
                         ]),
                     Forms\Components\Tabs\Tab::make('German')
-                        ->label(fn (Get $get) => ($get('name') ?? 'Neue Attraktion').' - DE')
+                        ->label(fn (Get $get) => '🇩🇪 DE · '.($get('name') ?? 'Neue Attraktion'))
                         ->schema([
                             Forms\Components\Grid::make(2)
                                 ->schema([
