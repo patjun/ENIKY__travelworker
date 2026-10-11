@@ -325,9 +325,11 @@ class AttractionResource extends Resource
                                 ->zoom(13)
                                 ->detectRetina()
                                 ->extraTileControl([])
+                                ->extraStyles(['min-height: 60vh'])
                                 ->extraControl([
                                     'zoomDelta' => 1,
                                     'zoomSnap' => 2,
+                                    'scrollWheelZoom' => false,
                                 ]),
                         ]),
                 ]),
