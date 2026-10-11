@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\AttractionResource\Pages;
 use App\Jobs\ProcessDataForSeoOrchestrator;
 use App\Models\Attraction;
+use App\Models\Country;
 use Dotswan\MapPicker\Fields\Map;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -14,6 +15,9 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\HtmlString;
 
 class AttractionResource extends Resource
@@ -166,10 +170,12 @@ class AttractionResource extends Resource
                                     ->icon('heroicon-o-magnifying-glass')
                                     ->color('primary')
                                     ->action(function (Set $set, Get $get) {
-                                        $searchQuery = $get('en_name');
+                                        $germanName = $get('name');
+                                        $searchQuery = $get('en_name')
+                                            ?: ($germanName !== 'Neue Attraktion' ? $germanName : null);
 
                                         if (empty($searchQuery)) {
-                                            \Filament\Notifications\Notification::make()
+                                            Notification::make()
                                                 ->title('Error')
                                                 ->body('Please enter a name or address.')
                                                 ->warning()
@@ -179,26 +185,22 @@ class AttractionResource extends Resource
                                         }
 
                                         // Use Nominatim (OpenStreetMap) for geocoding
-                                        $url = 'https://nominatim.openstreetmap.org/search?'.http_build_query([
-                                            'q' => $searchQuery,
-                                            'format' => 'json',
-                                            'limit' => 1,
-                                            'addressdetails' => 1,
-                                            'accept-language' => 'en',
-                                        ]);
+                                        try {
+                                            $response = Http::withUserAgent('TravelWorker Attraction Finder')
+                                                ->timeout(10)
+                                                ->get('https://nominatim.openstreetmap.org/search', [
+                                                    'q' => $searchQuery,
+                                                    'format' => 'json',
+                                                    'limit' => 1,
+                                                    'addressdetails' => 1,
+                                                    'accept-language' => 'en',
+                                                ]);
+                                        } catch (ConnectionException) {
+                                            $response = null;
+                                        }
 
-                                        $ch = curl_init();
-                                        curl_setopt($ch, CURLOPT_URL, $url);
-                                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                                        curl_setopt($ch, CURLOPT_USERAGENT, 'TravelWorker Attraction Finder');
-                                        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-
-                                        $response = curl_exec($ch);
-                                        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                                        curl_close($ch);
-
-                                        if ($httpCode === 200 && $response) {
-                                            $results = json_decode($response, true);
+                                        if ($response?->successful()) {
+                                            $results = $response->json();
 
                                             if (! empty($results) && isset($results[0])) {
                                                 $result = $results[0];
@@ -220,20 +222,20 @@ class AttractionResource extends Resource
                                                     $set('zip', $address['postcode']);
                                                 }
 
-                                                \Filament\Notifications\Notification::make()
+                                                Notification::make()
                                                     ->title('Address Found')
                                                     ->body('Address data and coordinates have been successfully updated.')
                                                     ->success()
                                                     ->send();
                                             } else {
-                                                \Filament\Notifications\Notification::make()
+                                                Notification::make()
                                                     ->title('No Results')
                                                     ->body('No results were found for this search.')
                                                     ->warning()
                                                     ->send();
                                             }
                                         } else {
-                                            \Filament\Notifications\Notification::make()
+                                            Notification::make()
                                                 ->title('Error')
                                                 ->body('Address search failed. Please try again.')
                                                 ->danger()
@@ -377,31 +379,31 @@ class AttractionResource extends Resource
                                 ->content(function (Get $get) {
                                     $allSeasons = $get('../../manual_opening_hours') ?? [];
                                     $hasYearRound = false;
-                                    
+
                                     foreach ($allSeasons as $season) {
                                         if (isset($season['is_year_round']) && $season['is_year_round']) {
                                             $hasYearRound = true;
                                             break;
                                         }
                                     }
-                                    
+
                                     if ($hasYearRound && count($allSeasons) > 1) {
                                         return new HtmlString('⚠️ <strong>Notice:</strong> You have a Year-Round season. It doesn\'t make sense to have multiple seasons when one is year-round. Consider removing either the year-round season or the seasonal ones.');
                                     }
-                                    
+
                                     return '';
                                 })
                                 ->visible(function (Get $get) {
                                     $allSeasons = $get('../../manual_opening_hours') ?? [];
                                     $hasYearRound = false;
-                                    
+
                                     foreach ($allSeasons as $season) {
                                         if (isset($season['is_year_round']) && $season['is_year_round']) {
                                             $hasYearRound = true;
                                             break;
                                         }
                                     }
-                                    
+
                                     return $hasYearRound && count($allSeasons) > 1;
                                 })
                                 ->extraAttributes(['class' => 'text-warning-600 text-sm']),
@@ -416,26 +418,26 @@ class AttractionResource extends Resource
                                         ->helperText(function (Get $get) {
                                             $allSeasons = $get('../../manual_opening_hours') ?? [];
                                             $seasonCount = count($allSeasons);
-                                            
+
                                             if ($seasonCount > 1) {
                                                 return '⚠️ Year-Round is only allowed when you have a single season. Remove other seasons first.';
                                             }
-                                            
+
                                             return 'This season applies all year (repeats every year)';
                                         })
                                         ->default(false)
                                         ->reactive()
                                         ->disabled(function (Get $get) {
                                             $allSeasons = $get('../../manual_opening_hours') ?? [];
-                                            $seasonCount = count(array_filter($allSeasons, function($season) {
-                                                return !empty($season); // Filter out empty entries
+                                            $seasonCount = count(array_filter($allSeasons, function ($season) {
+                                                return ! empty($season); // Filter out empty entries
                                             }));
-                                            
+
                                             // Disable if there's more than one season
                                             return $seasonCount > 1;
                                         })
                                         ->columnSpan(4),
-                                    
+
                                     // Start Date
                                     Forms\Components\Select::make('start_month')
                                         ->label('Start Month')
@@ -456,7 +458,7 @@ class AttractionResource extends Resource
                                         ->hidden(fn (Get $get) => $get('is_year_round'))
                                         ->required(fn (Get $get) => ! $get('is_year_round'))
                                         ->reactive()
-                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                             static::updateStartDate($get, $set);
                                             static::checkSeasonOverlaps($get, $set);
                                         })
@@ -465,19 +467,19 @@ class AttractionResource extends Resource
                                     Forms\Components\Select::make('start_day')
                                         ->label('Start Day')
                                         ->options(fn () => array_combine(
-                                            array_map(fn($i) => sprintf('%02d', $i), range(1, 31)),
+                                            array_map(fn ($i) => sprintf('%02d', $i), range(1, 31)),
                                             range(1, 31)
                                         ))
                                         ->hidden(fn (Get $get) => $get('is_year_round'))
                                         ->required(fn (Get $get) => ! $get('is_year_round'))
                                         ->reactive()
-                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                             static::updateStartDate($get, $set);
                                             static::checkSeasonOverlaps($get, $set);
                                         })
                                         ->dehydrated(false)
                                         ->columnSpan(1),
-                                    
+
                                     // End Date
                                     Forms\Components\Select::make('end_month')
                                         ->label('End Month')
@@ -498,7 +500,7 @@ class AttractionResource extends Resource
                                         ->hidden(fn (Get $get) => $get('is_year_round'))
                                         ->required(fn (Get $get) => ! $get('is_year_round'))
                                         ->reactive()
-                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                             static::updateEndDate($get, $set);
                                             static::checkSeasonOverlaps($get, $set);
                                         })
@@ -507,22 +509,22 @@ class AttractionResource extends Resource
                                     Forms\Components\Select::make('end_day')
                                         ->label('End Day')
                                         ->options(fn () => array_combine(
-                                            array_map(fn($i) => sprintf('%02d', $i), range(1, 31)),
+                                            array_map(fn ($i) => sprintf('%02d', $i), range(1, 31)),
                                             range(1, 31)
                                         ))
                                         ->hidden(fn (Get $get) => $get('is_year_round'))
                                         ->required(fn (Get $get) => ! $get('is_year_round'))
                                         ->reactive()
-                                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                             static::updateEndDate($get, $set);
                                             static::checkSeasonOverlaps($get, $set);
                                         })
                                         ->dehydrated(false)
                                         ->columnSpan(1),
-                                    
+
                                     // Hidden fields that store the actual MM-DD values
                                     Forms\Components\Hidden::make('start_date')
-                                        ->afterStateHydrated(function ($state, Forms\Set $set) {
+                                        ->afterStateHydrated(function ($state, Set $set) {
                                             if ($state && strpos($state, '-') !== false) {
                                                 [$month, $day] = explode('-', $state);
                                                 $set('start_month', $month);
@@ -530,7 +532,7 @@ class AttractionResource extends Resource
                                             }
                                         }),
                                     Forms\Components\Hidden::make('end_date')
-                                        ->afterStateHydrated(function ($state, Forms\Set $set) {
+                                        ->afterStateHydrated(function ($state, Set $set) {
                                             if ($state && strpos($state, '-') !== false) {
                                                 [$month, $day] = explode('-', $state);
                                                 $set('end_month', $month);
@@ -540,8 +542,8 @@ class AttractionResource extends Resource
                                 ]),
                             Forms\Components\Placeholder::make('overlap_warning')
                                 ->label('')
-                                ->content(fn (Forms\Get $get) => static::getOverlapWarning($get))
-                                ->visible(fn (Forms\Get $get) => static::hasOverlap($get))
+                                ->content(fn (Get $get) => static::getOverlapWarning($get))
+                                ->visible(fn (Get $get) => static::hasOverlap($get))
                                 ->extraAttributes(['class' => 'text-warning-600 text-sm']),
                             Forms\Components\Repeater::make('time_slots')
                                 ->label('Time Slots')
@@ -597,12 +599,11 @@ class AttractionResource extends Resource
                         ->reorderable()
                         ->collapsible()
                         ->collapsed()
-                        ->itemLabel(fn (array $state): ?string => 
-                            $state['is_year_round'] ?? false
+                        ->itemLabel(fn (array $state): ?string => $state['is_year_round'] ?? false
                                 ? ($state['name'] ?: 'Year-Round / Ganzjährig')
-                                : ($state['name'] ?: 'Season') . 
-                                  (isset($state['start_date']) && isset($state['end_date']) 
-                                    ? ' (' . static::formatDateForLabel($state['start_date']) . ' - ' . static::formatDateForLabel($state['end_date']) . ')' 
+                                : ($state['name'] ?: 'Season').
+                                  (isset($state['start_date']) && isset($state['end_date'])
+                                    ? ' ('.static::formatDateForLabel($state['start_date']).' - '.static::formatDateForLabel($state['end_date']).')'
                                     : '')
                         ),
                 ]),
@@ -639,9 +640,10 @@ class AttractionResource extends Resource
         if (strpos($date, '-') === false) {
             return $date;
         }
-        
+
         [$month, $day] = explode('-', $date);
-        return sprintf('%02d.%02d.', (int)$day, (int)$month);
+
+        return sprintf('%02d.%02d.', (int) $day, (int) $month);
     }
 
     /**
@@ -653,7 +655,7 @@ class AttractionResource extends Resource
         $openTime = $state['open_time'] ?? null;
         $closeTime = $state['close_time'] ?? null;
 
-        if (empty($days) || !$openTime || !$closeTime) {
+        if (empty($days) || ! $openTime || ! $closeTime) {
             return 'Time Slot';
         }
 
@@ -670,7 +672,7 @@ class AttractionResource extends Resource
 
         // Day order
         $dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-        
+
         // Sort days by order
         $sortedDays = array_intersect($dayOrder, $days);
         $sortedDays = array_values($sortedDays);
@@ -680,8 +682,8 @@ class AttractionResource extends Resource
         }
 
         // Format days
-        $dayLabels = array_map(fn($day) => $dayAbbr[$day] ?? $day, $sortedDays);
-        
+        $dayLabels = array_map(fn ($day) => $dayAbbr[$day] ?? $day, $sortedDays);
+
         // Try to group consecutive days (e.g., Mo-Fr)
         $formattedDays = static::formatDayRange($sortedDays, $dayAbbr);
 
@@ -689,7 +691,7 @@ class AttractionResource extends Resource
         $openFormatted = preg_replace('/:\d{2}$/', '', $openTime);
         $closeFormatted = preg_replace('/:\d{2}$/', '', $closeTime);
 
-        return $formattedDays . ': ' . $openFormatted . '-' . $closeFormatted;
+        return $formattedDays.': '.$openFormatted.'-'.$closeFormatted;
     }
 
     /**
@@ -702,15 +704,15 @@ class AttractionResource extends Resource
         }
 
         $dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-        
+
         // Find consecutive ranges
         $ranges = [];
         $currentRange = [$days[0]];
-        
+
         for ($i = 1; $i < count($days); $i++) {
             $currentIndex = array_search($days[$i - 1], $dayOrder);
             $nextIndex = array_search($days[$i], $dayOrder);
-            
+
             // Check if consecutive (handling week wrap-around)
             if ($nextIndex === $currentIndex + 1 || ($currentIndex === 6 && $nextIndex === 0)) {
                 $currentRange[] = $days[$i];
@@ -727,9 +729,9 @@ class AttractionResource extends Resource
             if (count($range) === 1) {
                 $formatted[] = $dayAbbr[$range[0]];
             } elseif (count($range) === 2) {
-                $formatted[] = $dayAbbr[$range[0]] . ', ' . $dayAbbr[$range[1]];
+                $formatted[] = $dayAbbr[$range[0]].', '.$dayAbbr[$range[1]];
             } else {
-                $formatted[] = $dayAbbr[$range[0]] . '-' . $dayAbbr[end($range)];
+                $formatted[] = $dayAbbr[$range[0]].'-'.$dayAbbr[end($range)];
             }
         }
 
@@ -743,9 +745,9 @@ class AttractionResource extends Resource
     {
         $month = $get('start_month');
         $day = $get('start_day');
-        
+
         if ($month && $day) {
-            $set('start_date', $month . '-' . $day);
+            $set('start_date', $month.'-'.$day);
         }
     }
 
@@ -756,9 +758,9 @@ class AttractionResource extends Resource
     {
         $month = $get('end_month');
         $day = $get('end_day');
-        
+
         if ($month && $day) {
-            $set('end_date', $month . '-' . $day);
+            $set('end_date', $month.'-'.$day);
         }
     }
 
@@ -777,15 +779,15 @@ class AttractionResource extends Resource
     protected static function hasOverlap(Get $get): bool
     {
         $seasons = $get('../../manual_opening_hours') ?? [];
-        
+
         if (empty($seasons) || count($seasons) < 2) {
             return false;
         }
 
         // Filter out year-round and incomplete seasons
         $validSeasons = array_filter($seasons, function ($season) {
-            return ! ($season['is_year_round'] ?? false) 
-                && ! empty($season['start_date']) 
+            return ! ($season['is_year_round'] ?? false)
+                && ! empty($season['start_date'])
                 && ! empty($season['end_date']);
         });
 
@@ -902,7 +904,7 @@ class AttractionResource extends Resource
                         }
                     })
                     ->options(function () {
-                        return \App\Models\Country::orderBy('name_de')->pluck('name_de', 'id')->toArray();
+                        return Country::orderBy('name_de')->pluck('name_de', 'id')->toArray();
                     })
                     ->searchable()
                     ->preload(),
@@ -925,7 +927,7 @@ class AttractionResource extends Resource
                         ->modalDescription('Möchten Sie die Daten für alle ausgewählten Attraktionen aktualisieren? Der Prozess wird im Hintergrund ausgeführt.')
                         ->modalSubmitActionLabel('Ja, alle in Queue einreihen')
                         ->visible(fn () => auth()->user()?->hasAnyRole(['super_admin', 'admin', 'editor']) ?? false)
-                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                        ->action(function (Collection $records) {
                             $processed = 0;
                             $skipped = 0;
                             $errors = 0;
@@ -1001,7 +1003,7 @@ class AttractionResource extends Resource
     public static function canEdit($record): bool
     {
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -1013,10 +1015,10 @@ class AttractionResource extends Resource
         // Attractions Author kann nur eigene Attractions bearbeiten
         if ($user->hasRole('attractions-author')) {
             // Prüfe ob User die Berechtigung "edit own attractions" hat
-            if (!$user->can('edit own attractions')) {
+            if (! $user->can('edit own attractions')) {
                 return false;
             }
-            
+
             // TODO: Wenn user_id Feld hinzugefügt wird, hier Prüfung auf eigene Attractions einbauen
             // Aktuell können alle Attractions-Autoren alle Attractions bearbeiten,
             // bis das user_id Feld implementiert ist
@@ -1029,7 +1031,7 @@ class AttractionResource extends Resource
     public static function canDelete($record): bool
     {
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

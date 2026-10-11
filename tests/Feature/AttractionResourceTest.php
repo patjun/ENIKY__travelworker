@@ -14,6 +14,9 @@ use App\Models\Country;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -468,6 +471,97 @@ class AttractionResourceTest extends TestCase
             ->callTableBulkAction('bulk_load_dataforseo', [...$withPlaceId->all(), $withoutPlaceId]);
 
         Queue::assertPushed(ProcessDataForSeoOrchestrator::class, 2);
+    }
+
+    // ===== Address Search Action Tests =====
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function fakeNominatimResult(): array
+    {
+        return [[
+            'lat' => '52.5163',
+            'lon' => '13.3777',
+            'address' => ['road' => 'Pariser Platz', 'house_number' => '1', 'postcode' => '10117'],
+        ]];
+    }
+
+    public function test_address_search_uses_english_name_and_fills_address_fields(): void
+    {
+        Http::fake(['nominatim.openstreetmap.org/*' => Http::response($this->fakeNominatimResult())]);
+        $this->actingAs($this->createUserWithRole('admin'));
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm(['en_name' => 'Brandenburg Gate', 'name' => 'Brandenburger Tor'])
+            ->callFormComponentAction('search_addressAction', 'search_address')
+            ->assertSet('data.latitude', 52.5163)
+            ->assertSet('data.longitude', 13.3777)
+            ->assertSet('data.street', 'Pariser Platz 1')
+            ->assertSet('data.zip', '10117')
+            ->assertNotified('Address Found');
+
+        Http::assertSent(fn (Request $request) => $request['q'] === 'Brandenburg Gate');
+    }
+
+    public function test_address_search_falls_back_to_german_name_when_english_name_is_empty(): void
+    {
+        Http::fake(['nominatim.openstreetmap.org/*' => Http::response($this->fakeNominatimResult())]);
+        $this->actingAs($this->createUserWithRole('admin'));
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm(['en_name' => '', 'name' => 'Brandenburger Tor'])
+            ->callFormComponentAction('search_addressAction', 'search_address')
+            ->assertSet('data.zip', '10117')
+            ->assertNotified('Address Found');
+
+        Http::assertSent(fn (Request $request) => $request['q'] === 'Brandenburger Tor');
+    }
+
+    public function test_address_search_warns_when_only_default_german_name_is_present(): void
+    {
+        Http::fake();
+        $this->actingAs($this->createUserWithRole('admin'));
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm(['en_name' => '', 'name' => 'Neue Attraktion'])
+            ->callFormComponentAction('search_addressAction', 'search_address')
+            ->assertNotified('Error');
+
+        Http::assertNothingSent();
+    }
+
+    public function test_address_search_reports_no_results(): void
+    {
+        Http::fake(['nominatim.openstreetmap.org/*' => Http::response([])]);
+        $this->actingAs($this->createUserWithRole('admin'));
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm(['en_name' => 'Nowhere Place'])
+            ->callFormComponentAction('search_addressAction', 'search_address')
+            ->assertNotified('No Results');
+    }
+
+    public function test_address_search_reports_http_failure(): void
+    {
+        Http::fake(['nominatim.openstreetmap.org/*' => Http::response('', 500)]);
+        $this->actingAs($this->createUserWithRole('admin'));
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm(['en_name' => 'Brandenburg Gate'])
+            ->callFormComponentAction('search_addressAction', 'search_address')
+            ->assertNotified('Error');
+    }
+
+    public function test_address_search_reports_connection_failure(): void
+    {
+        Http::fake(fn () => throw new ConnectionException('timeout'));
+        $this->actingAs($this->createUserWithRole('admin'));
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm(['en_name' => 'Brandenburg Gate'])
+            ->callFormComponentAction('search_addressAction', 'search_address')
+            ->assertNotified('Error');
     }
 
     // ===== Form Component Tests =====
