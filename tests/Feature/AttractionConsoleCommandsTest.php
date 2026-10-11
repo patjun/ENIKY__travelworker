@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class AttractionConsoleCommandsTest extends TestCase
@@ -31,10 +32,9 @@ class AttractionConsoleCommandsTest extends TestCase
     }
 
     /**
-     * @dataProvider attractionCommandProvider
-     *
      * @param  array<string, mixed>  $parameters
      */
+    #[DataProvider('attractionCommandProvider')]
     public function test_command_resolves_attraction_model_and_runs(string $command, array $parameters): void
     {
         Queue::fake();

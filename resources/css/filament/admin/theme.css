@@ -6,3 +6,27 @@
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
 
 @config 'tailwind.config.js';
+
+.fi-fo-tabs.fi-contained > .fi-tabs {
+    position: sticky;
+    top: 4rem;
+    z-index: 10;
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+    background-color: #fff;
+}
+
+.dark .fi-fo-tabs.fi-contained > .fi-tabs {
+    background-color: rgb(17 24 39);
+}
+
+.fi-fo-tabs.fi-contained > .fi-tabs .fi-tabs-item.fi-active {
+    background-color: rgb(var(--primary-600));
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+}
+
+.fi-fo-tabs.fi-contained > .fi-tabs .fi-tabs-item.fi-active,
+.fi-fo-tabs.fi-contained > .fi-tabs .fi-tabs-item.fi-active * {
+    color: #fff !important;
+    font-weight: 600;
+}

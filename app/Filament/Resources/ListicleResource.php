@@ -39,7 +39,7 @@ class ListicleResource extends Resource
                 ->columnSpanFull()
                 ->tabs([
                     Forms\Components\Tabs\Tab::make('English')
-                        ->label(fn (Get $get) => ($get('title_en') ?? 'New Listicle').' - EN')
+                        ->label(fn (Get $get) => '🇬🇧 EN · '.($get('title_en') ?? 'New Listicle'))
                         ->schema([
                             Forms\Components\Section::make('Basic Info')
                                 ->schema([
@@ -160,7 +160,7 @@ class ListicleResource extends Resource
                         ]),
 
                     Forms\Components\Tabs\Tab::make('German')
-                        ->label(fn (Get $get) => ($get('title_de') ?? 'New Listicle').' - DE')
+                        ->label(fn (Get $get) => '🇩🇪 DE · '.($get('title_de') ?? 'New Listicle'))
                         ->schema([
                             Forms\Components\Section::make('Grunddaten')
                                 ->schema([
