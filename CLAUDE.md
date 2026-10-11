@@ -1,3 +1,12 @@
+# Zusammengehörige Repositories
+
+Dieses Repo (Laravel/Filament) und das WordPress-Plugin `../ENIKY__travelworker_wp_plugin` gehören zusammen und werden gemeinsam entwickelt.
+
+- Laravel erzeugt die Widget-HTML (`Attraction::generate*Html()`, Spalten `*_html`) und synct sie per `AttractionSyncService` (`attractions:sync-wordpress`) über die Plugin-REST-API.
+- Das Plugin speichert und gibt aus: Shortcodes, JSON-LD, Widget-CSS (`widgets.scss`) und JS (z. B. „Heute“ bei den Öffnungszeiten).
+- Änderungen an Markup oder Klassennamen (`am-*`) der Widgets, an Feldern oder an der API müssen in beiden Repos abgestimmt werden. Die CSS-Kopie in der Admin-Vorschau (`AttractionResource`) muss zum Plugin-CSS passen.
+- Getrennte Git-Repos und eigene Commits/PRs pro Repo.
+
 <laravel-boost-guidelines>
 === foundation rules ===
 

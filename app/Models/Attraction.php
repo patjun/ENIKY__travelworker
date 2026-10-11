@@ -19,7 +19,7 @@ class Attraction extends Model
         'location_code', 'language_code', 'business_data', 'last_dataforseo_update',
         'job_status', 'post_attempts', 'get_attempts', 'email', 'website',
         'website_opening_hours', 'website_pricing',
-        'description', 'category', 'rating_value', 'rating_votes_count',
+        'description', 'category', 'rating_value', 'rating_votes_count', 'rating_text', 'en_rating_text',
         'opening_hours', 'accessibility', 'main_image_url', 'is_claimed',
         'price_level', 'additional_categories', 'opening_hours_html', 'structured_data',
         'contact_info_html', 'rating_html', 'accessibility_html', 'manual_opening_hours',
@@ -108,122 +108,75 @@ class Attraction extends Model
 
     public function generateContactInfoHtml($language = 'de')
     {
-        $name = $language === 'en' ? ($this->en_name ?: $this->name) : $this->name;
-        $street = $this->street;
-        $zip = $this->zip;
-
-        // Load city relationship if not loaded
-        if (! $this->relationLoaded('city')) {
-            $this->load('city.country');
-        }
+        $isEnglish = $language === 'en';
+        $name = $isEnglish ? ($this->en_name ?: $this->name) : $this->name;
 
         $cityModel = $this->city()->first();
-        $city = $cityModel ? ($language === 'en' ? $cityModel->name_en : $cityModel->name_de) : null;
-        $country = $cityModel && $cityModel->country ? ($language === 'en' ? $cityModel->country->name_en : $cityModel->country->name_de) : null;
+        $city = $cityModel ? ($isEnglish ? $cityModel->name_en : $cityModel->name_de) : null;
+        $country = $cityModel && $cityModel->country ? ($isEnglish ? $cityModel->country->name_en : $cityModel->country->name_de) : null;
 
-        $website = $language === 'en' ? ($this->en_website ?: $this->website) : $this->website;
-        $email = $this->email;
+        $website = $isEnglish ? ($this->en_website ?: $this->website) : $this->website;
 
-        $html = "<div class=\"widget contact-info\">\n";
+        $addressLines = array_filter([
+            $this->street,
+            trim(($this->zip ?? '').' '.($city ?? '')),
+            $country,
+        ]);
 
-        // Header with business name
-        if ($name) {
-            $html .= "  <div class=\"header\">\n";
-            $html .= "    <h3 class=\"title\">{$name}</h3>\n";
-            $html .= "  </div>\n";
+        $rows = '';
+
+        if ($addressLines !== []) {
+            $rows .= $this->renderWidgetRow(
+                $isEnglish ? 'Address' : 'Adresse',
+                implode('<br>', array_map('e', $addressLines))
+            );
         }
 
-        $html .= "  <div class=\"contact widget-content\">\n";
-
-        // Address section
-        if ($street || $city || $country || $zip) {
-            $html .= "    <div class=\"item\">\n";
-            $html .= "      <div class=\"icon\">📍</div>\n";
-            $html .= "      <div class=\"info\">\n";
-
-            $addressParts = [];
-            if ($street) {
-                $addressParts[] = $street;
-            }
-            if ($zip && $city) {
-                $addressParts[] = $zip.' '.$city;
-            } elseif ($city) {
-                $addressParts[] = $city;
-            }
-            if ($country) {
-                $addressParts[] = $country;
-            }
-
-            foreach ($addressParts as $part) {
-                $html .= "        <div class=\"line\">{$part}</div>\n";
-            }
-
-            $html .= "      </div>\n";
-            $html .= "    </div>\n";
-        }
-
-        // Website section
         if ($website) {
-            $websiteText = $language === 'en' ? 'Visit Website' : 'Website besuchen';
-            $html .= "    <div class=\"item\">\n";
-            $html .= "      <div class=\"icon\">🌐</div>\n";
-            $html .= "      <div class=\"info\">\n";
-            $html .= "        <a href=\"{$website}\" target=\"_blank\" rel=\"noopener\" class=\"link\">{$websiteText}</a>\n";
-            $html .= "      </div>\n";
-            $html .= "    </div>\n";
+            $host = preg_replace('/^www\./', '', (string) parse_url($website, PHP_URL_HOST)) ?: $website;
+            $rows .= $this->renderWidgetRow(
+                'Website',
+                '<a class="am-link" href="'.e($website).'" target="_blank" rel="noopener">'.e($host).' ↗</a>'
+            );
         }
 
-        // E-Mail section
-        if ($email) {
-            $html .= "    <div class=\"item\">\n";
-            $html .= "      <div class=\"icon\">✉️</div>\n";
-            $html .= "      <div class=\"info\">\n";
-            $html .= "        <a href=\"mailto:{$email}\" target=\"_blank\" rel=\"noopener\" class=\"link\">{$email}</a>\n";
-            $html .= "      </div>\n";
-            $html .= "    </div>\n";
+        if ($this->email) {
+            $rows .= $this->renderWidgetRow(
+                $isEnglish ? 'Email' : 'E-Mail',
+                '<a class="am-link am-break" href="mailto:'.e($this->email).'">'.e($this->email).'</a>'
+            );
         }
 
-        $html .= "  </div>\n";
-        $html .= '</div>';
+        $html = $this->renderWidgetHead('contact', $isEnglish ? 'Contact' : 'Kontakt', (string) $name);
 
-        return $html;
+        return $html."  <dl class=\"am-rows\">\n{$rows}  </dl>\n</section>";
     }
 
     public function generateAccessibilityHtml($language = 'de')
     {
-        // Load accessibility attributes from relationship
         $attributes = $this->accessibilityAttributes;
 
-        // Return null if no accessibility attributes
         if ($attributes->isEmpty()) {
             return null;
         }
 
-        // Set up translations
-        $titleText = $language === 'en' ? 'Accessibility' : 'Barrierefreiheit';
+        $isEnglish = $language === 'en';
 
-        // Start building HTML
-        $output = '<div class="widget accessibility">'."\n";
-        $output .= '  <div class="header">'."\n";
-        $output .= '    <h3 class="title">'.$titleText.'</h3>'."\n";
-        $output .= '  </div>'."\n";
-        $output .= '  <div class="widget-content accessibility">'."\n";
+        $html = $this->renderWidgetHead(
+            'accessibility',
+            $isEnglish ? 'Accessibility' : 'Barrierefreiheit',
+            $isEnglish ? 'Easy to access?' : 'Gut zugänglich?'
+        );
+        $html .= "  <ul class=\"am-checks\">\n";
 
-        // Add all accessibility features
         foreach ($attributes as $attribute) {
-            // Get the name in the correct language
-            $label = $language === 'en' ? $attribute->name_en : $attribute->name_de;
+            $label = $isEnglish ? $attribute->name_en : $attribute->name_de;
 
-            $output .= '    <div class="item available">'."\n";
-            $output .= '      <span class="status yes">✓</span>'."\n";
-            $output .= '      <span class="label">'.htmlspecialchars($label).'</span>'."\n";
-            $output .= '    </div>'."\n";
+            $html .= '    <li class="am-check am-ok"><span class="am-mark" aria-hidden="true">✓</span>'
+                .'<span class="am-check-label">'.e($label)."</span></li>\n";
         }
 
-        $output .= '  </div>'."\n";
-        $output .= '</div>';
-
-        return $output;
+        return $html."  </ul>\n</section>";
     }
 
     public function generateRatingHtml($language = 'de')
@@ -232,75 +185,48 @@ class Attraction extends Model
             return null;
         }
 
-        $ratingText = $language === 'en' ? 'Our Rating' : 'Unsere Bewertung';
-        $reviewsText = $language === 'en' ? 'Reviews' : 'Bewertungen';
-        $outOfText = $language === 'en' ? 'out of' : 'von';
+        $isEnglish = $language === 'en';
+        $rating = (float) $this->rating_value;
+        $ratingText = $isEnglish ? ($this->en_rating_text ?: $this->rating_text) : $this->rating_text;
 
-        $html = "<div class=\"widget rating\">\n";
-
-        // Header
-        $html .= "  <div class=\"header\">\n";
-        $html .= "    <h3 class=\"title\">{$ratingText}</h3>\n";
-        $html .= "  </div>\n";
-
-        $html .= "  <div class=\"widget-content rating\">\n";
-
-        // Main rating display
-        $html .= "    <div class=\"score\">\n";
-        $html .= "      <div class=\"number\">{$this->rating_value}</div>\n";
-        $html .= "      <div class=\"details\">\n";
-
-        // Star display
-        $html .= "        <div class=\"stars\">\n";
-        $fullStars = floor($this->rating_value);
-        $hasHalfStar = ($this->rating_value - $fullStars) >= 0.5;
-
+        $stars = '';
         for ($i = 1; $i <= 5; $i++) {
-            if ($i <= $fullStars) {
-                $html .= "          <span class=\"star star-full\">★</span>\n";
-            } elseif ($i == $fullStars + 1 && $hasHalfStar) {
-                $html .= "          <span class=\"star star-half\">☆</span>\n";
-            } else {
-                $html .= "          <span class=\"star star-empty\">☆</span>\n";
-            }
+            $stars .= $i <= round($rating)
+                ? '<span class="am-star am-star-full">★</span>'
+                : '<span class="am-star am-star-empty">★</span>';
         }
-        $html .= "        </div>\n";
 
-        // Rating text
-        $html .= "        <div class=\"text\">\n";
-        $html .= "          <span class=\"out-of\">{$outOfText} 5</span>\n";
-        $html .= "        </div>\n";
-
-        $html .= "      </div>\n";
+        $html = $this->renderWidgetHead(
+            'rating',
+            $isEnglish ? 'Our rating' : 'Unsere Bewertung',
+            $isEnglish ? 'Worth a visit?' : 'Lohnt sich der Besuch?'
+        );
+        $html .= "  <div class=\"am-score\">\n";
+        $html .= '    <span class="am-number">'.number_format($rating, 1, $isEnglish ? '.' : ',', '')."</span>\n";
+        $html .= "    <div class=\"am-score-details\">\n";
+        $html .= "      <span class=\"am-stars\" role=\"img\" aria-label=\"{$rating} / 5\">{$stars}</span>\n";
+        $html .= '      <span class="am-out-of">'.($isEnglish ? 'out of 5 points' : 'von 5 Punkten')."</span>\n";
         $html .= "    </div>\n";
-
-        // Review count
-        $html .= "    <div class=\"reviews\">\n";
-        $html .= '      <span class="count">'.number_format($this->rating_votes_count)."</span>\n";
-        $html .= "      <span class=\"label\">{$reviewsText}</span>\n";
-        $html .= "    </div>\n";
-
         $html .= "  </div>\n";
-        $html .= '</div>';
 
-        return $html;
+        if ($ratingText) {
+            $html .= '  <p class="am-text">'.e($ratingText)."</p>\n";
+        }
+
+        return $html.'</section>';
     }
 
     public function generateOpeningHoursHtml($language = 'de')
     {
         $openingHours = $language === 'en' ? $this->en_opening_hours : $this->opening_hours;
 
-        if (! $openingHours || ! isset($openingHours['seasons'])) {
+        if (! $openingHours || empty($openingHours['seasons'])) {
             return null;
         }
 
-        $seasons = $openingHours['seasons'];
+        $isEnglish = $language === 'en';
 
-        if (empty($seasons)) {
-            return null;
-        }
-
-        $dayNames = $language === 'en' ? [
+        $dayNames = $isEnglish ? [
             'monday' => 'Monday',
             'tuesday' => 'Tuesday',
             'wednesday' => 'Wednesday',
@@ -318,21 +244,19 @@ class Attraction extends Model
             'sunday' => 'Sonntag',
         ];
 
-        $closedText = $language === 'en' ? 'Closed' : 'Geschlossen';
-        $openingHoursText = $language === 'en' ? 'Opening Hours' : 'Öffnungszeiten';
-        $dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        $closedText = $isEnglish ? 'closed' : 'geschlossen';
+        $todayText = $isEnglish ? 'Today' : 'Heute';
 
-        // Sort seasons
-        $sortedSeasons = $this->sortSeasonsByDate($seasons);
-
-        // Find active season (current or next upcoming)
+        $sortedSeasons = $this->sortSeasonsByDate($openingHours['seasons']);
         $activeSeason = $this->getActiveOrNextSeason($sortedSeasons);
+        $timezone = $this->resolveTimezone();
 
-        $html = "<div class=\"widget\">\n";
-        $html .= "  <div class=\"header\">\n";
-        $html .= "    <h3 class=\"title\">{$openingHoursText}</h3>\n";
-        $html .= "  </div>\n";
-        $html .= "  <div class=\"opening-hours widget-content\">\n";
+        $html = $this->renderWidgetHead(
+            'hours',
+            $isEnglish ? 'Opening hours' : 'Öffnungszeiten',
+            $isEnglish ? 'When is it open?' : 'Wann geöffnet?',
+            ' data-today-label="'.e($todayText).'"'.($timezone ? ' data-timezone="'.e($timezone).'"' : '')
+        );
 
         foreach ($sortedSeasons as $season) {
             $isActiveSeason = $activeSeason &&
@@ -340,68 +264,90 @@ class Attraction extends Model
                 ($season['start_date'] ?? null) === ($activeSeason['start_date'] ?? null) &&
                 ($season['end_date'] ?? null) === ($activeSeason['end_date'] ?? null);
 
-            // Generate season header
-            $seasonTitle = '';
             if ($season['is_year_round'] ?? false) {
-                $seasonTitle = $season['name'] ?: ($language === 'en' ? 'Year-Round' : 'Ganzjährig');
+                $seasonTitle = $season['name'] ?: ($isEnglish ? 'Year-round' : 'Ganzjährig');
             } else {
                 $dateRange = $this->formatDateRange($season['start_date'] ?? null, $season['end_date'] ?? null, $language);
-                if ($season['name']) {
-                    $seasonTitle = $season['name'].($dateRange ? ' ('.$dateRange.')' : '');
-                } else {
-                    $seasonTitle = $dateRange;
-                }
+                $seasonTitle = $season['name']
+                    ? $season['name'].($dateRange ? ' ('.$dateRange.')' : '')
+                    : $dateRange;
             }
 
-            // Use details element for collapsible seasons
-            $html .= '    <details class="season-block"'.($isActiveSeason ? ' open' : '').">\n";
-            $html .= "      <summary class=\"season-header\">{$seasonTitle}</summary>\n";
-            $html .= "      <div class=\"season-content\">\n";
+            $timetable = $this->transformManualOpeningHoursToTimetable($season['time_slots'] ?? []);
 
-            // Generate timetable for this season
-            $timeSlots = $season['time_slots'] ?? [];
-            $timetable = $this->transformManualOpeningHoursToTimetable($timeSlots);
+            $html .= '  <details class="am-season"'.($isActiveSeason ? ' open' : '').">\n";
+            $html .= '    <summary class="am-season-toggle"><span>'.e($seasonTitle)."</span></summary>\n";
+            $html .= "    <div class=\"am-days\">\n";
 
-            foreach ($dayOrder as $day) {
-                $dayLabel = $dayNames[$day];
-                $html .= "        <div class=\"day\">\n";
+            foreach ($dayNames as $day => $dayLabel) {
+                $time = empty($timetable[$day])
+                    ? '<span class="am-time am-closed">'.$closedText.'</span>'
+                    : '<span class="am-time">'.e($this->formatOpeningSlots($timetable[$day], $isEnglish)).'</span>';
 
-                if (isset($timetable[$day]) && ! empty($timetable[$day])) {
-                    foreach ($timetable[$day] as $index => $hours) {
-                        if ($language === 'en') {
-                            // 12-hour format for English
-                            $openTime = $this->formatTime12Hour($hours['open']['hour'], $hours['open']['minute']);
-                            $closeTime = $this->formatTime12Hour($hours['close']['hour'], $hours['close']['minute']);
-                        } else {
-                            // 24-hour format for German
-                            $openTime = sprintf('%02d:%02d', $hours['open']['hour'], $hours['open']['minute']);
-                            $closeTime = sprintf('%02d:%02d', $hours['close']['hour'], $hours['close']['minute']);
-                        }
-
-                        if ($index === 0) {
-                            $html .= "          <div class=\"timeline first\"><span class=\"name\">{$dayLabel}</span>\n";
-                            $html .= "          <span class=\"time\">{$openTime} - {$closeTime}</span></div>\n";
-                        } else {
-                            $html .= "          <div class=\"timeline\"><span class=\"name\"></span>\n";
-                            $html .= "          <span class=\"time\">{$openTime} - {$closeTime}</span></div>\n";
-                        }
-                    }
-                } else {
-                    $html .= "          <div class=\"timeline\"><span class=\"name\">{$dayLabel}</span>\n";
-                    $html .= "          <span class=\"closed\">{$closedText}</span></div>\n";
-                }
-
-                $html .= "        </div>\n";
+                $html .= "      <div class=\"am-day\" data-day=\"{$day}\"><span class=\"am-day-name\">{$dayLabel}</span>{$time}</div>\n";
             }
 
-            $html .= "      </div>\n";
-            $html .= "    </details>\n";
+            $html .= "    </div>\n";
+            $html .= "  </details>\n";
         }
 
-        $html .= "  </div>\n";
-        $html .= '</div>';
+        return $html.'</section>';
+    }
 
-        return $html;
+    /**
+     * Opens a widget card with its mono label and heading.
+     */
+    private function renderWidgetHead(string $type, string $label, string $title, string $attributes = ''): string
+    {
+        return "<section class=\"am-widget am-{$type}\"{$attributes}>\n"
+            .'  <div class="am-label">'.e($label)."</div>\n"
+            .'  <h3 class="am-title">'.e($title)."</h3>\n";
+    }
+
+    private function renderWidgetRow(string $label, string $valueHtml): string
+    {
+        return '    <div class="am-row"><dt>'.e($label).'</dt><dd>'.$valueHtml."</dd></div>\n";
+    }
+
+    /**
+     * Formats the slots of one day, e.g. "9:30–12, 14–18 Uhr" or "9:30 am–12 pm, 2–6 pm".
+     *
+     * @param  array<int, array{open: array{hour: int, minute: int}, close: array{hour: int, minute: int}}>  $slots
+     */
+    private function formatOpeningSlots(array $slots, bool $isEnglish): string
+    {
+        $ranges = array_map(function (array $slot) use ($isEnglish): string {
+            if ($isEnglish) {
+                return $this->formatTime12Hour($slot['open']['hour'], $slot['open']['minute'])
+                    .'–'.$this->formatTime12Hour($slot['close']['hour'], $slot['close']['minute']);
+            }
+
+            return $this->formatTime24Hour($slot['open']['hour'], $slot['open']['minute'])
+                .'–'.$this->formatTime24Hour($slot['close']['hour'], $slot['close']['minute']);
+        }, $slots);
+
+        return implode(', ', $ranges).($isEnglish ? '' : ' Uhr');
+    }
+
+    private function formatTime24Hour(int $hour, int $minute): string
+    {
+        return $minute === 0 ? (string) $hour : sprintf('%d:%02d', $hour, $minute);
+    }
+
+    /**
+     * IANA timezone of the attraction, only when its country has exactly one.
+     */
+    private function resolveTimezone(): ?string
+    {
+        $code = $this->city()->first()?->country?->code;
+
+        if (! $code) {
+            return null;
+        }
+
+        $zones = \DateTimeZone::listIdentifiers(\DateTimeZone::PER_COUNTRY, strtoupper($code));
+
+        return count($zones) === 1 ? $zones[0] : null;
     }
 
     public function generateStructuredData($language = 'de')
