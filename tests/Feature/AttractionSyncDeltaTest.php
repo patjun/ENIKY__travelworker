@@ -87,6 +87,29 @@ class AttractionSyncDeltaTest extends TestCase
         });
     }
 
+    public function test_edit_after_load_is_sent_fresh_and_last_sync_is_start_time(): void
+    {
+        Http::fake(['wp.test/*/attractions/77' => Http::response(['id' => 77], 200)]);
+        $stale = $this->syncedAttraction();
+
+        Carbon::setTestNow('2026-10-12 12:30:00');
+        Attraction::query()->whereKey($stale->id)->update([
+            'opening_hours_html' => '<div>zwischenzeitlich</div>',
+            'opening_hours_changed_at' => '2026-10-12 12:30:00',
+            'updated_at' => '2026-10-12 12:30:00',
+        ]);
+
+        Carbon::setTestNow('2026-10-12 13:00:00');
+        $this->assertTrue((new AttractionSyncService)->syncAttraction($stale, 'de'));
+
+        Http::assertSent(function (Request $request): bool {
+            return $request->method() === 'PUT'
+                && $request['widget_opening_hours'] === '<div>zwischenzeitlich</div>'
+                && $request['widget_opening_hours_changed_at'] === '2026-10-12T12:30:00+00:00';
+        });
+        $this->assertTrue($stale->fresh()->wp_de_last_sync->equalTo(Carbon::parse('2026-10-12 13:00:00')));
+    }
+
     public function test_sync_does_not_bump_updated_at(): void
     {
         Http::fake(['wp.test/*/attractions/77' => Http::response(['id' => 77], 200)]);

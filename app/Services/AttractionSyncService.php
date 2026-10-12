@@ -13,6 +13,9 @@ class AttractionSyncService
     public function syncAttraction(Attraction $attraction, string $language, bool $force = false): bool
     {
         try {
+            $syncStartedAt = now();
+            $attraction->refresh();
+
             $wpIdField = "wp_{$language}_id";
             $wpSyncField = "wp_{$language}_last_sync";
             $wpId = $attraction->$wpIdField;
@@ -50,10 +53,14 @@ class AttractionSyncService
 
             // Update attraction with sync info
             $attraction->$wpIdField = $result['id'];
-            $attraction->$wpSyncField = now();
+            $attraction->$wpSyncField = $syncStartedAt;
             $attraction->timestamps = false;
-            $attraction->save();
-            $attraction->timestamps = true;
+
+            try {
+                $attraction->save();
+            } finally {
+                $attraction->timestamps = true;
+            }
 
             Log::channel('wordpress-sync')->info('Attraction synced successfully', [
                 'attraction_id' => $attraction->id,
