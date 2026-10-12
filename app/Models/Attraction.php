@@ -54,6 +54,16 @@ class Attraction extends Model
         'en_last_dataforseo_update' => 'datetime',
         'wp_de_last_sync' => 'datetime',
         'wp_en_last_sync' => 'datetime',
+        'contact_info_changed_at' => 'datetime',
+        'rating_changed_at' => 'datetime',
+        'opening_hours_changed_at' => 'datetime',
+        'accessibility_changed_at' => 'datetime',
+        'structured_data_changed_at' => 'datetime',
+        'en_contact_info_changed_at' => 'datetime',
+        'en_rating_changed_at' => 'datetime',
+        'en_opening_hours_changed_at' => 'datetime',
+        'en_accessibility_changed_at' => 'datetime',
+        'en_structured_data_changed_at' => 'datetime',
     ];
 
     public function city(): BelongsTo
@@ -64,6 +74,25 @@ class Attraction extends Model
     public function accessibilityAttributes(): BelongsToMany
     {
         return $this->belongsToMany(AccessibilityAttribute::class, 'attraction_accessibility_attribute');
+    }
+
+    /**
+     * Map WordPress API fields to the HTML column, its change timestamp column
+     * and the generator method for the given language.
+     *
+     * @return array<string, array{html: string, changed_at: string, generator: string}>
+     */
+    public static function widgetMap(string $language): array
+    {
+        $prefix = $language === 'en' ? 'en_' : '';
+
+        return [
+            'widget_contact' => ['html' => "{$prefix}contact_info_html", 'changed_at' => "{$prefix}contact_info_changed_at", 'generator' => 'generateContactInfoHtml'],
+            'widget_rating' => ['html' => "{$prefix}rating_html", 'changed_at' => "{$prefix}rating_changed_at", 'generator' => 'generateRatingHtml'],
+            'widget_opening_hours' => ['html' => "{$prefix}opening_hours_html", 'changed_at' => "{$prefix}opening_hours_changed_at", 'generator' => 'generateOpeningHoursHtml'],
+            'widget_accessibility' => ['html' => "{$prefix}accessibility_html", 'changed_at' => "{$prefix}accessibility_changed_at", 'generator' => 'generateAccessibilityHtml'],
+            'json_ld' => ['html' => "{$prefix}structured_data", 'changed_at' => "{$prefix}structured_data_changed_at", 'generator' => 'generateStructuredData'],
+        ];
     }
 
     public function generateWidgets(): void
