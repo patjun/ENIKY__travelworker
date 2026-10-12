@@ -32,11 +32,12 @@ class AttractionSyncService
                 } else {
                     // Attraction doesn't exist in WordPress but we have an ID stored
                     // This means it was deleted in WordPress
-                    Log::channel('wordpress-sync')->warning("WordPress attraction was deleted, skipping sync", [
+                    Log::channel('wordpress-sync')->warning('WordPress attraction was deleted, skipping sync', [
                         'attraction_id' => $attraction->id,
                         'language' => $language,
-                        'wp_id' => $wpId
+                        'wp_id' => $wpId,
                     ]);
+
                     return false;
                 }
             } else {
@@ -49,20 +50,20 @@ class AttractionSyncService
             $attraction->$wpSyncField = now();
             $attraction->save();
 
-            Log::channel('wordpress-sync')->info("Attraction synced successfully", [
+            Log::channel('wordpress-sync')->info('Attraction synced successfully', [
                 'attraction_id' => $attraction->id,
                 'language' => $language,
                 'wp_id' => $result['id'],
-                'name' => $data['name']
+                'name' => $data['name'],
             ]);
 
             return true;
         } catch (\Exception $e) {
-            Log::channel('wordpress-sync')->error("Attraction sync failed", [
+            Log::channel('wordpress-sync')->error('Attraction sync failed', [
                 'attraction_id' => $attraction->id,
                 'language' => $language,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return false;
@@ -79,7 +80,7 @@ class AttractionSyncService
             'total' => $attractions->count(),
             'success_count' => 0,
             'error_count' => 0,
-            'errors' => []
+            'errors' => [],
         ];
 
         foreach ($attractions as $attraction) {
@@ -89,7 +90,7 @@ class AttractionSyncService
                 $stats['error_count']++;
                 $stats['errors'][] = [
                     'attraction_id' => $attraction->id,
-                    'name' => $language === 'en' ? ($attraction->en_name ?: $attraction->name) : $attraction->name
+                    'name' => $language === 'en' ? ($attraction->en_name ?: $attraction->name) : $attraction->name,
                 ];
             }
         }
@@ -104,11 +105,15 @@ class AttractionSyncService
      */
     private function mapAttractionToWordPress(Attraction $attraction, string $language): array
     {
+        $attraction->loadMissing('city.country');
+        $city = $attraction->city;
+        $country = $city?->country;
+
         if ($language === 'en') {
             $data = [
                 'name' => $attraction->en_name ?: $attraction->name,
-                'city' => $attraction->en_city ?: $attraction->city,
-                'country' => $attraction->en_country ?: $attraction->country,
+                'city' => $city?->name_en ?: $city?->name_de,
+                'country' => $country?->name_en ?: $country?->name_de,
                 'widget_contact' => $attraction->en_contact_info_html,
                 'widget_rating' => $attraction->en_rating_html,
                 'widget_opening_hours' => $attraction->en_opening_hours_html,
@@ -118,8 +123,8 @@ class AttractionSyncService
         } else {
             $data = [
                 'name' => $attraction->name,
-                'city' => $attraction->city,
-                'country' => $attraction->country,
+                'city' => $city?->name_de ?: $city?->name_en,
+                'country' => $country?->name_de ?: $country?->name_en,
                 'widget_contact' => $attraction->contact_info_html,
                 'widget_rating' => $attraction->rating_html,
                 'widget_opening_hours' => $attraction->opening_hours_html,

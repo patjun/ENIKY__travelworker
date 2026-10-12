@@ -64,7 +64,7 @@ class SyncAttractionsToWordPress extends Command
             $errors = [];
 
             foreach ($locations as $location) {
-                if ($syncService->syncLocation($location, $lang)) {
+                if ($syncService->syncAttraction($location, $lang)) {
                     $successCount++;
                 } else {
                     $errorCount++;
