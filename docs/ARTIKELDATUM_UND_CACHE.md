@@ -9,7 +9,7 @@
 
 Reine Neu-Syncs ohne inhaltliche Änderung verändern nichts.
 
-Die Erkennung passiert in Laravel, die Aktualisierung der Beiträge und des Caches im WordPress-Plugin. Die Plugin-Seite ist in der Plugin-Dokumentation beschrieben (Plugin-Repo, `src/attraction-manager/README-LARAVEL.md`); sie ist dort die Referenz. Die Beschreibung der Plugin-Seite weiter unten entspricht der Spezifikation (`docs/superpowers/specs/2026-10-12-artikeldatum-und-cache-design.md`).
+Die Erkennung passiert in Laravel, die Aktualisierung der Beiträge und des Caches im WordPress-Plugin. Die Plugin-Seite ist in der Plugin-Dokumentation beschrieben (Plugin-Repo, `src/attraction-manager/README-LARAVEL.md`); sie ist dort die Referenz. Die Beschreibung der Plugin-Seite weiter unten entspricht dem umgesetzten Plugin-Code (Spezifikation: `docs/superpowers/specs/2026-10-12-artikeldatum-und-cache-design.md`).
 
 ## Datenfluss
 
@@ -69,14 +69,24 @@ Das JSON-LD enthält u. a. Öffnungszeiten, Bewertung und Kontakt und ändert si
 - `json_ld_changed_at` leert den Cache aller Beiträge mit irgendeinem der vier Widgets dieser Attraktion, datiert aber nicht. Sonst würde dort veraltetes JSON-LD aus dem Cache ausgeliefert.
 - Eine Widget-Änderung leert zusätzlich den Cache der Beiträge mit dem geänderten Widget (diese werden ohnehin datiert).
 
-## Plugin-Seite (laut Spezifikation)
+## Plugin-Seite
 
-- Betroffene Beiträge: Veröffentlichte Beiträge und Seiten, in deren `post_content` oder `wp_postmeta.meta_value` der passende Shortcode (`attraction_contact`, `attraction_rating`, `attraction_hours`, `attraction_accessibility`) mit exakt dieser ID steht (`id="42"`, `id='42'`, `id=42`; `id="4"` trifft nicht `42`). Entwürfe und Revisionen werden ignoriert.
-- Datum: `post_modified` und `post_modified_gmt` werden direkt per `$wpdb->update` auf das gesendete `changed_at` gesetzt, nie rückwärts. Kein `wp_update_post()`, damit keine Revisionen und keine `save_post`-Hooks anderer Plugins ausgelöst werden.
+- Betroffene Beiträge: Veröffentlichte Beiträge und Seiten (`post`, `page`, Status `publish`), in deren `post_content` oder `wp_postmeta.meta_value` (alle Meta-Keys) der passende Shortcode (`attraction_contact`, `attraction_rating`, `attraction_hours`, `attraction_accessibility`) mit exakt dieser ID steht (`id="42"`, `id='42'`, `id=42`, auch mit Backslash maskierte Anführungszeichen in JSON/serialisierten Meta-Werten; `id="4"` trifft nicht `42`). Entwürfe und Revisionen werden ignoriert.
+- Datum: `post_modified` und `post_modified_gmt` werden direkt per `$wpdb->update` auf das gesendete `changed_at` gesetzt, nie rückwärts (nur wenn jünger als das bisherige `post_modified_gmt`). Kein `wp_update_post()`, damit keine Revisionen und keine `save_post`-Hooks anderer Plugins ausgelöst werden.
 - Cache: `clean_post_cache()` und, falls vorhanden, `rocket_clean_post()` je betroffenem Beitrag. Ohne WP Rocket kein Fehler.
-- Fehler bei Suche oder Cache-Leeren lassen das Speichern der Attraktion nicht scheitern. Die Antwort enthält zusätzlich `updated_posts` (Post-IDs).
+- Fehler bei Suche, Datum oder Cache-Leeren lassen das Speichern der Attraktion nicht scheitern (Protokoll per `error_log`). Ungültige Zeitstempel werden ignoriert.
+- Die Antwort enthält zusätzlich `updated_posts`: Post-IDs aller Beiträge, deren Cache geleert wurde (auch solche, die nicht datiert wurden, z. B. bei reinem JSON-LD-Update).
+- Ein PUT braucht weiterhin mindestens ein Inhaltsfeld (`name`, `city`, `country`, `widget_*`, `json_ld`). Ein Request nur mit `*_changed_at` liefert `400`. Der Laravel-Sync sendet `changed_at` immer zusammen mit dem Widget.
 
-Details und Stand der Umsetzung: Plugin-Dokumentation `src/attraction-manager/README-LARAVEL.md` im Plugin-Repo.
+Details und Tests (`cd src && composer install && vendor/bin/phpunit`): Plugin-Dokumentation `src/attraction-manager/README-LARAVEL.md` im Plugin-Repo.
+
+## Offene Prüfung
+
+Die Live-Verifikation gegen ein echtes WordPress mit WP Rocket wurde **noch nicht durchgeführt**. Das Plugin-Verhalten ist bisher nur über PHPUnit-Tests (ohne WordPress) abgesichert. Vor dem Release per `curl` prüfen:
+
+1. Eine reine Widget-Änderung (z. B. `widget_opening_hours` + `widget_opening_hours_changed_at`) datiert und leert nur die Beiträge mit diesem Shortcode; Beiträge mit anderen Widgets derselben Attraktion bleiben unverändert.
+2. Eine reine `json_ld`-Änderung (`json_ld_changed_at`) leert den Cache aller Beiträge der Attraktion mit einem der vier Shortcodes, datiert aber keinen.
+3. Ein wiederholter Request mit demselben Zeitstempel setzt `post_modified` nicht rückwärts.
 
 ## Entscheidungen
 
