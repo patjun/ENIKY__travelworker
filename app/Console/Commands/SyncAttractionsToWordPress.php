@@ -13,7 +13,7 @@ class SyncAttractionsToWordPress extends Command
      *
      * @var string
      */
-    protected $signature = 'attractions:sync-wordpress {--language=both : de, en, or both}';
+    protected $signature = 'attractions:sync-wordpress {--language=both : de, en, or both} {--force : Send all attractions and widgets, ignoring change detection}';
 
     /**
      * The console command description.
@@ -64,7 +64,7 @@ class SyncAttractionsToWordPress extends Command
             $errors = [];
 
             foreach ($locations as $location) {
-                if ($syncService->syncAttraction($location, $lang)) {
+                if ($syncService->syncAttraction($location, $lang, (bool) $this->option('force'))) {
                     $successCount++;
                 } else {
                     $errorCount++;
