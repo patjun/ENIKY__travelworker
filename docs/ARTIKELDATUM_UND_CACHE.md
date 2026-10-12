@@ -59,7 +59,27 @@ Nach einem erfolgreichen Request setzt der Sync `wp_{lang}_id` und `wp_{lang}_la
 
 ## Bestandsdaten
 
-Bei bestehenden Attraktionen sind die `*_changed_at` zunächst `NULL`. Das bedeutet: keine Datumsänderung, solange sich nichts ändert (ein `NULL`-Wert gilt im Delta-Sync nicht als „geändert“). Soll der Ausgangszustand einmal sauber erfasst werden, `php artisan locations:regenerate-widgets` ausführen. Beim ersten Lauf gilt eine leere bisherige HTML als Änderung; bereits befüllte HTML wird nur bei echter Abweichung neu datiert.
+Bei bestehenden Attraktionen sind die `*_changed_at` nach der Migration `NULL`. Ein `NULL`-Wert gilt im Delta-Sync nicht als „geändert“, es werden also zunächst keine Beiträge datiert.
+
+Achtung: Eine Attraktion, die nach dem letzten nächtlichen Sync, aber vor dem Deploy bearbeitet wurde, hat `updated_at > last_sync`, aber kein Widget zählt als geändert. Ihr neues HTML würde ohne Gegenmaßnahme erst bei der nächsten Bearbeitung in WordPress ankommen.
+
+## Release-Reihenfolge
+
+1. Plugin-Seite zuerst deployen (rückwärtskompatibel: ohne `*_changed_at` ändert sich an Beiträgen und Cache nichts).
+2. `php artisan migrate`
+3. Optional `php artisan locations:regenerate-widgets`
+4. SOFORT danach `php artisan attractions:sync-wordpress --force`, vor dem nächsten geplanten Lauf um 02:00.
+
+Warum: `--force` schickt das aktuelle HTML aller Attraktionen ohne Änderungsdaten und setzt `last_sync` erst nach den `changed_at`-Stempeln des Regenerierens auf `now()`. Damit wird der Ausgangszustand absorbiert:
+
+- Keine Massen-Neudatierung: `locations:regenerate-widgets` stempelt jedes Widget, dessen gespeichertes HTML von der heutigen Generatorausgabe abweicht (Saison über `now()`, Generator-Änderungen, vorher leere HTML). Ohne den `--force`-Lauf würde der nächste nächtliche Sync alle diese Beiträge auf einmal neu datieren.
+- Keine verlorenen Änderungen: Ausstehende Bearbeitungen (zwischen letztem Sync und Deploy) erreichen WordPress ebenfalls über diesen Lauf.
+
+Das frühere „zur Erfassung des Ausgangszustands neu generieren“ gilt nicht mehr als Empfehlung.
+
+## Leere Widget-Ausgaben
+
+Liefert der Generator für ein Widget `null` (Daten entfernt), wird es als leerer String gespeichert und gesendet. Ein leerer Wert überschreibt nun das WordPress-Widget, statt den alten Inhalt zu behalten: entfernte Daten verschwinden aus dem Beitrag.
 
 ## JSON-LD (Variante A)
 
