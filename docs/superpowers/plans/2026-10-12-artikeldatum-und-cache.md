@@ -50,7 +50,7 @@
 **Interfaces:**
 - Produces: Spalten `contact_info_changed_at`, `rating_changed_at`, `opening_hours_changed_at`, `accessibility_changed_at`, `structured_data_changed_at` und je mit Präfix `en_`; `Attraction::widgetMap(string $language): array` mit Einträgen `<api-feld> => ['html' => <Spalte>, 'changed_at' => <Spalte>, 'generator' => <Methodenname>]`.
 
-- [ ] **Step 1: Test anlegen**
+- [x] **Step 1: Test anlegen**
 
 ```bash
 php artisan make:test --phpunit AttractionChangeTrackingTest --no-interaction
@@ -105,12 +105,12 @@ class AttractionChangeTrackingTest extends TestCase
 }
 ```
 
-- [ ] **Step 2: Test laufen lassen, Fehlschlag prüfen**
+- [x] **Step 2: Test laufen lassen, Fehlschlag prüfen**
 
 Run: `php artisan test --compact tests/Feature/AttractionChangeTrackingTest.php`
 Expected: FAIL (Spalten fehlen, `widgetMap` nicht definiert).
 
-- [ ] **Step 3: Migration**
+- [x] **Step 3: Migration**
 
 ```bash
 php artisan make:migration add_widget_changed_at_to_attractions_table --table=attractions --no-interaction
@@ -167,7 +167,7 @@ return new class extends Migration
 };
 ```
 
-- [ ] **Step 4: Modell erweitern**
+- [x] **Step 4: Modell erweitern**
 
 In `app/Models/Attraction.php` zu `$casts` hinzufügen (nach `'wp_en_last_sync' => 'datetime',`):
 
@@ -207,12 +207,12 @@ und vor `generateWidgets()` die Methode:
     }
 ```
 
-- [ ] **Step 5: Test laufen lassen**
+- [x] **Step 5: Test laufen lassen**
 
 Run: `php artisan test --compact tests/Feature/AttractionChangeTrackingTest.php`
 Expected: PASS (2 Tests).
 
-- [ ] **Step 6: Formatieren und committen**
+- [x] **Step 6: Formatieren und committen**
 
 ```bash
 vendor/bin/pint --dirty --format agent
@@ -234,7 +234,7 @@ git commit -m "feat: Add widget change timestamp columns and widget map to Attra
 - Consumes: `Attraction::widgetMap()` aus Task 1.
 - Produces: `Attraction::normalizeHtml(string $html): string` (public static); `generateWidgets()` setzt `*_changed_at` auf `now()` genau dann, wenn die normalisierte neue HTML von der bisherigen abweicht.
 
-- [ ] **Step 1: Failing Tests ergänzen**
+- [x] **Step 1: Failing Tests ergänzen**
 
 In `AttractionChangeTrackingTest` oben `use Illuminate\Support\Carbon;` ergänzen und diese Tests/Helfer hinzufügen:
 
@@ -341,12 +341,12 @@ In `AttractionChangeTrackingTest` oben `use Illuminate\Support\Carbon;` ergänze
     }
 ```
 
-- [ ] **Step 2: Tests laufen lassen, Fehlschlag prüfen**
+- [x] **Step 2: Tests laufen lassen, Fehlschlag prüfen**
 
 Run: `php artisan test --compact tests/Feature/AttractionChangeTrackingTest.php`
 Expected: FAIL (`normalizeHtml` nicht definiert, Zeitstempel bleiben NULL).
 
-- [ ] **Step 3: Implementierung**
+- [x] **Step 3: Implementierung**
 
 In `app/Models/Attraction.php` den Block „Generate all widget HTML“ in `generateWidgets()` ersetzen durch:
 
@@ -390,12 +390,12 @@ Direkt nach `generateWidgets()` einfügen:
     }
 ```
 
-- [ ] **Step 4: Tests laufen lassen**
+- [x] **Step 4: Tests laufen lassen**
 
 Run: `php artisan test --compact tests/Feature/AttractionChangeTrackingTest.php tests/Feature/AttractionWidgetHtmlTest.php`
 Expected: PASS. (Der zweite Lauf stellt sicher, dass die HTML-Ausgabe unverändert bleibt.)
 
-- [ ] **Step 5: Formatieren und committen**
+- [x] **Step 5: Formatieren und committen**
 
 ```bash
 vendor/bin/pint --dirty --format agent
@@ -418,7 +418,7 @@ git commit -m "feat: Track content changes per widget when generating widgets"
 
 Regel für „geändert“: Widget gilt als geändert, wenn `wp_{lang}_last_sync` leer ist oder `<changed_at> > wp_{lang}_last_sync`. `needsSync()` ist wahr, wenn keine WP-ID existiert, `last_sync` leer ist oder `updated_at > last_sync`. Damit `updated_at` nicht durch den Sync selbst springt, speichert `syncAttraction()` ohne Timestamps.
 
-- [ ] **Step 1: Test anlegen**
+- [x] **Step 1: Test anlegen**
 
 ```bash
 php artisan make:test --phpunit AttractionSyncDeltaTest --no-interaction
@@ -610,12 +610,12 @@ class AttractionSyncDeltaTest extends TestCase
 
 Hinweis: Bei `Http::sequence()` in `test_changed_widget_…` ist der erste Eintrag für `getAttraction` (GET), der zweite für das `PUT`. Gleiches Muster in `test_failed_request_keeps_last_sync` (GET ok, PUT 500). In den Tests mit `Http::response(...)` bedient dieselbe Antwort GET und PUT. `WordPressApiService::executeWithRetry` wiederholt bei Fehlern; falls der 500er mehrfach abgefragt wird, `Http::response('error', 500)` statt `sequence()` für den PUT verwenden und GET separat über `Http::fake([... 'GET' …])` bedienen. Das beim Ausführen von Step 2/4 anhand der tatsächlichen Retry-Logik (`WordPressApiService.php`, `executeWithRetry`) anpassen.
 
-- [ ] **Step 2: Tests laufen lassen, Fehlschlag prüfen**
+- [x] **Step 2: Tests laufen lassen, Fehlschlag prüfen**
 
 Run: `php artisan test --compact tests/Feature/AttractionSyncDeltaTest.php`
 Expected: FAIL (Parameter `force`, `needsSync` fehlen).
 
-- [ ] **Step 3: Service anpassen**
+- [x] **Step 3: Service anpassen**
 
 `syncAttraction()` Signatur und Kopf:
 
@@ -714,18 +714,18 @@ Neue Methode:
 
 Die DocBlock-Zeile über der Methode bleibt; ergänzen: `@param bool $onlyChangedWidgets Send only widgets changed since the last sync, with their change timestamps`.
 
-- [ ] **Step 4: Command anpassen**
+- [x] **Step 4: Command anpassen**
 
 In `SyncAttractionsToWordPress`:
 - `$signature = 'attractions:sync-wordpress {--language=both : de, en, or both} {--force : Send all attractions and widgets, ignoring change detection}';`
 - im Schleifenaufruf `$syncService->syncAttraction($location, $lang, (bool) $this->option('force'))`.
 
-- [ ] **Step 5: Tests laufen lassen**
+- [x] **Step 5: Tests laufen lassen**
 
 Run: `php artisan test --compact tests/Feature/AttractionSyncDeltaTest.php tests/Feature/AttractionConsoleCommandsTest.php`
 Expected: PASS. Schlägt ein Test an der Retry-Logik fehl, Test gemäß Hinweis in Step 1 anpassen, nicht die Implementierung verbiegen.
 
-- [ ] **Step 6: Formatieren und committen**
+- [x] **Step 6: Formatieren und committen**
 
 ```bash
 vendor/bin/pint --dirty --format agent
@@ -740,11 +740,11 @@ git commit -m "feat: Sync only changed attractions and widgets with change times
 **Files:**
 - Create: `docs/ARTIKELDATUM_UND_CACHE.md`
 
-- [ ] **Step 1: Dokument schreiben** (Deutsch, Stil wie `docs/POSTS_UND_PAGES.md`)
+- [x] **Step 1: Dokument schreiben** (Deutsch, Stil wie `docs/POSTS_UND_PAGES.md`)
 
 Inhalt: Ziel; Datenfluss (Erkennung in `generateWidgets()`, `*_changed_at`, Delta-Regeln `needsSync()`/„geändert“, `--force`, warum `updated_at` nicht durch den Sync springt); API-Vertrag (`<feld>_changed_at`, ISO 8601 UTC, bei Create/`--force` weggelassen); Hinweis zu Bestandsdaten (NULL → keine Datumsänderung, einmal `locations:regenerate-widgets` ausführen, wenn gewünscht); Variante A für JSON-LD (Änderungen an Öffnungszeiten, Bewertung und Kontakt ändern auch das JSON-LD; dieses datiert keine Beiträge, leert aber den Cache aller Beiträge mit irgendeinem Widget dieser Attraktion, damit dort kein veraltetes JSON-LD ausgeliefert wird); Entscheidungstabelle aus der Spec; Verweis auf die Plugin-Doku.
 
-- [ ] **Step 2: Committen**
+- [x] **Step 2: Committen**
 
 ```bash
 git add docs/ARTIKELDATUM_UND_CACHE.md
@@ -766,7 +766,7 @@ git commit -m "docs: Document article date and cache handling"
 
 Vor diesem Task Patrick kurz fragen, ob `phpunit/phpunit` als Dev-Abhängigkeit im Plugin-Repo ok ist (Laravel nutzt PHPUnit 11; für das Plugin reicht PHPUnit 9, weil PHP 7.4 unterstützt bleiben soll).
 
-- [ ] **Step 1: Dateien anlegen**
+- [x] **Step 1: Dateien anlegen**
 
 `src/composer.json`:
 
@@ -837,12 +837,12 @@ class SmokeTest extends TestCase {
 
 `src/.gitignore` um eine Zeile `vendor/` ergänzen.
 
-- [ ] **Step 2: Installieren und laufen lassen**
+- [x] **Step 2: Installieren und laufen lassen**
 
 Run: `cd src && composer install --no-interaction && vendor/bin/phpunit`
 Expected: `OK (1 test, 1 assertion)`.
 
-- [ ] **Step 3: Committen**
+- [x] **Step 3: Committen**
 
 ```bash
 git add src/composer.json src/composer.lock src/phpunit.xml src/tests src/.gitignore
@@ -860,7 +860,7 @@ git commit -m "chore: Add PHPUnit for WordPress-independent classes"
 **Interfaces:**
 - Produces: `AttractionManager\Shortcode_Matcher::contains( string $text, array $tags, int $id ): bool` (static). Wahr, wenn `$text` einen der Shortcodes `$tags` mit exakt `id=$id` enthält.
 
-- [ ] **Step 1: Failing Test**
+- [x] **Step 1: Failing Test**
 
 ```php
 <?php
@@ -931,12 +931,12 @@ class ShortcodeMatcherTest extends TestCase {
 }
 ```
 
-- [ ] **Step 2: Fehlschlag prüfen**
+- [x] **Step 2: Fehlschlag prüfen**
 
 Run: `cd src && vendor/bin/phpunit tests/ShortcodeMatcherTest.php`
 Expected: FAIL / Error (`Class AttractionManager\Shortcode_Matcher not found`).
 
-- [ ] **Step 3: Implementierung**
+- [x] **Step 3: Implementierung**
 
 `src/attraction-manager/includes/class-shortcode-matcher.php`:
 
@@ -997,12 +997,12 @@ class Shortcode_Matcher {
 }
 ```
 
-- [ ] **Step 4: Test laufen lassen**
+- [x] **Step 4: Test laufen lassen**
 
 Run: `cd src && vendor/bin/phpunit tests/ShortcodeMatcherTest.php`
 Expected: PASS. Schlägt ein Fall fehl, die Regex anpassen, nicht den Testfall.
 
-- [ ] **Step 5: Committen**
+- [x] **Step 5: Committen**
 
 ```bash
 git add src/attraction-manager/includes/class-shortcode-matcher.php src/tests/ShortcodeMatcherTest.php
@@ -1025,7 +1025,7 @@ git commit -m "feat: Add shortcode matcher with exact attraction ID matching"
 
 Variante A: Das JSON-LD datiert keine Beiträge, weil es nur im Footer steht und bei fast jeder Widget-Änderung mitwechselt. Der Cache aller Beiträge mit einem Widget der Attraktion wird trotzdem geleert, damit dort kein veraltetes JSON-LD ausgeliefert wird. Die Regel „Feld → Tags“ steht ausschließlich in den Konstanten `FIELD_TAGS` und `JSON_LD_TAGS`.
 
-- [ ] **Step 1: Failing Test**
+- [x] **Step 1: Failing Test**
 
 ```php
 <?php
@@ -1115,12 +1115,12 @@ class WidgetChangesTest extends TestCase {
 }
 ```
 
-- [ ] **Step 2: Fehlschlag prüfen**
+- [x] **Step 2: Fehlschlag prüfen**
 
 Run: `cd src && vendor/bin/phpunit tests/WidgetChangesTest.php`
 Expected: Error (Klasse fehlt).
 
-- [ ] **Step 3: Implementierung**
+- [x] **Step 3: Implementierung**
 
 ```php
 <?php
@@ -1225,12 +1225,12 @@ class Widget_Changes {
 }
 ```
 
-- [ ] **Step 4: Tests laufen lassen**
+- [x] **Step 4: Tests laufen lassen**
 
 Run: `cd src && vendor/bin/phpunit tests/WidgetChangesTest.php`
 Expected: PASS (7 Tests).
 
-- [ ] **Step 5: Committen**
+- [x] **Step 5: Committen**
 
 ```bash
 git add src/attraction-manager/includes/class-widget-changes.php src/tests/WidgetChangesTest.php
@@ -1254,7 +1254,7 @@ git commit -m "feat: Parse widget change timestamps into date and cache shortcod
   - `Post_Refresher::__construct( Post_Store $store )`, `refresh( $attraction_id, array $date_tags, array $cache_tags ): array{affected: int[], dated: int[]}`. `affected` = alle Beiträge mit einem Shortcode aus `cache_tags` (Cache wird geleert); `dated` = Beiträge mit einem Shortcode aus `date_tags`, deren `post_modified` neu gesetzt wurde.
   - `Post_Repository implements Post_Store` (WordPress/`$wpdb`).
 
-- [ ] **Step 1: Failing Test mit Fake-Store**
+- [x] **Step 1: Failing Test mit Fake-Store**
 
 ```php
 <?php
@@ -1421,12 +1421,12 @@ class PostRefresherTest extends TestCase {
 }
 ```
 
-- [ ] **Step 2: Fehlschlag prüfen**
+- [x] **Step 2: Fehlschlag prüfen**
 
 Run: `cd src && vendor/bin/phpunit tests/PostRefresherTest.php`
 Expected: Error (Interface/Klasse fehlt).
 
-- [ ] **Step 3: Interface und Refresher**
+- [x] **Step 3: Interface und Refresher**
 
 `includes/interface-post-store.php`:
 
@@ -1588,12 +1588,12 @@ class Post_Refresher {
 }
 ```
 
-- [ ] **Step 4: Tests laufen lassen**
+- [x] **Step 4: Tests laufen lassen**
 
 Run: `cd src && vendor/bin/phpunit`
 Expected: PASS (alle Tests).
 
-- [ ] **Step 5: `Post_Repository` (WordPress-abhängig, nicht unit-getestet)**
+- [x] **Step 5: `Post_Repository` (WordPress-abhängig, nicht unit-getestet)**
 
 `includes/class-post-repository.php`:
 
@@ -1713,7 +1713,7 @@ class Post_Repository implements Post_Store {
 }
 ```
 
-- [ ] **Step 6: Committen**
+- [x] **Step 6: Committen**
 
 ```bash
 git add src/attraction-manager/includes/interface-post-store.php src/attraction-manager/includes/class-post-refresher.php src/attraction-manager/includes/class-post-repository.php src/tests/PostRefresherTest.php
@@ -1732,7 +1732,7 @@ git commit -m "feat: Date posts with changed widgets and clear cache for all att
 - Consumes: `Widget_Changes::parse()`, `Post_Refresher`, `Post_Repository`.
 - Produces: `PUT /attraction-manager/v1/attractions/{id}` akzeptiert `widget_contact_changed_at`, `widget_rating_changed_at`, `widget_opening_hours_changed_at`, `widget_accessibility_changed_at`, `json_ld_changed_at`; die Antwort enthält zusätzlich `updated_posts` (int[]: alle Beiträge, deren Cache geleert wurde; nicht nur die neu datierten). Fehler in der Beitragsaktualisierung führen nie zu einem Fehlerstatus.
 
-- [ ] **Step 1: Dateien laden**
+- [x] **Step 1: Dateien laden**
 
 In `load_dependencies()` nach der Zeile für `class-structured-data.php` ergänzen:
 
@@ -1744,7 +1744,7 @@ In `load_dependencies()` nach der Zeile für `class-structured-data.php` ergänz
 		require_once EN_ATTRACTION_MANAGER_PLUGIN_DIR . 'includes/class-post-repository.php';
 ```
 
-- [ ] **Step 2: Argumente für `PUT` registrieren**
+- [x] **Step 2: Argumente für `PUT` registrieren**
 
 In `get_endpoint_args_for_item_schema( $required = true )` vor `return $args;` ergänzen:
 
@@ -1759,7 +1759,7 @@ In `get_endpoint_args_for_item_schema( $required = true )` vor `return $args;` e
 		}
 ```
 
-- [ ] **Step 3: `update_attraction()` erweitern**
+- [x] **Step 3: `update_attraction()` erweitern**
 
 Nach dem erfolgreichen `$this->database->update( $id, $data )` und vor dem Laden von `$attraction` einfügen und die Antwort ergänzen. Der Abschnitt ab `$attraction = $this->database->get( $id );` lautet danach:
 
@@ -1810,12 +1810,12 @@ Neue private Methode (vor `log_api_request()`):
 	}
 ```
 
-- [ ] **Step 4: Unit-Tests und Syntax prüfen**
+- [x] **Step 4: Unit-Tests und Syntax prüfen**
 
 Run: `cd src && vendor/bin/phpunit && for f in attraction-manager/attraction-manager.php attraction-manager/includes/*.php; do php -l "$f"; done`
 Expected: alle Tests PASS, `No syntax errors detected` für jede Datei.
 
-- [ ] **Step 5: Manuelle Verifikation gegen eine lokale WordPress-Instanz**
+- [x] **Step 5: Manuelle Verifikation gegen eine lokale WordPress-Instanz**
 
 Voraussetzung: Plugin aktiv, ein Beitrag mit `[attraction_hours id="<ID>"]` im Inhalt, ein zweiter nur mit `[attraction_contact id="<ID>"]`, ein dritter mit dem Shortcode in einem Custom Field.
 
@@ -1839,7 +1839,7 @@ curl -s -u "<user>:<application-password>" -X PUT \
 
 Expected: `updated_posts` enthält die Beiträge 1, 2 und 3 (alle mit einem Widget dieser Attraktion), aber **keiner** bekommt ein neues `post_modified` (bleibt bei 11:30:00); bei aktivem WP Rocket ist der Cache aller drei geleert.
 
-- [ ] **Step 6: Committen**
+- [x] **Step 6: Committen**
 
 ```bash
 git add src/attraction-manager/attraction-manager.php src/attraction-manager/includes/class-rest-api.php
@@ -1854,9 +1854,9 @@ git commit -m "feat: Update posts and clear cache when widgets change via REST A
 - Modify (Plugin-Repo): `src/attraction-manager/README-LARAVEL.md` (Abschnitt „API“/„Update“ um `<feld>_changed_at`, `updated_posts` und Ablauf ergänzen), `README.md` des Plugins falls dort die API beschrieben ist
 - Modify (Laravel-Repo): `docs/ARTIKELDATUM_UND_CACHE.md` (Verweis auf die Plugin-Seite, Abgleich mit dem tatsächlichen Verhalten aus der manuellen Verifikation)
 
-- [ ] **Step 1: Plugin-Doku ergänzen** — API-Vertrag (Felder, Format, Wirkung; `widget_*_changed_at` datiert und leert den Cache, `json_ld_changed_at` leert nur den Cache), Suche in `post_content` und `wp_postmeta`, Regeln (`publish`, nie rückwärts, kein `wp_update_post`), WP-Rocket-Verhalten, Test-Befehl `cd src && vendor/bin/phpunit`.
-- [ ] **Step 2: Laravel-Doku abgleichen** und Ergebnis der manuellen Verifikation (Task 9, Step 5) kurz festhalten.
-- [ ] **Step 3: Je Repo committen**
+- [x] **Step 1: Plugin-Doku ergänzen** — API-Vertrag (Felder, Format, Wirkung; `widget_*_changed_at` datiert und leert den Cache, `json_ld_changed_at` leert nur den Cache), Suche in `post_content` und `wp_postmeta`, Regeln (`publish`, nie rückwärts, kein `wp_update_post`), WP-Rocket-Verhalten, Test-Befehl `cd src && vendor/bin/phpunit`.
+- [x] **Step 2: Laravel-Doku abgleichen** und Ergebnis der manuellen Verifikation (Task 9, Step 5) kurz festhalten.
+- [x] **Step 3: Je Repo committen**
 
 ```bash
 git add src/attraction-manager/README-LARAVEL.md
