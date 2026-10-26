@@ -66,9 +66,11 @@ Achtung: Eine Attraktion, die nach dem letzten nächtlichen Sync, aber vor dem D
 ## Release-Reihenfolge
 
 1. Plugin-Seite zuerst deployen (rückwärtskompatibel: ohne `*_changed_at` ändert sich an Beiträgen und Cache nichts).
-2. `php artisan migrate`
+2. Laravel-App deployen. Das Deploy-Script führt `php artisan migrate --force` automatisch aus, die Migration läuft also mit dem Deploy und nicht als eigener Schritt.
 3. Optional `php artisan locations:regenerate-widgets`
 4. SOFORT danach `php artisan attractions:sync-wordpress --force`, vor dem nächsten geplanten Lauf um 02:00.
+
+Da Schritt 2 durch das Deploy-Script automatisch passiert, darf der Laravel-Deploy erst nach dem Plugin-Deploy laufen und nicht so spät, dass Schritt 3 und 4 nicht mehr sicher vor 02:00 erledigt sind. Die Schritte 3 und 4 macht das Deploy-Script nicht, sie werden von Hand auf dem Server ausgeführt.
 
 Warum: `--force` schickt das aktuelle HTML aller Attraktionen ohne Änderungsdaten und setzt `last_sync` erst nach den `changed_at`-Stempeln des Regenerierens auf `now()`. Damit wird der Ausgangszustand absorbiert:
 
