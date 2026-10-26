@@ -102,13 +102,18 @@ Das JSON-LD enthält u. a. Öffnungszeiten, Bewertung und Kontakt und ändert si
 
 Details und Tests (`cd src && composer install && vendor/bin/phpunit`): Plugin-Dokumentation `src/attraction-manager/README-LARAVEL.md` im Plugin-Repo.
 
-## Offene Prüfung
+## Live-Verifikation
 
-Die Live-Verifikation gegen ein echtes WordPress mit WP Rocket wurde **noch nicht durchgeführt**. Das Plugin-Verhalten ist bisher nur über PHPUnit-Tests (ohne WordPress) abgesichert. Vor dem Release per `curl` prüfen:
+Am 26.10.2026 lokal gegen `vonortzuort.test` (Multisite mit WP Rocket 3.23, Plugin aus dem Feature-Branch) durchgeführt: 20 von 20 Prüfungen bestanden. Das Skript `src/tests/live/verify-post-refresh.sh` im Plugin-Repo prüft:
 
-1. Eine reine Widget-Änderung (z. B. `widget_opening_hours` + `widget_opening_hours_changed_at`) datiert und leert nur die Beiträge mit diesem Shortcode; Beiträge mit anderen Widgets derselben Attraktion bleiben unverändert.
-2. Eine reine `json_ld`-Änderung (`json_ld_changed_at`) leert den Cache aller Beiträge der Attraktion mit einem der vier Shortcodes, datiert aber keinen.
-3. Ein wiederholter Request mit demselben Zeitstempel setzt `post_modified` nicht rückwärts.
+1. Eine reine Widget-Änderung (z. B. `widget_rating_changed_at`) datiert und leert nur die Beiträge mit diesem Shortcode; Beiträge mit anderen Widgets derselben Attraktion bleiben unverändert.
+2. Ein Shortcode in einem ACF-Feld (Post-Meta) wird gefunden; ein Shortcode mit anderer ID (`id="120"` statt `id="12"`) bleibt unberührt.
+3. Eine reine `json_ld`-Änderung (`json_ld_changed_at`) leert den Cache aller Beiträge der Attraktion mit einem der vier Shortcodes, datiert aber keinen.
+4. Ein wiederholter Request mit demselben oder einem älteren Zeitstempel setzt `post_modified` nicht rückwärts.
+
+Das Skript legt temporäre Test-Beiträge an und räumt sie danach wieder auf. Aufruf und Parameter stehen im Kopf des Skripts. Nicht gegen die Live-Seite laufen lassen, da es Beiträge vorübergehend neu datiert.
+
+Hinweis für lokale Kopien der Live-Datenbank: WP Rocket legt seine Konfiguration pro Domain an (`wp-content/wp-rocket-config/<domain>.php`). Fehlt die Datei für die `.test`-Domain, cacht WP Rocket nicht. Erzeugen mit `wp eval 'rocket_generate_config_file();' --url=<domain>`.
 
 ## Entscheidungen
 
