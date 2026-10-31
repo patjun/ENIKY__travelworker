@@ -62,6 +62,7 @@ class SyncAttractionsToWordPress extends Command
             $successCount = 0;
             $errorCount = 0;
             $errors = [];
+            $loginError = null;
 
             foreach ($locations as $location) {
                 if ($syncService->syncAttraction($location, $lang, (bool) $this->option('force'))) {
@@ -69,10 +70,19 @@ class SyncAttractionsToWordPress extends Command
                 } else {
                     $errorCount++;
                     $name = $lang === 'en' ? ($location->en_name ?: $location->name) : $location->name;
+                    $failure = $syncService->lastFailure();
                     $errors[] = [
                         'id' => $location->id,
                         'name' => $name,
+                        'reason' => $failure['reason'],
                     ];
+
+                    if ($failure['is_login_error']) {
+                        $loginError = $failure['reason'];
+                        $progressBar->advance();
+
+                        break;
+                    }
                 }
 
                 $progressBar->advance();
@@ -80,6 +90,12 @@ class SyncAttractionsToWordPress extends Command
 
             $progressBar->finish();
             $this->newLine(2);
+
+            if ($loginError !== null) {
+                $skipped = $total - $successCount - $errorCount;
+                $this->error("WordPress login failed for {$lang} ({$loginError}), {$skipped} locations skipped. Check the API credentials.");
+                $this->newLine();
+            }
 
             $results[$lang] = [
                 'total' => $total,
@@ -116,7 +132,7 @@ class SyncAttractionsToWordPress extends Command
                 $this->newLine();
                 $this->error("Failed locations for {$lang}:");
                 foreach ($stats['errors'] as $error) {
-                    $this->line("  - ID {$error['id']}: {$error['name']}");
+                    $this->line("  - ID {$error['id']}: {$error['name']} ({$error['reason']})");
                 }
             }
         }
