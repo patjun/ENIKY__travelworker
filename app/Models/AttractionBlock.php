@@ -51,6 +51,7 @@ class AttractionBlock extends Model
         $contactField = $language === 'de' ? 'contact_info_html' : 'en_contact_info_html';
         $ratingField = $language === 'de' ? 'rating_html' : 'en_rating_html';
         $openingHoursField = $language === 'de' ? 'opening_hours_html' : 'en_opening_hours_html';
+        $pricesField = $language === 'de' ? 'prices_html' : 'en_prices_html';
         $accessibilityField = $language === 'de' ? 'accessibility_html' : 'en_accessibility_html';
 
         if ($attraction->{$contactField}) {
@@ -63,6 +64,10 @@ class AttractionBlock extends Model
 
         if ($attraction->{$openingHoursField}) {
             $html .= $attraction->{$openingHoursField};
+        }
+
+        if ($attraction->{$pricesField}) {
+            $html .= $attraction->{$pricesField};
         }
 
         if ($attraction->{$accessibilityField}) {
