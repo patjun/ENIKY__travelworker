@@ -860,4 +860,169 @@ class AttractionResourceTest extends TestCase
         $this->assertStringContainsString('<details', $attraction->opening_hours_html);
         $this->assertStringContainsString('open', $attraction->opening_hours_html);
     }
+
+    // ===== Prices Tests =====
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    private function pricesFormData(array $row = []): array
+    {
+        return [
+            'price_currency' => 'EUR',
+            'prices' => [
+                [
+                    'name_de' => 'Standard',
+                    'name_en' => 'Standard',
+                    'rows' => [
+                        array_merge([
+                            'label_de' => 'Erwachsene',
+                            'label_en' => 'Adults',
+                            'amount' => 3.7,
+                            'is_free' => false,
+                        ], $row),
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    public function test_prices_can_be_saved_and_widget_is_generated(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+
+        Livewire::test(EditAttraction::class, ['record' => $attraction->getRouteKey()])
+            ->fillForm($this->pricesFormData())
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $attraction = $attraction->fresh();
+
+        $this->assertStringContainsString('3,70 €', $attraction->prices_html);
+        $this->assertStringContainsString('€3.70', $attraction->en_prices_html);
+        $this->assertNotEmpty(collect($attraction->prices)->first()['rows'][0]['id']);
+    }
+
+    public function test_row_needs_amount_unless_it_is_free(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+
+        $component = Livewire::test(EditAttraction::class, ['record' => $attraction->getRouteKey()])
+            ->fillForm($this->pricesFormData(['amount' => null, 'is_free' => false]))
+            ->call('save');
+
+        $component->assertHasFormErrors();
+
+        $component
+            ->fillForm($this->pricesFormData(['amount' => null, 'is_free' => true]))
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertStringContainsString('gratis', $attraction->fresh()->prices_html);
+    }
+
+    public function test_row_needs_a_label_in_at_least_one_language(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+
+        $component = Livewire::test(EditAttraction::class, ['record' => $attraction->getRouteKey()])
+            ->fillForm($this->pricesFormData(['label_de' => '', 'label_en' => '']))
+            ->call('save');
+
+        $component->assertHasFormErrors();
+
+        $component
+            ->fillForm($this->pricesFormData(['label_de' => '', 'label_en' => 'Adults']))
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $component
+            ->fillForm($this->pricesFormData(['label_de' => 'Erwachsene', 'label_en' => '']))
+            ->call('save')
+            ->assertHasNoFormErrors();
+    }
+
+    public function test_negative_amount_is_rejected(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+
+        Livewire::test(EditAttraction::class, ['record' => $attraction->getRouteKey()])
+            ->fillForm($this->pricesFormData(['amount' => -1]))
+            ->call('save')
+            ->assertHasFormErrors();
+    }
+
+    public function test_ticket_url_must_be_a_url(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+
+        $component = Livewire::test(EditAttraction::class, ['record' => $attraction->getRouteKey()])
+            ->fillForm($this->pricesFormData() + ['price_ticket_url' => 'not a url'])
+            ->call('save');
+
+        $component->assertHasFormErrors(['price_ticket_url']);
+
+        $component
+            ->fillForm(['price_ticket_url' => 'https://tickets.example.com'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('https://tickets.example.com', $attraction->fresh()->price_ticket_url);
+    }
+
+    public function test_prices_section_keeps_row_ids_when_editing(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->withPrices()->create();
+
+        Livewire::test(EditAttraction::class, ['record' => $attraction->getRouteKey()])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $prices = $attraction->fresh()->prices;
+
+        $this->assertSame('row-winter-adult', $prices[0]['rows'][0]['id']);
+        $this->assertSame('row-summer-adult', $prices[1]['rows'][0]['id']);
+    }
+
+    public function test_removing_season_months_clears_the_season(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create([
+            'price_currency' => 'EUR',
+            'prices' => [
+                [
+                    'name_de' => 'Winter',
+                    'name_en' => 'Winter',
+                    'start_date' => '11-01',
+                    'end_date' => '02-28',
+                    'rows' => [
+                        ['label_de' => 'Erwachsene', 'label_en' => 'Adults', 'amount' => 6, 'is_free' => false],
+                    ],
+                ],
+            ],
+        ]);
+
+        $component = Livewire::test(EditAttraction::class, ['record' => $attraction->getRouteKey()]);
+        $seasonKey = array_key_first($component->get('data.prices'));
+
+        $component
+            ->assertSet("data.prices.{$seasonKey}.start_month", '11')
+            ->set("data.prices.{$seasonKey}.start_month", null)
+            ->set("data.prices.{$seasonKey}.end_month", null)
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $attraction = $attraction->fresh();
+
+        $this->assertNull($attraction->prices[0]['start_date']);
+        $this->assertNull($attraction->prices[0]['end_date']);
+        $this->assertStringNotContainsString('data-season-start', $attraction->prices_html);
+    }
 }

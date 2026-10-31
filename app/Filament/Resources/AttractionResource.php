@@ -44,7 +44,7 @@ class AttractionResource extends Resource
                 ->columnSpanFull()
                 ->content(new HtmlString('
                     <style>
-                    .am-widget{--am-green: #186b29;--am-green-light: #edf5ee;--am-warn: #b8752a;--am-text: #2b2724;--am-text-2: #4b443c;--am-muted: #8c8479;--am-muted-2: #7d7568;--am-closed: #9a9186;--am-sand: #f4f1ec;--am-border: #ddd7ce;--am-border-sand: #e2ddd5;--am-line: #ede9e3;--am-font-heading: Lora, Georgia, serif;--am-font-mono: "IBM Plex Mono", ui-monospace, monospace;box-sizing:border-box;margin:0 0 18px;padding:20px 22px 22px;background:#fff;border:1px solid var(--am-border);border-top:3px solid var(--am-green);border-radius:3px;color:var(--am-text);line-height:1.5}.am-widget *,.am-widget *::before,.am-widget *::after{box-sizing:border-box}.am-widget .am-label{margin-bottom:6px;font-family:var(--am-font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--am-green)}.am-widget .am-title{margin:0 0 16px;font-family:var(--am-font-heading);font-size:21px;line-height:1.3;font-weight:700;color:var(--am-text);text-wrap:pretty}.am-widget .am-link{font-weight:600;color:var(--am-green)}.am-widget .am-break{word-break:break-all}.am-contact .am-rows{display:flex;flex-direction:column;margin:0}.am-contact .am-row{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--am-line)}.am-contact .am-row:last-child{border-bottom:1px solid var(--am-line)}.am-contact .am-row dt{padding-top:2px;font-size:13px;color:var(--am-muted)}.am-contact .am-row dd{margin:0;font-size:16px;line-height:1.5}.am-rating .am-score{display:flex;align-items:center;gap:16px;padding:14px 0;border-top:1px solid var(--am-line);border-bottom:1px solid var(--am-line)}.am-rating .am-number{font-family:var(--am-font-heading);font-size:52px;line-height:1;font-weight:700}.am-rating .am-score-details{display:flex;flex-direction:column;gap:4px}.am-rating .am-stars{font-size:20px;letter-spacing:2px}.am-rating .am-star-full{color:var(--am-warn)}.am-rating .am-star-empty{color:var(--am-border)}.am-rating .am-out-of{font-size:14px;color:var(--am-muted-2)}.am-rating .am-text{margin:12px 0 0;font-size:15px;line-height:1.6;color:var(--am-text-2);text-wrap:pretty}.am-hours{padding-bottom:18px}.am-hours .am-season+.am-season{margin-top:8px}.am-hours .am-season-toggle{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:0 14px;background:var(--am-sand);border:1px solid var(--am-border-sand);border-radius:3px;font-size:14.5px;font-weight:600;cursor:pointer;list-style:none}.am-hours .am-season-toggle::-webkit-details-marker{display:none}.am-hours .am-season-toggle::after{content:"▾";color:#6d655c;transition:transform .15s ease}.am-hours .am-season-toggle:hover{background:var(--am-line)}.am-hours .am-season:not([open]) .am-season-toggle::after{transform:rotate(-90deg)}.am-hours .am-days{display:flex;flex-direction:column;margin-top:8px}.am-hours .am-day{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border-bottom:1px solid var(--am-line);font-size:15.5px}.am-hours .am-day.am-today{background:var(--am-green-light)}.am-hours .am-day.am-today .am-day-name{font-weight:700}.am-hours .am-day-name{display:flex;align-items:center;gap:8px;font-weight:600}.am-hours .am-today-tag{font-family:var(--am-font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--am-green)}.am-hours .am-time{text-align:right;font-variant-numeric:tabular-nums}.am-hours .am-closed{color:var(--am-closed)}.am-accessibility{padding-bottom:18px}.am-accessibility .am-checks{display:flex;flex-direction:column;margin:0;padding:0;list-style:none}.am-accessibility .am-check{display:flex;align-items:baseline;gap:12px;padding:10px 0;border-top:1px solid var(--am-line);font-size:16px;line-height:1.5}.am-accessibility .am-check:last-child{border-bottom:1px solid var(--am-line)}.am-accessibility .am-mark{font-weight:700}.am-accessibility .am-ok .am-mark{color:var(--am-green)}.am-accessibility .am-warn .am-mark{color:var(--am-warn)}
+                    .am-widget{--am-green: #186b29;--am-green-light: #edf5ee;--am-warn: #b8752a;--am-text: #2b2724;--am-text-2: #4b443c;--am-muted: #8c8479;--am-muted-2: #7d7568;--am-closed: #9a9186;--am-sand: #f4f1ec;--am-border: #ddd7ce;--am-border-sand: #e2ddd5;--am-line: #ede9e3;--am-font-heading: Lora, Georgia, serif;--am-font-mono: "IBM Plex Mono", ui-monospace, monospace;box-sizing:border-box;margin:0 0 18px;padding:20px 22px 22px;background:#fff;border:1px solid var(--am-border);border-top:3px solid var(--am-green);border-radius:3px;color:var(--am-text);line-height:1.5}.am-widget *,.am-widget *::before,.am-widget *::after{box-sizing:border-box}.am-widget .am-label{margin-bottom:6px;font-family:var(--am-font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--am-green)}.am-widget .am-title{margin:0 0 16px;font-family:var(--am-font-heading);font-size:21px;line-height:1.3;font-weight:700;color:var(--am-text);text-wrap:pretty}.am-widget .am-link{font-weight:600;color:var(--am-green)}.am-widget .am-break{word-break:break-all}.am-contact .am-rows{display:flex;flex-direction:column;margin:0}.am-contact .am-row{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--am-line)}.am-contact .am-row:last-child{border-bottom:1px solid var(--am-line)}.am-contact .am-row dt{padding-top:2px;font-size:13px;color:var(--am-muted)}.am-contact .am-row dd{margin:0;font-size:16px;line-height:1.5}.am-rating .am-score{display:flex;align-items:center;gap:16px;padding:14px 0;border-top:1px solid var(--am-line);border-bottom:1px solid var(--am-line)}.am-rating .am-number{font-family:var(--am-font-heading);font-size:52px;line-height:1;font-weight:700}.am-rating .am-score-details{display:flex;flex-direction:column;gap:4px}.am-rating .am-stars{font-size:20px;letter-spacing:2px}.am-rating .am-star-full{color:var(--am-warn)}.am-rating .am-star-empty{color:var(--am-border)}.am-rating .am-out-of{font-size:14px;color:var(--am-muted-2)}.am-rating .am-text{margin:12px 0 0;font-size:15px;line-height:1.6;color:var(--am-text-2);text-wrap:pretty}.am-hours,.am-prices{padding-bottom:18px}.am-hours .am-season+.am-season,.am-prices .am-season+.am-season{margin-top:8px}.am-hours .am-season-toggle,.am-prices .am-season-toggle{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:0 14px;background:var(--am-sand);border:1px solid var(--am-border-sand);border-radius:3px;font-size:14.5px;font-weight:600;cursor:pointer;list-style:none}.am-hours .am-season-toggle::-webkit-details-marker,.am-prices .am-season-toggle::-webkit-details-marker{display:none}.am-hours .am-season-toggle::after,.am-prices .am-season-toggle::after{content:"▾";color:#6d655c;transition:transform .15s ease}.am-hours .am-season-toggle:hover,.am-prices .am-season-toggle:hover{background:var(--am-line)}.am-hours .am-season:not([open]) .am-season-toggle::after,.am-prices .am-season:not([open]) .am-season-toggle::after{transform:rotate(-90deg)}.am-hours .am-days{display:flex;flex-direction:column;margin-top:8px}.am-hours .am-day{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border-bottom:1px solid var(--am-line);font-size:15.5px}.am-hours .am-day.am-today{background:var(--am-green-light)}.am-hours .am-day.am-today .am-day-name{font-weight:700}.am-hours .am-day-name{display:flex;align-items:center;gap:8px;font-weight:600}.am-hours .am-today-tag{font-family:var(--am-font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--am-green)}.am-hours .am-time{text-align:right;font-variant-numeric:tabular-nums}.am-hours .am-closed{color:var(--am-closed)}.am-prices .am-price-intro,.am-prices .am-price-footer{margin:12px 0 0;font-size:15px;line-height:1.6;color:var(--am-text-2);text-wrap:pretty}.am-prices .am-price-rows{display:flex;flex-direction:column;margin-top:8px}.am-prices .am-price-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border-bottom:1px solid var(--am-line);font-size:15.5px}.am-prices .am-price-label{font-weight:600}.am-prices .am-price-amount{white-space:nowrap;font-weight:600;font-variant-numeric:tabular-nums}.am-prices .am-price-meta{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-size:14px;color:var(--am-muted-2)}.am-accessibility{padding-bottom:18px}.am-accessibility .am-checks{display:flex;flex-direction:column;margin:0;padding:0;list-style:none}.am-accessibility .am-check{display:flex;align-items:baseline;gap:12px;padding:10px 0;border-top:1px solid var(--am-line);font-size:16px;line-height:1.5}.am-accessibility .am-check:last-child{border-bottom:1px solid var(--am-line)}.am-accessibility .am-mark{font-weight:700}.am-accessibility .am-ok .am-mark{color:var(--am-green)}.am-accessibility .am-warn .am-mark{color:var(--am-warn)}
                     </style>
                 ')),
             Forms\Components\Tabs::make('Languages')
@@ -92,6 +92,12 @@ class AttractionResource extends Resource
                                                 ->label('Opening Hours Widget Preview')
                                                 ->content(fn ($record) => $record && $record->en_opening_hours_html
                                                     ? new HtmlString($record->en_opening_hours_html)
+                                                    : 'Widget will be generated after saving'
+                                                ),
+                                            Forms\Components\Placeholder::make('en_prices_preview')
+                                                ->label('Prices Widget Preview')
+                                                ->content(fn ($record) => $record && $record->en_prices_html
+                                                    ? new HtmlString($record->en_prices_html)
                                                     : 'Widget will be generated after saving'
                                                 ),
                                             Forms\Components\Placeholder::make('en_accessibility_preview')
@@ -146,6 +152,12 @@ class AttractionResource extends Resource
                                                 ->label('Opening Hours Widget Preview')
                                                 ->content(fn ($record) => $record && $record->opening_hours_html
                                                     ? new HtmlString($record->opening_hours_html)
+                                                    : 'Widget wird nach dem Speichern generiert'
+                                                ),
+                                            Forms\Components\Placeholder::make('prices_preview')
+                                                ->label('Prices Widget Preview')
+                                                ->content(fn ($record) => $record && $record->prices_html
+                                                    ? new HtmlString($record->prices_html)
                                                     : 'Widget wird nach dem Speichern generiert'
                                                 ),
                                             Forms\Components\Placeholder::make('accessibility_preview')
@@ -458,20 +470,7 @@ class AttractionResource extends Resource
                                     // Start Date
                                     Forms\Components\Select::make('start_month')
                                         ->label('Start Month')
-                                        ->options([
-                                            '01' => 'January / Januar',
-                                            '02' => 'February / Februar',
-                                            '03' => 'March / März',
-                                            '04' => 'April / April',
-                                            '05' => 'May / Mai',
-                                            '06' => 'June / Juni',
-                                            '07' => 'July / Juli',
-                                            '08' => 'August / August',
-                                            '09' => 'September / September',
-                                            '10' => 'October / Oktober',
-                                            '11' => 'November / November',
-                                            '12' => 'December / Dezember',
-                                        ])
+                                        ->options(static::getMonthOptions())
                                         ->hidden(fn (Get $get) => $get('is_year_round'))
                                         ->required(fn (Get $get) => ! $get('is_year_round'))
                                         ->reactive()
@@ -483,10 +482,7 @@ class AttractionResource extends Resource
                                         ->columnSpan(1),
                                     Forms\Components\Select::make('start_day')
                                         ->label('Start Day')
-                                        ->options(fn () => array_combine(
-                                            array_map(fn ($i) => sprintf('%02d', $i), range(1, 31)),
-                                            range(1, 31)
-                                        ))
+                                        ->options(static::getDayOptions())
                                         ->hidden(fn (Get $get) => $get('is_year_round'))
                                         ->required(fn (Get $get) => ! $get('is_year_round'))
                                         ->reactive()
@@ -500,20 +496,7 @@ class AttractionResource extends Resource
                                     // End Date
                                     Forms\Components\Select::make('end_month')
                                         ->label('End Month')
-                                        ->options([
-                                            '01' => 'January / Januar',
-                                            '02' => 'February / Februar',
-                                            '03' => 'March / März',
-                                            '04' => 'April / April',
-                                            '05' => 'May / Mai',
-                                            '06' => 'June / Juni',
-                                            '07' => 'July / Juli',
-                                            '08' => 'August / August',
-                                            '09' => 'September / September',
-                                            '10' => 'October / Oktober',
-                                            '11' => 'November / November',
-                                            '12' => 'December / Dezember',
-                                        ])
+                                        ->options(static::getMonthOptions())
                                         ->hidden(fn (Get $get) => $get('is_year_round'))
                                         ->required(fn (Get $get) => ! $get('is_year_round'))
                                         ->reactive()
@@ -525,10 +508,7 @@ class AttractionResource extends Resource
                                         ->columnSpan(1),
                                     Forms\Components\Select::make('end_day')
                                         ->label('End Day')
-                                        ->options(fn () => array_combine(
-                                            array_map(fn ($i) => sprintf('%02d', $i), range(1, 31)),
-                                            range(1, 31)
-                                        ))
+                                        ->options(static::getDayOptions())
                                         ->hidden(fn (Get $get) => $get('is_year_round'))
                                         ->required(fn (Get $get) => ! $get('is_year_round'))
                                         ->reactive()
@@ -622,6 +602,154 @@ class AttractionResource extends Resource
                                   (isset($state['start_date']) && isset($state['end_date'])
                                     ? ' ('.static::formatDateForLabel($state['start_date']).' - '.static::formatDateForLabel($state['end_date']).')'
                                     : '')
+                        ),
+                ]),
+            Forms\Components\Section::make('Prices')
+                ->key('prices-section')
+                ->description('Define admission prices that will be used for both German and English versions')
+                ->collapsible()
+                ->columnSpanFull()
+                ->schema([
+                    Forms\Components\Grid::make(3)
+                        ->schema([
+                            Forms\Components\Select::make('price_currency')
+                                ->label('Currency')
+                                ->options(static::getCurrencyOptions())
+                                ->default('EUR')
+                                ->required()
+                                ->columnSpan(1),
+                            Forms\Components\DatePicker::make('price_valid_from')
+                                ->label('Prices valid from')
+                                ->columnSpan(1),
+                            Forms\Components\TextInput::make('price_ticket_url')
+                                ->label('Ticket shop URL')
+                                ->url()
+                                ->columnSpan(1),
+                        ]),
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\Textarea::make('price_intro')
+                                ->label('Intro (DE)')
+                                ->rows(3)
+                                ->columnSpan(1),
+                            Forms\Components\Textarea::make('en_price_intro')
+                                ->label('Intro (EN)')
+                                ->rows(3)
+                                ->columnSpan(1),
+                            Forms\Components\Textarea::make('price_footer')
+                                ->label('Footer (DE)')
+                                ->rows(3)
+                                ->columnSpan(1),
+                            Forms\Components\Textarea::make('en_price_footer')
+                                ->label('Footer (EN)')
+                                ->rows(3)
+                                ->columnSpan(1),
+                        ]),
+                    Forms\Components\Repeater::make('prices')
+                        ->label('Price sections')
+                        ->schema([
+                            Forms\Components\Grid::make(4)
+                                ->schema([
+                                    Forms\Components\TextInput::make('name_de')
+                                        ->label('Title (DE)')
+                                        ->placeholder('e.g. Sommersaison')
+                                        ->live(onBlur: true)
+                                        ->columnSpan(2),
+                                    Forms\Components\TextInput::make('name_en')
+                                        ->label('Title (EN)')
+                                        ->placeholder('e.g. Summer season')
+                                        ->live(onBlur: true)
+                                        ->columnSpan(2),
+                                    Forms\Components\Select::make('start_month')
+                                        ->label('Season start month')
+                                        ->options(static::getMonthOptions())
+                                        ->reactive()
+                                        ->afterStateUpdated(fn (Get $get, Set $set) => static::updateOptionalSeasonDate($get, $set, 'start'))
+                                        ->dehydrated(false)
+                                        ->columnSpan(1),
+                                    Forms\Components\Select::make('start_day')
+                                        ->label('Season start day')
+                                        ->options(static::getDayOptions())
+                                        ->reactive()
+                                        ->afterStateUpdated(fn (Get $get, Set $set) => static::updateOptionalSeasonDate($get, $set, 'start'))
+                                        ->dehydrated(false)
+                                        ->columnSpan(1),
+                                    Forms\Components\Select::make('end_month')
+                                        ->label('Season end month')
+                                        ->options(static::getMonthOptions())
+                                        ->reactive()
+                                        ->afterStateUpdated(fn (Get $get, Set $set) => static::updateOptionalSeasonDate($get, $set, 'end'))
+                                        ->dehydrated(false)
+                                        ->columnSpan(1),
+                                    Forms\Components\Select::make('end_day')
+                                        ->label('Season end day')
+                                        ->options(static::getDayOptions())
+                                        ->reactive()
+                                        ->afterStateUpdated(fn (Get $get, Set $set) => static::updateOptionalSeasonDate($get, $set, 'end'))
+                                        ->dehydrated(false)
+                                        ->columnSpan(1),
+                                    Forms\Components\Hidden::make('start_date')
+                                        ->afterStateHydrated(function ($state, Set $set) {
+                                            if ($state && strpos($state, '-') !== false) {
+                                                [$month, $day] = explode('-', $state);
+                                                $set('start_month', $month);
+                                                $set('start_day', $day);
+                                            }
+                                        }),
+                                    Forms\Components\Hidden::make('end_date')
+                                        ->afterStateHydrated(function ($state, Set $set) {
+                                            if ($state && strpos($state, '-') !== false) {
+                                                [$month, $day] = explode('-', $state);
+                                                $set('end_month', $month);
+                                                $set('end_day', $day);
+                                            }
+                                        }),
+                                ]),
+                            Forms\Components\Repeater::make('rows')
+                                ->label('Prices')
+                                ->schema([
+                                    Forms\Components\Hidden::make('id'),
+                                    Forms\Components\TextInput::make('label_de')
+                                        ->label('Description (DE)')
+                                        ->placeholder('e.g. Erwachsene')
+                                        ->required(fn (Get $get): bool => blank($get('label_en')))
+                                        ->live(onBlur: true)
+                                        ->columnSpan(1),
+                                    Forms\Components\TextInput::make('label_en')
+                                        ->label('Description (EN)')
+                                        ->placeholder('e.g. Adults')
+                                        ->required(fn (Get $get): bool => blank($get('label_de')))
+                                        ->live(onBlur: true)
+                                        ->columnSpan(1),
+                                    Forms\Components\TextInput::make('amount')
+                                        ->label('Amount')
+                                        ->numeric()
+                                        ->minValue(0)
+                                        ->required(fn (Get $get): bool => ! $get('is_free'))
+                                        ->columnSpan(1),
+                                    Forms\Components\Toggle::make('is_free')
+                                        ->label('Free')
+                                        ->default(false)
+                                        ->live()
+                                        ->inline(false)
+                                        ->columnSpan(1),
+                                ])
+                                ->columns(4)
+                                ->defaultItems(0)
+                                ->addActionLabel('Add Price')
+                                ->reorderable()
+                                ->collapsible()
+                                ->itemLabel(fn (array $state): ?string => ($state['label_de'] ?? null) ?: ($state['label_en'] ?? null) ?: 'Price'),
+                        ])
+                        ->columns(1)
+                        ->defaultItems(0)
+                        ->addActionLabel('Add Price Section')
+                        ->reorderable()
+                        ->collapsible()
+                        ->itemLabel(fn (array $state): ?string => (($state['name_de'] ?? null) ?: ($state['name_en'] ?? null) ?: 'Prices').
+                            (! empty($state['start_date']) && ! empty($state['end_date'])
+                                ? ' ('.static::formatDateForLabel($state['start_date']).' - '.static::formatDateForLabel($state['end_date']).')'
+                                : '')
                         ),
                 ]),
             Forms\Components\Section::make('Google Places')
@@ -753,6 +881,74 @@ class AttractionResource extends Resource
         }
 
         return implode(', ', $formatted);
+    }
+
+    /**
+     * Months as options for season date selects, keyed by two-digit number
+     *
+     * @return array<string, string>
+     */
+    protected static function getMonthOptions(): array
+    {
+        return [
+            '01' => 'January / Januar',
+            '02' => 'February / Februar',
+            '03' => 'March / März',
+            '04' => 'April / April',
+            '05' => 'May / Mai',
+            '06' => 'June / Juni',
+            '07' => 'July / Juli',
+            '08' => 'August / August',
+            '09' => 'September / September',
+            '10' => 'October / Oktober',
+            '11' => 'November / November',
+            '12' => 'December / Dezember',
+        ];
+    }
+
+    /**
+     * Days 1-31 as options for season date selects, keyed by two-digit number
+     *
+     * @return array<string, int>
+     */
+    protected static function getDayOptions(): array
+    {
+        return array_combine(
+            array_map(fn ($i) => sprintf('%02d', $i), range(1, 31)),
+            range(1, 31)
+        );
+    }
+
+    /**
+     * Currencies that can be selected for the prices widget
+     *
+     * @return array<string, string>
+     */
+    protected static function getCurrencyOptions(): array
+    {
+        return [
+            'EUR' => 'EUR (€)',
+            'GBP' => 'GBP (£)',
+            'CHF' => 'CHF',
+            'CZK' => 'CZK',
+            'HUF' => 'HUF',
+            'PLN' => 'PLN',
+            'DKK' => 'DKK',
+            'SEK' => 'SEK',
+            'NOK' => 'NOK',
+            'USD' => 'USD ($)',
+        ];
+    }
+
+    /**
+     * Update "{$prefix}_date" from "{$prefix}_month" and "{$prefix}_day", or clear it when either is missing
+     */
+    protected static function updateOptionalSeasonDate(Get $get, Set $set, string $prefix): void
+    {
+        $month = $get("{$prefix}_month");
+        $day = $get("{$prefix}_day");
+
+        $set("{$prefix}_date", $month && $day ? $month.'-'.$day : null);
     }
 
     /**
