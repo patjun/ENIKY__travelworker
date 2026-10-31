@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Actions\TranslatePricesAction;
 use App\Filament\Resources\AttractionResource\Pages;
 use App\Jobs\ProcessDataForSeoOrchestrator;
 use App\Models\Attraction;
@@ -606,6 +607,10 @@ class AttractionResource extends Resource
                 ]),
             Forms\Components\Section::make('Prices')
                 ->key('prices-section')
+                ->headerActions([
+                    TranslatePricesAction::make('en'),
+                    TranslatePricesAction::make('de'),
+                ])
                 ->description('Define admission prices that will be used for both German and English versions')
                 ->collapsible()
                 ->columnSpanFull()
