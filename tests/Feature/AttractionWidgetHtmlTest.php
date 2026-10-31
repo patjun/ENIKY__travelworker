@@ -190,4 +190,32 @@ class AttractionWidgetHtmlTest extends TestCase
     {
         $this->assertNull($this->makeAttraction()->generateAccessibilityHtml('de'));
     }
+
+    public function test_structured_data_keeps_closing_script_tag_in_value_inside_the_block(): void
+    {
+        $name = 'Museum </script><script>alert(1)</script>';
+
+        $html = $this->makeAttraction(['name' => $name])->generateStructuredData('de');
+
+        $this->assertSame(1, substr_count($html, '</script>'));
+        $this->assertSame($name, $this->decodeStructuredData($html)['name']);
+    }
+
+    public function test_structured_data_encodes_ampersands_for_the_wordpress_filter(): void
+    {
+        $html = $this->makeAttraction(['name' => 'Kunst & Kultur'])->generateStructuredData('de');
+
+        $this->assertStringNotContainsString('&', $html);
+        $this->assertSame('Kunst & Kultur', $this->decodeStructuredData($html)['name']);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function decodeStructuredData(string $html): array
+    {
+        $this->assertSame(1, preg_match('/^<script type="application\/ld\+json">(.*)<\/script>$/s', $html, $matches));
+
+        return json_decode($matches[1], true, flags: JSON_THROW_ON_ERROR);
+    }
 }
