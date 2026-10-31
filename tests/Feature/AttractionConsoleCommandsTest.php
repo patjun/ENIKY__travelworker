@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Attraction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -40,5 +42,23 @@ class AttractionConsoleCommandsTest extends TestCase
         Queue::fake();
 
         $this->artisan($command, $parameters)->assertSuccessful();
+    }
+
+    public function test_sync_wordpress_command_syncs_existing_attractions(): void
+    {
+        config(['wordpress.de' => [
+            'api_url' => 'https://wp.test/wp-json/attraction-manager/v1',
+            'username' => 'admin',
+            'password' => 'secret',
+        ]]);
+        Http::fake(['wp.test/*' => Http::response(['id' => 77], 201)]);
+        $attraction = Attraction::factory()->create();
+
+        $this->artisan('attractions:sync-wordpress', ['--language' => 'de'])->assertSuccessful();
+
+        Http::assertSent(fn ($request): bool => $request->url() === 'https://wp.test/wp-json/attraction-manager/v1/attractions'
+            && $request['city'] === $attraction->city->name_de
+            && $request['country'] === $attraction->city->country->name_de);
+        $this->assertSame(77, $attraction->fresh()->wp_de_id);
     }
 }

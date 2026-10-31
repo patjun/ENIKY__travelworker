@@ -54,6 +54,16 @@ class Attraction extends Model
         'en_last_dataforseo_update' => 'datetime',
         'wp_de_last_sync' => 'datetime',
         'wp_en_last_sync' => 'datetime',
+        'contact_info_changed_at' => 'datetime',
+        'rating_changed_at' => 'datetime',
+        'opening_hours_changed_at' => 'datetime',
+        'accessibility_changed_at' => 'datetime',
+        'structured_data_changed_at' => 'datetime',
+        'en_contact_info_changed_at' => 'datetime',
+        'en_rating_changed_at' => 'datetime',
+        'en_opening_hours_changed_at' => 'datetime',
+        'en_accessibility_changed_at' => 'datetime',
+        'en_structured_data_changed_at' => 'datetime',
     ];
 
     public function city(): BelongsTo
@@ -64,6 +74,25 @@ class Attraction extends Model
     public function accessibilityAttributes(): BelongsToMany
     {
         return $this->belongsToMany(AccessibilityAttribute::class, 'attraction_accessibility_attribute');
+    }
+
+    /**
+     * Map WordPress API fields to the HTML column, its change timestamp column
+     * and the generator method for the given language.
+     *
+     * @return array<string, array{html: string, changed_at: string, generator: string}>
+     */
+    public static function widgetMap(string $language): array
+    {
+        $prefix = $language === 'en' ? 'en_' : '';
+
+        return [
+            'widget_contact' => ['html' => "{$prefix}contact_info_html", 'changed_at' => "{$prefix}contact_info_changed_at", 'generator' => 'generateContactInfoHtml'],
+            'widget_rating' => ['html' => "{$prefix}rating_html", 'changed_at' => "{$prefix}rating_changed_at", 'generator' => 'generateRatingHtml'],
+            'widget_opening_hours' => ['html' => "{$prefix}opening_hours_html", 'changed_at' => "{$prefix}opening_hours_changed_at", 'generator' => 'generateOpeningHoursHtml'],
+            'widget_accessibility' => ['html' => "{$prefix}accessibility_html", 'changed_at' => "{$prefix}accessibility_changed_at", 'generator' => 'generateAccessibilityHtml'],
+            'json_ld' => ['html' => "{$prefix}structured_data", 'changed_at' => "{$prefix}structured_data_changed_at", 'generator' => 'generateStructuredData'],
+        ];
     }
 
     public function generateWidgets(): void
@@ -93,17 +122,37 @@ class Attraction extends Model
             }
         }
 
-        // Generate all widget HTML
-        $this->contact_info_html = $this->generateContactInfoHtml('de');
-        $this->accessibility_html = $this->generateAccessibilityHtml('de');
-        $this->rating_html = $this->generateRatingHtml('de');
-        $this->opening_hours_html = $this->generateOpeningHoursHtml('de');
-        $this->structured_data = $this->generateStructuredData('de');
-        $this->en_contact_info_html = $this->generateContactInfoHtml('en');
-        $this->en_accessibility_html = $this->generateAccessibilityHtml('en');
-        $this->en_rating_html = $this->generateRatingHtml('en');
-        $this->en_opening_hours_html = $this->generateOpeningHoursHtml('en');
-        $this->en_structured_data = $this->generateStructuredData('en');
+        foreach (['de', 'en'] as $language) {
+            foreach (self::widgetMap($language) as $definition) {
+                $this->assignWidgetHtml(
+                    $definition['html'],
+                    $definition['changed_at'],
+                    (string) $this->{$definition['generator']}($language)
+                );
+            }
+        }
+    }
+
+    /**
+     * Collapse whitespace so purely cosmetic differences are not treated as changes.
+     */
+    public static function normalizeHtml(string $html): string
+    {
+        $html = (string) preg_replace('/>\s+</', '><', $html);
+
+        return trim((string) preg_replace('/\s+/', ' ', $html));
+    }
+
+    /**
+     * Store generated widget HTML and stamp the change time when the content differs.
+     */
+    private function assignWidgetHtml(string $htmlColumn, string $changedAtColumn, string $html): void
+    {
+        if (self::normalizeHtml((string) $this->{$htmlColumn}) !== self::normalizeHtml($html)) {
+            $this->{$changedAtColumn} = now();
+        }
+
+        $this->{$htmlColumn} = $html;
     }
 
     public function generateContactInfoHtml($language = 'de')
