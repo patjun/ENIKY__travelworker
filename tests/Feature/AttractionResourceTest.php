@@ -946,6 +946,25 @@ class AttractionResourceTest extends TestCase
             ->assertHasNoFormErrors();
     }
 
+    public function test_currency_outside_the_supported_list_is_rejected(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+
+        $component = Livewire::test(EditAttraction::class, ['record' => $attraction->getRouteKey()])
+            ->fillForm(['price_currency' => 'USD'] + $this->pricesFormData())
+            ->call('save');
+
+        $component->assertHasFormErrors(['price_currency']);
+
+        $component
+            ->fillForm(['price_currency' => 'CZK'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('CZK', $attraction->fresh()->price_currency);
+    }
+
     public function test_negative_amount_is_rejected(): void
     {
         $this->actingAs($this->createUserWithRole('admin'));

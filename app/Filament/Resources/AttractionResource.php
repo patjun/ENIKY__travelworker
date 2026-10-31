@@ -615,6 +615,7 @@ class AttractionResource extends Resource
                             Forms\Components\Select::make('price_currency')
                                 ->label('Currency')
                                 ->options(static::getCurrencyOptions())
+                                ->in(array_keys(static::getCurrencyOptions()))
                                 ->default('EUR')
                                 ->required()
                                 ->columnSpan(1),
@@ -928,15 +929,11 @@ class AttractionResource extends Resource
     {
         return [
             'EUR' => 'EUR (€)',
-            'GBP' => 'GBP (£)',
-            'CHF' => 'CHF',
             'CZK' => 'CZK',
-            'HUF' => 'HUF',
+            'CHF' => 'CHF',
+            'GBP' => 'GBP (£)',
             'PLN' => 'PLN',
-            'DKK' => 'DKK',
-            'SEK' => 'SEK',
-            'NOK' => 'NOK',
-            'USD' => 'USD ($)',
+            'HUF' => 'HUF',
         ];
     }
 
