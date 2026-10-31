@@ -127,7 +127,7 @@ Am 26.10.2026 lokal gegen `vonortzuort.test` (Multisite mit WP Rocket 3.23, Plug
 
 1. Eine reine Widget-Änderung (z. B. `widget_rating_changed_at`) datiert und leert nur die Beiträge mit diesem Shortcode; Beiträge mit anderen Widgets derselben Attraktion bleiben unverändert.
 2. Ein Shortcode in einem ACF-Feld (Post-Meta) wird gefunden; ein Shortcode mit anderer ID (`id="120"` statt `id="12"`) bleibt unberührt.
-3. Eine reine `json_ld`-Änderung (`json_ld_changed_at`) leert den Cache aller Beiträge der Attraktion mit einem der fünf Shortcodes, datiert aber keinen.
+3. Eine reine `json_ld`-Änderung (`json_ld_changed_at`) leert den Cache aller Beiträge der Attraktion mit allen Shortcodes, datiert aber keinen.
 4. Ein wiederholter Request mit demselben oder einem älteren Zeitstempel setzt `post_modified` nicht rückwärts.
 
 Das Skript legt temporäre Test-Beiträge an und räumt sie danach wieder auf. Aufruf und Parameter stehen im Kopf des Skripts. Nicht gegen die Live-Seite laufen lassen, da es Beiträge vorübergehend neu datiert.

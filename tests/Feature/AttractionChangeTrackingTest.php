@@ -76,6 +76,20 @@ class AttractionChangeTrackingTest extends TestCase
         }
     }
 
+    public function test_attraction_without_prices_keeps_price_change_dates_empty(): void
+    {
+        Carbon::setTestNow('2026-10-12 10:00:00');
+        $attraction = Attraction::factory()->create(['manual_opening_hours' => $this->hours('09:00', '17:00')]);
+
+        $attraction->generateWidgets();
+        $attraction->save();
+
+        $attraction = $attraction->fresh();
+        $this->assertSame('', $attraction->prices_html);
+        $this->assertNull($attraction->prices_changed_at);
+        $this->assertNull($attraction->en_prices_changed_at);
+    }
+
     public function test_regenerating_unchanged_data_keeps_timestamps(): void
     {
         Carbon::setTestNow('2026-10-12 10:00:00');
