@@ -42,6 +42,12 @@ Die Zuordnung steht zentral in `Attraction::widgetMap($language)` (API-Feld, HTM
 
 `php artisan attractions:sync-wordpress --force` sendet alle Datensätze und alle Widgets und lässt `changed_at` weg. Dadurch bleibt das Beitragsdatum unverändert; der Befehl eignet sich für einen kompletten Abgleich, ohne Artikeldaten zu verschieben. `--language=de|en|both` bleibt kombinierbar.
 
+### Fehler beim Sync
+
+Eine Attraktion gilt nur dann als in WordPress gelöscht, wenn das Plugin 404 mit dem Code `attraction_not_found` meldet. Ein 404 mit anderem Code (zum Beispiel `rest_no_route` bei deaktiviertem Plugin), 401, 403, 5xx, Netzwerkfehler und nicht lesbare Antworten sind Fehler. Der Befehl zeigt den Grund pro Attraktion an, zum Beispiel `HTTP 401 rest_forbidden`.
+
+Bei einem Login-Fehler (401, oder 403 mit `rest_forbidden`) bricht der Befehl die betroffene Sprache ab und meldet, wie viele Attraktionen übersprungen wurden. Die andere Sprache läuft weiter. Ein 403 ohne `rest_forbidden` bricht nicht ab, weil eine Firewall einzelne Inhalte blockieren kann und sonst eine einzelne Attraktion jeden Lauf stoppen würde.
+
 ### Warum `updated_at` nicht durch den Sync springt
 
 Nach einem erfolgreichen Request setzt der Sync `wp_{lang}_id` und `wp_{lang}_last_sync` und speichert mit `$attraction->timestamps = false`. So wird `updated_at` nicht angefasst. Sonst wäre jeder Sync selbst eine „Änderung“, und der Vergleich `updated_at > last_sync` würde nie zur Ruhe kommen.

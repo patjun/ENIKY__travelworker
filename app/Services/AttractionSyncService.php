@@ -3,15 +3,33 @@
 namespace App\Services;
 
 use App\Models\Attraction;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Log;
 
 class AttractionSyncService
 {
     /**
+     * @var array{reason: string, is_login_error: bool}|null
+     */
+    private ?array $lastFailure = null;
+
+    /**
+     * Why the most recent syncAttraction() call failed, null if it succeeded
+     *
+     * @return array{reason: string, is_login_error: bool}|null
+     */
+    public function lastFailure(): ?array
+    {
+        return $this->lastFailure;
+    }
+
+    /**
      * Synchronize a single attraction to WordPress
      */
     public function syncAttraction(Attraction $attraction, string $language, bool $force = false): bool
     {
+        $this->lastFailure = null;
+
         try {
             $syncStartedAt = now();
             $attraction->refresh();
@@ -43,6 +61,7 @@ class AttractionSyncService
                         'language' => $language,
                         'wp_id' => $wpId,
                     ]);
+                    $this->lastFailure = ['reason' => 'Deleted in WordPress', 'is_login_error' => false];
 
                     return false;
                 }
@@ -77,9 +96,30 @@ class AttractionSyncService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+            $this->lastFailure = $this->describeFailure($e);
 
             return false;
         }
+    }
+
+    /**
+     * A 403 only counts as a login error with the WordPress code, a firewall can block single requests.
+     *
+     * @return array{reason: string, is_login_error: bool}
+     */
+    private function describeFailure(\Exception $exception): array
+    {
+        if (! $exception instanceof RequestException) {
+            return ['reason' => $exception->getMessage(), 'is_login_error' => false];
+        }
+
+        $status = $exception->response->status();
+        $code = $exception->response->json('code');
+
+        return [
+            'reason' => trim("HTTP {$status} {$code}"),
+            'is_login_error' => $status === 401 || ($status === 403 && $code === 'rest_forbidden'),
+        ];
     }
 
     /**
