@@ -347,6 +347,7 @@ class AttractionResource extends Resource
                                 ->label('Rating Value')
                                 ->numeric()
                                 ->required()
+                                ->default('0.0')
                                 ->minValue(0)
                                 ->maxValue(5)
                                 ->step(0.1)
@@ -355,6 +356,7 @@ class AttractionResource extends Resource
                                 ->label('Rating Count')
                                 ->numeric()
                                 ->required()
+                                ->default(0)
                                 ->minValue(0)
                                 ->step(1)
                                 ->columnSpan(1),

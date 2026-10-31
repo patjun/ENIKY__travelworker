@@ -182,6 +182,46 @@ class AttractionResourceTest extends TestCase
         ]);
     }
 
+    public function test_create_form_defaults_rating_fields_to_zero(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+
+        Livewire::test(CreateAttraction::class)
+            ->assertFormSet([
+                'rating_value' => '0.0',
+                'rating_votes_count' => 0,
+            ]);
+    }
+
+    public function test_can_create_attraction_with_default_rating(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $city = City::factory()->create();
+
+        Livewire::test(CreateAttraction::class)
+            ->fillForm([
+                'name' => 'Attraction With Default Rating',
+                'en_name' => 'Attraction With Default Rating EN',
+                'city_id' => $city->id,
+                'street' => 'Test Street 123',
+                'zip' => '12345',
+                'website' => 'https://example.com',
+                'en_website' => 'https://example.com',
+                'latitude' => 52.520008,
+                'longitude' => 13.404954,
+                'place_id' => 'test_place_id_default_rating',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $attraction = Attraction::query()->where('place_id', 'test_place_id_default_rating')->firstOrFail();
+
+        $this->assertEquals(0, $attraction->rating_value);
+        $this->assertSame(0, (int) $attraction->rating_votes_count);
+        $this->assertEmpty($attraction->rating_html);
+        $this->assertStringNotContainsString('aggregateRating', (string) json_encode($attraction->structured_data));
+    }
+
     public function test_create_attraction_validates_required_fields(): void
     {
         $this->actingAs($this->createUserWithRole('admin'));
