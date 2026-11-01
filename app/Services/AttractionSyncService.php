@@ -24,9 +24,76 @@ class AttractionSyncService
     }
 
     /**
+     * Transfer an attraction to both languages and record the outcome in the report.
+     *
+     * With $refreshWidgets the widgets are regenerated and all of them are sent
+     * without dating posts, see docs/ARTIKELDATUM_UND_CACHE.md.
+     */
+    public function syncToAllLanguages(Attraction $attraction, AttractionSyncReport $report, bool $refreshWidgets = false): void
+    {
+        $attraction->refresh();
+
+        if ($refreshWidgets && ! $this->regenerateWidgets($attraction, $report)) {
+            return;
+        }
+
+        foreach (AttractionSyncReport::LANGUAGES as $language) {
+            if ($report->hasLoginFailed($language)) {
+                $report->add($language, AttractionSyncReport::SKIPPED);
+
+                continue;
+            }
+
+            if (! $refreshWidgets && ! $this->needsSync($attraction, $language)) {
+                $report->add($language, AttractionSyncReport::UNCHANGED);
+
+                continue;
+            }
+
+            if ($this->syncAttraction($attraction, $language, refreshWidgets: $refreshWidgets)) {
+                $report->add($language, AttractionSyncReport::SYNCED);
+
+                continue;
+            }
+
+            $report->addFailure($this->displayName($attraction, $language), $language, $this->lastFailure['reason']);
+
+            if ($this->lastFailure['is_login_error']) {
+                $report->addLoginFailure($language, $this->lastFailure['reason']);
+            }
+        }
+    }
+
+    private function regenerateWidgets(Attraction $attraction, AttractionSyncReport $report): bool
+    {
+        try {
+            $attraction->regenerateWidgetsKeepingChangeDates();
+            $attraction->save();
+
+            return true;
+        } catch (\Exception $e) {
+            Log::channel('wordpress-sync')->error('Widget regeneration failed', [
+                'attraction_id' => $attraction->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            foreach (AttractionSyncReport::LANGUAGES as $language) {
+                $report->addFailure($this->displayName($attraction, $language), $language, $e->getMessage());
+            }
+
+            return false;
+        }
+    }
+
+    private function displayName(Attraction $attraction, string $language): string
+    {
+        return $language === 'en' ? ($attraction->en_name ?: $attraction->name) : $attraction->name;
+    }
+
+    /**
      * Synchronize a single attraction to WordPress
      */
-    public function syncAttraction(Attraction $attraction, string $language, bool $force = false): bool
+    public function syncAttraction(Attraction $attraction, string $language, bool $force = false, bool $refreshWidgets = false): bool
     {
         $this->lastFailure = null;
 
@@ -38,12 +105,14 @@ class AttractionSyncService
             $wpSyncField = "wp_{$language}_last_sync";
             $wpId = $attraction->$wpIdField;
 
-            if (! $force && ! $this->needsSync($attraction, $language)) {
+            if (! $force && ! $refreshWidgets && ! $this->needsSync($attraction, $language)) {
                 return true;
             }
 
             $api = new WordPressApiService($language);
-            $data = $this->mapAttractionToWordPress($attraction, $language, $wpId && ! $force);
+            $data = $refreshWidgets
+                ? $this->mapRefreshedAttractionToWordPress($attraction, $language)
+                : $this->mapAttractionToWordPress($attraction, $language, $wpId && ! $force);
 
             if ($wpId) {
                 // WordPress ID exists - only update, never create
@@ -165,6 +234,33 @@ class AttractionSyncService
         }
 
         return $attraction->updated_at !== null && $attraction->updated_at->greaterThan($lastSync);
+    }
+
+    /**
+     * Send all widgets after a regeneration. Only json_ld_changed_at is added, which
+     * clears the post cache without dating posts. Real changes still waiting for a
+     * sync keep their timestamp, so their posts are dated as usual.
+     */
+    private function mapRefreshedAttractionToWordPress(Attraction $attraction, string $language): array
+    {
+        $data = $this->mapAttractionToWordPress($attraction, $language);
+        $lastSync = $attraction->{"wp_{$language}_last_sync"};
+
+        if (! $attraction->{"wp_{$language}_id"}) {
+            return $data;
+        }
+
+        foreach (Attraction::widgetMap($language) as $field => $definition) {
+            $changedAt = $attraction->{$definition['changed_at']};
+
+            if ($changedAt !== null && $lastSync !== null && $changedAt->greaterThan($lastSync)) {
+                $data["{$field}_changed_at"] = $changedAt->copy()->utc()->toIso8601String();
+            }
+        }
+
+        $data['json_ld_changed_at'] = now()->utc()->toIso8601String();
+
+        return $data;
     }
 
     /**

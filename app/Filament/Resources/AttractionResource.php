@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Actions\SyncAttractionsAction;
 use App\Filament\Actions\TranslatePricesAction;
 use App\Filament\Resources\AttractionResource\Pages;
 use App\Jobs\ProcessDataForSeoOrchestrator;
@@ -1179,12 +1180,14 @@ class AttractionResource extends Resource
                     ->preload(),
             ])
             ->actions([
+                SyncAttractionsAction::row(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->visible(fn ($record) => static::canDelete($record)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    SyncAttractionsAction::selected(),
                     Tables\Actions\DeleteBulkAction::make()
                         ->visible(fn () => auth()->user()?->hasAnyRole(['super_admin', 'admin']) ?? false),
                     Tables\Actions\BulkAction::make('bulk_load_dataforseo')
