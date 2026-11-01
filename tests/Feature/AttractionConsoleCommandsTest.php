@@ -25,6 +25,7 @@ class AttractionConsoleCommandsTest extends TestCase
     {
         return [
             'attractions:sync-wordpress' => ['attractions:sync-wordpress', ['--language' => 'de']],
+            'attractions:refresh-structured-data' => ['attractions:refresh-structured-data', []],
             'dataforseo:map-existing-data' => ['dataforseo:map-existing-data', []],
             'dataforseo:check-pending' => ['dataforseo:check-pending', []],
             'locations:update-outdated' => ['locations:update-outdated', ['--force' => true]],

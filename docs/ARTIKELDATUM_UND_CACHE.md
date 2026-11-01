@@ -98,6 +98,16 @@ Das JSON-LD enthält u. a. Öffnungszeiten, Bewertung und Kontakt und ändert si
 - `json_ld_changed_at` leert den Cache aller Beiträge mit irgendeinem der fünf Widgets dieser Attraktion, datiert aber nicht. Sonst würde dort veraltetes JSON-LD aus dem Cache ausgeliefert.
 - Eine Widget-Änderung leert zusätzlich den Cache der Beiträge mit dem geänderten Widget (diese werden ohnehin datiert).
 
+## JSON-LD: Saisondaten der Öffnungszeiten
+
+Google und schema.org verlangen für `validFrom` und `validThrough` ein volles Datum (`YYYY-MM-DD`). Das frühere Format ohne Jahr (`--04-01`) meldet der Validator als Fehler. Die Saisons im Formular haben aber kein Jahr und wiederholen sich jährlich.
+
+Deshalb gibt `generateStructuredData()` für jede Saison den laufenden oder nächsten Zeitraum aus. Eine Saison bis 31.10. steht bis zu diesem Tag mit dem aktuellen Jahr im JSON-LD und ab dem 1.11. mit dem nächsten. Saisons über den Jahreswechsel enden im Folgejahr. Der 29.02. wird in Nicht-Schaltjahren zum 28.02. Ohne zwei gültige Daten entfallen beide Felder, die Öffnungszeiten bleiben stehen.
+
+Weil die Generatoren nur beim Speichern laufen, würden die Daten sonst nach Saisonende veralten. `attractions:refresh-structured-data` läuft täglich um 01:45 vor dem Sync und erzeugt nur das JSON-LD neu, nicht die sichtbaren Widgets. Das setzt `structured_data_changed_at`, damit leert der Sync nach Variante A nur den Cache und datiert keine Beiträge. Ohne Änderung bleibt der Datensatz unberührt.
+
+Nach dem Deploy stellt der erste Lauf bestehende Attraktionen auf das neue Format um. Der Sync um 02:00 überträgt das Ergebnis. Das Plugin muss dafür nicht geändert werden.
+
 ## Preis-Widget: aktueller Bereich im Browser
 
 Die Widget-HTML entsteht nur beim Speichern oder per `RegenerateLocationWidgets`, nicht täglich. Ein beim Erzeugen gesetztes `open` würde deshalb veralten: Eine Attraktion bliebe nach dem letzten Speichern im Winter auch im Juli auf den Winterpreisen stehen. Automatisches Neuerzeugen zum Saisonwechsel würde dagegen `prices_changed_at` setzen und Artikeldaten verschieben, obwohl sich kein Preis geändert hat.

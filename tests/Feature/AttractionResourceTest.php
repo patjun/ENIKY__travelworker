@@ -782,6 +782,8 @@ class AttractionResourceTest extends TestCase
 
     public function test_attraction_generates_structured_data_with_valid_from_through(): void
     {
+        $this->travelTo('2026-07-01 12:00:00');
+
         $city = City::factory()->create();
         $attraction = Attraction::factory()->create([
             'city_id' => $city->id,
@@ -813,8 +815,8 @@ class AttractionResourceTest extends TestCase
         $spec = $structuredData['openingHoursSpecification'][0];
         $this->assertArrayHasKey('validFrom', $spec);
         $this->assertArrayHasKey('validThrough', $spec);
-        $this->assertEquals('--04-01', $spec['validFrom']);
-        $this->assertEquals('--10-31', $spec['validThrough']);
+        $this->assertEquals('2026-04-01', $spec['validFrom']);
+        $this->assertEquals('2026-10-31', $spec['validThrough']);
     }
 
     public function test_attraction_opens_next_season_when_no_current_season(): void
