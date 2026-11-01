@@ -43,6 +43,29 @@ Die Zuordnung steht zentral in `Attraction::widgetMap($language)` (API-Feld, HTM
 
 `php artisan attractions:sync-wordpress --force` sendet alle Datensätze und alle Widgets und lässt `changed_at` weg. Dadurch bleibt das Beitragsdatum unverändert; der Befehl eignet sich für einen kompletten Abgleich, ohne Artikeldaten zu verschieben. `--language=de|en|both` bleibt kombinierbar.
 
+### Sofort übertragen und alle Widgets erneuern
+
+Im Admin lassen sich Attraktionen übertragen, ohne auf den Lauf um 02:00 zu warten. Gesendet wird der gespeicherte Stand in beiden Sprachen.
+
+| Aktion | Ort | Rollen | Ablauf |
+|---|---|---|---|
+| Sync now | Bearbeiten-Seite, Listenzeile | `super_admin`, `admin`, `editor` | sofort, Ergebnis direkt sichtbar |
+| Sync | Mehrfachauswahl in der Liste | `super_admin`, `admin`, `editor` | Hintergrund |
+| Sync all | Liste oben, mit Bestätigung | `super_admin`, `admin` | Hintergrund |
+| Renew all widgets | Liste oben, mit Bestätigung | `super_admin`, `admin` | Hintergrund |
+
+Die ersten drei Aktionen folgen den Delta-Regeln wie der nächtliche Sync: Sie senden nur Änderungen, leeren den Cache und datieren die Beiträge. Ohne Änderung wird nichts gesendet.
+
+„Renew all widgets“ ist für Änderungen an der Widget-Struktur gedacht, zum Beispiel neues Markup oder neue Klassennamen. Die Aktion erzeugt alle Widgets neu und sendet sie vollständig:
+
+- Das Erneuern setzt keine `*_changed_at` (`Attraction::regenerateWidgetsKeepingChangeDates()`), sonst würde der nächtliche Sync alle Beiträge datieren.
+- Mitgesendet wird nur `json_ld_changed_at`. Das leert nach Variante A den Cache aller Beiträge mit Widgets dieser Attraktion und datiert sie nicht. `--force` leert dagegen keinen Cache.
+- Eine echte Änderung, die noch auf den Sync wartet, behält ihren Zeitstempel, ihre Beiträge werden wie üblich datiert.
+- Schlägt die Übertragung einer Attraktion fehl, bleibt ihr neues HTML in Laravel, und der nächtliche Sync sendet es nicht. Die Aktion lässt sich gefahrlos wiederholen.
+- Eine Änderung durch den Saisonwechsel zählt hier nicht als Änderung, weil die Aktion alle Zeitstempel erhält.
+
+Das Ergebnis der Hintergrundläufe erscheint in der Glocke im Admin (Datenbank-Benachrichtigungen, aktualisiert sich alle 30 Sekunden). Bei einem Login-Fehler überspringt der Lauf die betroffene Sprache, schlägt der Login in beiden Sprachen fehl, endet er. `SyncAttractionsToWordPressJob` arbeitet höchstens 45 Sekunden und reiht sich dann mit den restlichen Attraktionen neu ein, weil die Queue einen Job nach `retry_after` (90 Sekunden) erneut vergibt. Dafür muss ein Queue-Worker laufen.
+
 ### Fehler beim Sync
 
 Eine Attraktion gilt nur dann als in WordPress gelöscht, wenn das Plugin 404 mit dem Code `attraction_not_found` meldet. Ein 404 mit anderem Code (zum Beispiel `rest_no_route` bei deaktiviertem Plugin), 401, 403, 5xx, Netzwerkfehler und nicht lesbare Antworten sind Fehler. Der Befehl zeigt den Grund pro Attraktion an, zum Beispiel `HTTP 401 rest_forbidden`.

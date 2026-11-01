@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\AttractionResource\Pages;
 
+use App\Filament\Actions\SyncAttractionsAction;
 use App\Filament\Resources\AttractionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Database\Eloquent\Model;
 
 class EditAttraction extends EditRecord
 {
@@ -14,6 +14,7 @@ class EditAttraction extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            SyncAttractionsAction::page(),
             Actions\DeleteAction::make(),
         ];
     }
