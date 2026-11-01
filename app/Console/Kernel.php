@@ -21,11 +21,17 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // Keep season dates in the JSON-LD current, ahead of the nightly sync
+        $schedule->command('attractions:refresh-structured-data')
+            ->dailyAt('01:45')
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/wp-sync.log'));
+
         // Sync attractions to WordPress daily at 2:00 AM
         $schedule->command('attractions:sync-wordpress --language=both')
-                 ->dailyAt('02:00')
-                 ->withoutOverlapping()
-                 ->appendOutputTo(storage_path('logs/wp-sync.log'));
+            ->dailyAt('02:00')
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/wp-sync.log'));
     }
 
     /**

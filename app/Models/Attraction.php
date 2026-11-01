@@ -150,6 +150,25 @@ class Attraction extends Model
     }
 
     /**
+     * Regenerate only the JSON-LD in both languages.
+     *
+     * A changed JSON-LD clears the cache of the affected posts but does not date
+     * them, unlike the visible widgets that generateWidgets() would also refresh.
+     */
+    public function refreshStructuredData(): void
+    {
+        foreach (['de', 'en'] as $language) {
+            $definition = self::widgetMap($language)['json_ld'];
+
+            $this->assignWidgetHtml(
+                $definition['html'],
+                $definition['changed_at'],
+                (string) $this->{$definition['generator']}($language)
+            );
+        }
+    }
+
+    /**
      * Collapse whitespace so purely cosmetic differences are not treated as changes.
      */
     public static function normalizeHtml(string $html): string
@@ -707,11 +726,11 @@ class Attraction extends Model
 
                     // Add validFrom and validThrough for seasonal hours
                     if (! ($season['is_year_round'] ?? false)) {
-                        if (! empty($season['start_date'])) {
-                            $spec['validFrom'] = '--'.$season['start_date'];
-                        }
-                        if (! empty($season['end_date'])) {
-                            $spec['validThrough'] = '--'.$season['end_date'];
+                        $seasonDates = $this->resolveSeasonOccurrence($season['start_date'] ?? null, $season['end_date'] ?? null);
+
+                        if ($seasonDates !== null) {
+                            $spec['validFrom'] = $seasonDates['from'];
+                            $spec['validThrough'] = $seasonDates['through'];
                         }
                     }
 
@@ -752,6 +771,57 @@ class Attraction extends Model
         }
 
         return $specifications;
+    }
+
+    /**
+     * Resolve a recurring season to the dates of its running or next occurrence.
+     *
+     * Schema.org and Google expect full dates, so the year-less season has to be
+     * pinned to a year. Returns null unless both dates are usable.
+     *
+     * @return array{from: string, through: string}|null
+     */
+    private function resolveSeasonOccurrence(?string $startDate, ?string $endDate): ?array
+    {
+        if (! $this->isValidSeasonDate($startDate) || ! $this->isValidSeasonDate($endDate)) {
+            return null;
+        }
+
+        $today = now()->startOfDay();
+        $spansNewYear = $startDate > $endDate;
+
+        foreach ([$today->year - 1, $today->year, $today->year + 1] as $startYear) {
+            $through = $this->seasonDateInYear($endDate, $spansNewYear ? $startYear + 1 : $startYear);
+
+            if ($through->greaterThanOrEqualTo($today)) {
+                return [
+                    'from' => $this->seasonDateInYear($startDate, $startYear)->toDateString(),
+                    'through' => $through->toDateString(),
+                ];
+            }
+        }
+
+        return null;
+    }
+
+    private function isValidSeasonDate(?string $date): bool
+    {
+        if ($date === null || preg_match('/^(\d{2})-(\d{2})$/', $date, $parts) !== 1) {
+            return false;
+        }
+
+        return checkdate((int) $parts[1], (int) $parts[2], 2024);
+    }
+
+    /**
+     * Pin a month-day string to a year, moving a leap day to Feb 28 in common years.
+     */
+    private function seasonDateInYear(string $date, int $year): Carbon
+    {
+        [$month, $day] = array_map('intval', explode('-', $date));
+        $firstOfMonth = Carbon::create($year, $month, 1);
+
+        return $firstOfMonth->day(min($day, $firstOfMonth->daysInMonth));
     }
 
     private function formatTime12Hour($hour, $minute)
