@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Attraction extends Model
 {
@@ -31,6 +32,9 @@ class Attraction extends Model
         'en_task_id', 'en_task_post_output', 'en_task_get_output', 'en_business_data',
         'en_last_dataforseo_update', 'en_job_status', 'en_post_attempts', 'en_get_attempts',
         'wp_de_last_sync', 'wp_de_id', 'wp_en_last_sync', 'wp_en_id',
+        'prices', 'price_currency', 'price_intro', 'en_price_intro', 'price_footer', 'en_price_footer',
+        'price_valid_from', 'price_ticket_url', 'prices_html', 'en_prices_html',
+        'prices_changed_at', 'en_prices_changed_at',
     ];
 
     protected $casts = [
@@ -64,7 +68,18 @@ class Attraction extends Model
         'en_opening_hours_changed_at' => 'datetime',
         'en_accessibility_changed_at' => 'datetime',
         'en_structured_data_changed_at' => 'datetime',
+        'prices' => 'array',
+        'price_valid_from' => 'date',
+        'prices_changed_at' => 'datetime',
+        'en_prices_changed_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Attraction $attraction): void {
+            $attraction->assignMissingPriceRowIds();
+        });
+    }
 
     public function city(): BelongsTo
     {
@@ -90,6 +105,7 @@ class Attraction extends Model
             'widget_contact' => ['html' => "{$prefix}contact_info_html", 'changed_at' => "{$prefix}contact_info_changed_at", 'generator' => 'generateContactInfoHtml'],
             'widget_rating' => ['html' => "{$prefix}rating_html", 'changed_at' => "{$prefix}rating_changed_at", 'generator' => 'generateRatingHtml'],
             'widget_opening_hours' => ['html' => "{$prefix}opening_hours_html", 'changed_at' => "{$prefix}opening_hours_changed_at", 'generator' => 'generateOpeningHoursHtml'],
+            'widget_prices' => ['html' => "{$prefix}prices_html", 'changed_at' => "{$prefix}prices_changed_at", 'generator' => 'generatePricesHtml'],
             'widget_accessibility' => ['html' => "{$prefix}accessibility_html", 'changed_at' => "{$prefix}accessibility_changed_at", 'generator' => 'generateAccessibilityHtml'],
             'json_ld' => ['html' => "{$prefix}structured_data", 'changed_at' => "{$prefix}structured_data_changed_at", 'generator' => 'generateStructuredData'],
         ];
@@ -341,6 +357,167 @@ class Attraction extends Model
         }
 
         return $html.'</section>';
+    }
+
+    public function generatePricesHtml($language = 'de'): ?string
+    {
+        $isEnglish = $language === 'en';
+
+        $sections = [];
+
+        foreach ($this->prices ?? [] as $section) {
+            $rows = array_values(array_filter(
+                $section['rows'] ?? [],
+                fn (mixed $row): bool => is_array($row) && $this->hasUsablePrice($row)
+            ));
+
+            if ($rows !== []) {
+                $sections[] = ['section' => $section, 'rows' => $rows];
+            }
+        }
+
+        if ($sections === []) {
+            return null;
+        }
+
+        $html = $this->renderWidgetHead(
+            'prices',
+            $isEnglish ? 'Prices' : 'Preise',
+            $isEnglish ? 'What does it cost?' : 'Was kostet es?'
+        );
+
+        $intro = $isEnglish ? ($this->en_price_intro ?: $this->price_intro) : ($this->price_intro ?: $this->en_price_intro);
+
+        if ($intro) {
+            $html .= '  <p class="am-price-intro">'.nl2br(e($intro))."</p>\n";
+        }
+
+        foreach ($sections as $index => $entry) {
+            $section = $entry['section'];
+            $name = $this->priceText($section, 'name', $language) ?? ($isEnglish ? 'Prices' : 'Preise');
+            $hasSeasonDates = ! empty($section['start_date']) && ! empty($section['end_date']);
+            $dateRange = $this->formatDateRange($section['start_date'] ?? null, $section['end_date'] ?? null, $language);
+            $title = $name.($dateRange ? ' ('.$dateRange.')' : '');
+            $seasonAttributes = $hasSeasonDates
+                ? ' data-season-start="'.e($section['start_date']).'" data-season-end="'.e($section['end_date']).'"'
+                : '';
+
+            $html .= '  <details class="am-season"'.($index === 0 ? ' open' : '').$seasonAttributes.">\n";
+            $html .= '    <summary class="am-season-toggle"><span>'.e($title)."</span></summary>\n";
+            $html .= "    <div class=\"am-price-rows\">\n";
+
+            foreach ($entry['rows'] as $row) {
+                $amount = ($row['is_free'] ?? false)
+                    ? ($isEnglish ? 'free' : 'gratis')
+                    : $this->formatPrice($row['amount'], $language);
+
+                $html .= '      <div class="am-price-row"><span class="am-price-label">'
+                    .e($this->priceText($row, 'label', $language))
+                    .'</span><span class="am-price-amount">'.e($amount)."</span></div>\n";
+            }
+
+            $html .= "    </div>\n";
+            $html .= "  </details>\n";
+        }
+
+        $footer = $isEnglish ? ($this->en_price_footer ?: $this->price_footer) : ($this->price_footer ?: $this->en_price_footer);
+
+        if ($footer) {
+            $html .= '  <p class="am-price-footer">'.nl2br(e($footer))."</p>\n";
+        }
+
+        $meta = '';
+
+        if ($this->price_valid_from) {
+            $meta .= '<span>'.($isEnglish
+                ? 'As of '.$this->price_valid_from->format('M j, Y')
+                : 'Stand: '.$this->price_valid_from->format('d.m.Y')).'</span>';
+        }
+
+        if ($this->price_ticket_url) {
+            $meta .= '<a class="am-link" href="'.e($this->price_ticket_url).'" target="_blank" rel="noopener">'
+                .($isEnglish ? 'Online tickets' : 'Online-Tickets').'</a>';
+        }
+
+        if ($meta !== '') {
+            $html .= '  <div class="am-price-meta">'.$meta."</div>\n";
+        }
+
+        return $html.'</section>';
+    }
+
+    /**
+     * Whether a price row shows something: the free marker or a numeric amount.
+     *
+     * @param  array<string, mixed>  $row
+     */
+    private function hasUsablePrice(array $row): bool
+    {
+        return ($row['is_free'] ?? false) || is_numeric($row['amount'] ?? null);
+    }
+
+    /**
+     * Formats an amount in the currency of the attraction, e.g. "3,70 €" / "€3.70" or "250 CZK" / "CZK 250".
+     */
+    private function formatPrice(mixed $amount, string $language): string
+    {
+        $isEnglish = $language === 'en';
+        $currency = $this->price_currency ?: 'EUR';
+        $decimals = in_array($currency, ['CZK', 'HUF'], true) ? 0 : 2;
+        $number = number_format((float) $amount, $decimals, $isEnglish ? '.' : ',', $isEnglish ? ',' : '.');
+        $symbol = ['EUR' => '€', 'GBP' => '£'][$currency] ?? null;
+
+        if ($symbol !== null) {
+            return $isEnglish ? $symbol.$number : $number.' '.$symbol;
+        }
+
+        return $isEnglish ? "{$currency} {$number}" : "{$number} {$currency}";
+    }
+
+    /**
+     * Text of a price section or row in the given language, falling back to the other language.
+     *
+     * @param  array<string, mixed>  $item
+     */
+    private function priceText(array $item, string $key, string $language): ?string
+    {
+        $other = $language === 'en' ? 'de' : 'en';
+
+        foreach ([$language, $other] as $candidate) {
+            $text = trim((string) ($item["{$key}_{$candidate}"] ?? ''));
+
+            if ($text !== '') {
+                return $text;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gives every price row without an id a UUID and leaves the others as they are.
+     */
+    private function assignMissingPriceRowIds(): void
+    {
+        if (! is_array($this->prices)) {
+            return;
+        }
+
+        $prices = $this->prices;
+        $hasAddedId = false;
+
+        foreach ($prices as $sectionIndex => $section) {
+            foreach ($section['rows'] ?? [] as $rowIndex => $row) {
+                if (is_array($row) && empty($row['id'])) {
+                    $prices[$sectionIndex]['rows'][$rowIndex]['id'] = (string) Str::uuid();
+                    $hasAddedId = true;
+                }
+            }
+        }
+
+        if ($hasAddedId) {
+            $this->prices = $prices;
+        }
     }
 
     /**
@@ -832,9 +1009,9 @@ class Attraction extends Model
         }
 
         try {
-            // Parse dates (using current year as dummy year)
-            $start = Carbon::createFromFormat('m-d', $startDate)->year(now()->year);
-            $end = Carbon::createFromFormat('m-d', $endDate)->year(now()->year);
+            // Parse dates (using a leap year as dummy year, so that 02-29 stays valid)
+            $start = Carbon::createFromFormat('Y-m-d', '2024-'.$startDate);
+            $end = Carbon::createFromFormat('Y-m-d', '2024-'.$endDate);
 
             if ($language === 'en') {
                 return $start->format('M j').' - '.$end->format('M j');

@@ -2,17 +2,23 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Client\RequestException;
 
 class WordPressApiService
 {
     private string $apiUrl;
+
     private string $username;
+
     private string $password;
+
     private string $language;
+
     private int $timeout = 30;
+
     private int $maxRetries = 3;
 
     public function __construct(string $language)
@@ -20,7 +26,7 @@ class WordPressApiService
         $this->language = $language;
         $config = config("wordpress.{$language}");
 
-        if (!$config || !$config['api_url'] || !$config['username'] || !$config['password']) {
+        if (! $config || ! $config['api_url'] || ! $config['username'] || ! $config['password']) {
             throw new \InvalidArgumentException("WordPress configuration for language '{$language}' is incomplete");
         }
 
@@ -40,11 +46,11 @@ class WordPressApiService
                 ->withBasicAuth($this->username, $this->password)
                 ->post("{$this->apiUrl}/attractions", $data);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error("WordPress API create failed ({$this->language})", [
                     'status' => $response->status(),
                     'body' => $response->body(),
-                    'data' => $data
+                    'data' => $data,
                 ]);
                 $response->throw();
             }
@@ -53,7 +59,7 @@ class WordPressApiService
 
             Log::info("WordPress attraction created ({$this->language})", [
                 'wp_id' => $result['id'] ?? null,
-                'name' => $data['name'] ?? null
+                'name' => $data['name'] ?? null,
             ]);
 
             return $result;
@@ -73,17 +79,17 @@ class WordPressApiService
             // If 404, the attraction doesn't exist anymore - throw to trigger create
             if ($response->status() === 404) {
                 Log::warning("WordPress attraction not found, needs recreation ({$this->language})", [
-                    'wp_id' => $wpId
+                    'wp_id' => $wpId,
                 ]);
-                throw new \RuntimeException("Attraction not found (404) - needs recreation");
+                throw new \RuntimeException('Attraction not found (404) - needs recreation');
             }
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error("WordPress API update failed ({$this->language})", [
                     'wp_id' => $wpId,
                     'status' => $response->status(),
                     'body' => $response->body(),
-                    'data' => $data
+                    'data' => $data,
                 ]);
                 $response->throw();
             }
@@ -92,7 +98,7 @@ class WordPressApiService
 
             Log::info("WordPress attraction updated ({$this->language})", [
                 'wp_id' => $wpId,
-                'name' => $data['name'] ?? null
+                'name' => $data['name'] ?? null,
             ]);
 
             return $result;
@@ -112,22 +118,23 @@ class WordPressApiService
             if ($response->status() === 404) {
                 // Already deleted or never existed
                 Log::info("WordPress attraction already deleted or not found ({$this->language})", [
-                    'wp_id' => $wpId
+                    'wp_id' => $wpId,
                 ]);
+
                 return true;
             }
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error("WordPress API delete failed ({$this->language})", [
                     'wp_id' => $wpId,
                     'status' => $response->status(),
-                    'body' => $response->body()
+                    'body' => $response->body(),
                 ]);
                 $response->throw();
             }
 
             Log::info("WordPress attraction deleted ({$this->language})", [
-                'wp_id' => $wpId
+                'wp_id' => $wpId,
             ]);
 
             return true;
@@ -136,67 +143,66 @@ class WordPressApiService
 
     /**
      * Get a single attraction from WordPress
+     *
+     * Returns null only if the plugin reports the attraction as missing. A 404 with any other
+     * code means the route itself is unavailable, for example when the plugin is not active.
+     *
+     * @throws RequestException
+     * @throws ConnectionException
      */
     public function getAttraction(int $wpId): ?array
     {
-        try {
-            $response = Http::timeout($this->timeout)
-                ->withBasicAuth($this->username, $this->password)
-                ->get("{$this->apiUrl}/attractions/{$wpId}");
+        $response = Http::timeout($this->timeout)
+            ->withBasicAuth($this->username, $this->password)
+            ->get("{$this->apiUrl}/attractions/{$wpId}");
 
-            if ($response->status() === 404) {
-                return null;
-            }
-
-            if (!$response->successful()) {
-                Log::error("WordPress API get failed ({$this->language})", [
-                    'wp_id' => $wpId,
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
-                return null;
-            }
-
-            return $response->json();
-        } catch (\Exception $e) {
-            Log::error("WordPress API get exception ({$this->language})", [
-                'wp_id' => $wpId,
-                'error' => $e->getMessage()
-            ]);
+        if ($response->status() === 404 && $response->json('code') === 'attraction_not_found') {
             return null;
         }
+
+        if (! $response->successful()) {
+            Log::error("WordPress API get failed ({$this->language})", [
+                'wp_id' => $wpId,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            $response->throw();
+        }
+
+        $attraction = $response->json();
+
+        if (! is_array($attraction)) {
+            throw new \RuntimeException('WordPress returned an unreadable response');
+        }
+
+        return $attraction;
     }
 
     /**
      * List all attractions from WordPress with pagination
+     *
+     * @throws RequestException
+     * @throws ConnectionException
      */
     public function listAttractions(int $page = 1, int $perPage = 100): array
     {
-        try {
-            $response = Http::timeout($this->timeout)
-                ->withBasicAuth($this->username, $this->password)
-                ->get("{$this->apiUrl}/attractions", [
-                    'page' => $page,
-                    'per_page' => $perPage
-                ]);
-
-            if (!$response->successful()) {
-                Log::error("WordPress API list failed ({$this->language})", [
-                    'page' => $page,
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
-                return [];
-            }
-
-            return $response->json();
-        } catch (\Exception $e) {
-            Log::error("WordPress API list exception ({$this->language})", [
+        $response = Http::timeout($this->timeout)
+            ->withBasicAuth($this->username, $this->password)
+            ->get("{$this->apiUrl}/attractions", [
                 'page' => $page,
-                'error' => $e->getMessage()
+                'per_page' => $perPage,
             ]);
-            return [];
+
+        if (! $response->successful()) {
+            Log::error("WordPress API list failed ({$this->language})", [
+                'page' => $page,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            $response->throw();
         }
+
+        return $response->json();
     }
 
     /**
@@ -221,7 +227,7 @@ class WordPressApiService
                 if ($attempt < $this->maxRetries) {
                     $delay = $attempt * 1000000; // Microseconds: 1s, 2s, 3s
                     Log::warning("WordPress API retry attempt {$attempt}/{$this->maxRetries} ({$this->language})", [
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                     usleep($delay);
                 }
@@ -236,7 +242,7 @@ class WordPressApiService
                 if ($attempt < $this->maxRetries) {
                     $delay = $attempt * 1000000;
                     Log::warning("WordPress API retry attempt {$attempt}/{$this->maxRetries} ({$this->language})", [
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                     usleep($delay);
                 }
@@ -247,9 +253,9 @@ class WordPressApiService
 
         // All retries failed
         Log::error("WordPress API all retries failed ({$this->language})", [
-            'error' => $lastException ? $lastException->getMessage() : 'Unknown error'
+            'error' => $lastException ? $lastException->getMessage() : 'Unknown error',
         ]);
 
-        throw $lastException ?? new \Exception("All retry attempts failed");
+        throw $lastException ?? new \Exception('All retry attempts failed');
     }
 }
