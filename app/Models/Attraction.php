@@ -150,6 +150,22 @@ class Attraction extends Model
     }
 
     /**
+     * Regenerate all widgets after a structural change without counting it as a
+     * content change, so the sync does not date any post.
+     */
+    public function regenerateWidgetsKeepingChangeDates(): void
+    {
+        $changeDateColumns = collect(['de', 'en'])
+            ->flatMap(fn (string $language): array => array_column(self::widgetMap($language), 'changed_at'))
+            ->all();
+        $changeDates = $this->only($changeDateColumns);
+
+        $this->generateWidgets();
+
+        $this->forceFill($changeDates);
+    }
+
+    /**
      * Regenerate only the JSON-LD in both languages.
      *
      * A changed JSON-LD clears the cache of the affected posts but does not date
