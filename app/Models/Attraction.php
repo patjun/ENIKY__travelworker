@@ -394,8 +394,10 @@ class Attraction extends Model
 
         foreach ($sections as $index => $entry) {
             $section = $entry['section'];
-            $title = $this->priceText($section, 'name', $language) ?? ($isEnglish ? 'Prices' : 'Preise');
+            $name = $this->priceText($section, 'name', $language) ?? ($isEnglish ? 'Prices' : 'Preise');
             $hasSeasonDates = ! empty($section['start_date']) && ! empty($section['end_date']);
+            $dateRange = $this->formatDateRange($section['start_date'] ?? null, $section['end_date'] ?? null, $language);
+            $title = $name.($dateRange ? ' ('.$dateRange.')' : '');
             $seasonAttributes = $hasSeasonDates
                 ? ' data-season-start="'.e($section['start_date']).'" data-season-end="'.e($section['end_date']).'"'
                 : '';
@@ -1007,9 +1009,9 @@ class Attraction extends Model
         }
 
         try {
-            // Parse dates (using current year as dummy year)
-            $start = Carbon::createFromFormat('m-d', $startDate)->year(now()->year);
-            $end = Carbon::createFromFormat('m-d', $endDate)->year(now()->year);
+            // Parse dates (using a leap year as dummy year, so that 02-29 stays valid)
+            $start = Carbon::createFromFormat('Y-m-d', '2024-'.$startDate);
+            $end = Carbon::createFromFormat('Y-m-d', '2024-'.$endDate);
 
             if ($language === 'en') {
                 return $start->format('M j').' - '.$end->format('M j');

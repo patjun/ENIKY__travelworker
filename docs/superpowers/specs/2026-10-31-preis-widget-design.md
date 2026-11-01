@@ -31,6 +31,7 @@ Entwurf B: aufklappbar wie die Öffnungszeiten.
 - Über den Bereichen steht ein optionaler Einleitungstext, darunter ein optionaler Fußtext. Einen Hinweis pro Bereich gibt es nicht.
 - Saisondaten sind optional. Sind sie gepflegt, ist der aktuelle Bereich offen, sonst der erste.
 - Es ist immer genau ein Bereich beim Laden offen. Die übrigen lassen sich aufklappen.
+- Hat ein Bereich eine Saison, stehen Start und Ende im Titel, wie bei den Öffnungszeiten: „Sommersaison (01.05. - 30.09.)“ / „Summer season (May 1 - Sep 30)“.
 
 Reihenfolge im Widget: Label, Titel, Einleitungstext, Bereiche, Fußtext, dann eine Zeile mit Stand-Datum und Ticket-Link. Ohne Stand-Datum und Ticket-Link entfällt diese Zeile.
 
@@ -52,7 +53,7 @@ Ohne Bereiche mit mindestens einer Zeile gibt das Widget nichts aus, auch wenn E
 - **Währungen:** Auswahl aus EUR, CZK, CHF, GBP, PLN, HUF, Vorgabe EUR. Eine Währung pro Standort. EUR und GBP zeigen das Symbol, die übrigen den ISO-Code.
 - **Nachkommastellen:** EUR, CHF, GBP und PLN immer mit zwei Stellen, CZK und HUF ganzzahlig.
 - **Fehlende Übersetzung:** Fehlt ein Text in einer Sprache, zeigt das Widget die andere Sprache, wie bei `en_name ?: name`.
-- **Saisondaten:** gleiches Format und gleiche Eingabe wie bei den Öffnungszeiten (`m-d`), Saisons dürfen über den Jahreswechsel gehen. Beide Daten sind nötig, damit ein Bereich als Saison zählt.
+- **Saisondaten:** gleiches Format und gleiche Eingabe wie bei den Öffnungszeiten (`m-d`), Saisons dürfen über den Jahreswechsel gehen. Start- und Endmonat sind nötig, damit ein Bereich als Saison zählt. Die Tage sind optional: Ohne Tag beginnt die Saison am Monatsersten und endet am Monatsletzten, im Februar am 29.
 
 ## Aktueller Bereich: im Browser, nicht beim Erzeugen
 
@@ -71,12 +72,12 @@ Diese Lösung ist gegen WP Rocket robust, weil die gecachte HTML für alle gleic
 - Migration für die Spalten oben sowie `prices_html`, `en_prices_html`, `prices_changed_at`, `en_prices_changed_at`.
 - `Attraction`: `fillable`, `casts`, `generatePricesHtml($language)`, Eintrag `widget_prices` in `widgetMap()`. `renderWidgetHead()` wiederverwenden. Damit laufen Änderungserkennung und Delta-Sync ohne weitere Anpassung.
 - `AttractionBlock`: Preis-Widget nach den Öffnungszeiten ausgeben.
-- `AttractionResource`: neue Sektion „Prices“ nach „Opening Hours“ mit Repeatern, Widget-Vorschau in beiden Sprach-Tabs, CSS-Kopie der Vorschau auf Stand des Plugin-CSS bringen.
+- `AttractionResource`: eigener Tab „Prices“ neben den Sprach-Tabs mit der Sektion samt Repeatern, am Ende des Tabs die Widget-Vorschau auf Deutsch und Englisch, CSS-Kopie der Vorschau auf Stand des Plugin-CSS bringen.
 - Markup: Klasse `am-prices`, Bereiche mit den vorhandenen `am-season` und `am-season-toggle`, neue Klassen mit Präfix `am-price-`. Texte mit `e()` ausgeben.
 
 ### Übersetzungsbutton
 
-- Zwei Aktionen in der Sektion: „Nach Englisch übersetzen“ und „Nach Deutsch übersetzen“.
+- Zwei Aktionen in der Sektion: „Translate to English“ und „Translate to German“.
 - Übersetzt werden Bereichstitel, Zeilenbeschreibungen, Einleitungs- und Fußtext. Beträge, Währung, Daten und Links bleiben unberührt.
 - Quelle ist der aktuelle Formularstand, auch ungespeichert. Das Ergebnis überschreibt die Felder der Zielsprache im Formular und wird nicht gespeichert. Sind dort schon Texte vorhanden, fragt die Aktion vorher nach.
 - Neue Methode in `ClaudeService` mit strukturierter Antwort, Modell und Einstellungen aus `AiSetting`. Fehler erscheinen als Filament-Benachrichtigung, das Formular bleibt unverändert. Vorbild ist `GenerateIntroWithAiAction`.

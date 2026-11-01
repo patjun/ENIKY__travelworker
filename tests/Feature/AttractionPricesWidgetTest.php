@@ -151,7 +151,7 @@ class AttractionPricesWidgetTest extends TestCase
 
     public function test_section_without_title_in_both_languages_is_called_prices(): void
     {
-        $attraction = $this->makeAttraction([$this->section([$this->row()], '', '')]);
+        $attraction = $this->makeAttraction([$this->section([$this->row()], '', '', null, null)]);
 
         $this->assertStringContainsString('<span>Preise</span>', $attraction->generatePricesHtml('de'));
         $this->assertStringContainsString('<span>Prices</span>', $attraction->generatePricesHtml('en'));
@@ -188,6 +188,46 @@ class AttractionPricesWidgetTest extends TestCase
         $this->assertStringNotContainsString('Leere Saison', $html);
         $this->assertStringContainsString('Wintersaison', $html);
         $this->assertSame(1, substr_count($html, '<div class="am-price-row">'));
+    }
+
+    public function test_season_dates_are_shown_in_the_section_title(): void
+    {
+        $attraction = Attraction::factory()->make(['price_currency' => 'EUR', 'prices' => [
+            $this->section([$this->row()], 'Sommersaison', 'Summer season', '05-01', '09-30'),
+        ]]);
+
+        $this->assertStringContainsString('<span>Sommersaison (01.05. - 30.09.)</span>', $attraction->generatePricesHtml('de'));
+        $this->assertStringContainsString('<span>Summer season (May 1 - Sep 30)</span>', $attraction->generatePricesHtml('en'));
+    }
+
+    public function test_section_title_stays_without_dates_when_the_season_is_incomplete(): void
+    {
+        $attraction = Attraction::factory()->make(['price_currency' => 'EUR', 'prices' => [
+            $this->section([$this->row()], 'Einzeltickets', 'Single tickets', '05-01', null),
+        ]]);
+
+        $this->assertStringContainsString('<span>Einzeltickets</span>', $attraction->generatePricesHtml('de'));
+    }
+
+    public function test_section_without_title_shows_the_fallback_title_with_its_season_dates(): void
+    {
+        $attraction = Attraction::factory()->make(['price_currency' => 'EUR', 'prices' => [
+            $this->section([$this->row()], '', '', '05-01', '09-30'),
+        ]]);
+
+        $this->assertStringContainsString('<span>Preise (01.05. - 30.09.)</span>', $attraction->generatePricesHtml('de'));
+    }
+
+    public function test_season_ending_on_february_29_is_shown_correctly_outside_leap_years(): void
+    {
+        $this->travelTo('2026-11-01');
+
+        $attraction = Attraction::factory()->make(['price_currency' => 'EUR', 'prices' => [
+            $this->section([$this->row()], 'Winter', 'Winter', '11-01', '02-29'),
+        ]]);
+
+        $this->assertStringContainsString('<span>Winter (01.11. - 29.02.)</span>', $attraction->generatePricesHtml('de'));
+        $this->assertStringContainsString('<span>Winter (Nov 1 - Feb 29)</span>', $attraction->generatePricesHtml('en'));
     }
 
     public function test_first_section_is_open_and_only_complete_seasons_have_data_attributes(): void

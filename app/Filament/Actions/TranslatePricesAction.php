@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class TranslatePricesAction
 {
-    private const LANGUAGE_NAMES = ['de' => 'Deutsch', 'en' => 'Englisch'];
+    private const LANGUAGE_NAMES = ['de' => 'German', 'en' => 'English'];
 
     /**
      * Create a header action that translates the price texts into the target language.
@@ -24,22 +24,22 @@ class TranslatePricesAction
 
         return Action::make('translatePricesTo'.ucfirst($targetLanguage))
             ->icon('heroicon-o-language')
-            ->label("Nach {$targetName} übersetzen")
+            ->label("Translate to {$targetName}")
             ->color('gray')
             ->requiresConfirmation($overwritesText)
-            ->modalHeading(fn (Get $get): ?string => $overwritesText($get) ? "Preistexte nach {$targetName} übersetzen?" : null)
+            ->modalHeading(fn (Get $get): ?string => $overwritesText($get) ? "Translate price texts to {$targetName}?" : null)
             ->modalDescription(fn (Get $get): ?string => $overwritesText($get)
-                ? "Vorhandene Preistexte auf {$targetName} werden im Formular überschrieben. Gespeichert wird erst mit „Speichern“."
+                ? "Existing {$targetName} price texts in the form will be overwritten. Nothing is saved until you click “Save changes”."
                 : null)
-            ->modalSubmitActionLabel('Übersetzen')
+            ->modalSubmitActionLabel('Translate')
             ->action(function (Get $get, Set $set) use ($sourceLanguage, $targetLanguage, $targetName): void {
                 $state = static::stateFromForm($get);
 
                 if (! static::hasTexts($state, $sourceLanguage)) {
                     Notification::make()
                         ->warning()
-                        ->title('Nichts zu übersetzen')
-                        ->body('In der Quellsprache sind keine Preistexte vorhanden.')
+                        ->title('Nothing to translate')
+                        ->body('There are no price texts in the source language.')
                         ->send();
 
                     return;
@@ -62,8 +62,8 @@ class TranslatePricesAction
 
                     Notification::make()
                         ->danger()
-                        ->title('Übersetzung fehlgeschlagen')
-                        ->body('Fehler: '.$e->getMessage())
+                        ->title('Translation failed')
+                        ->body('Error: '.$e->getMessage())
                         ->persistent()
                         ->send();
 
@@ -76,8 +76,8 @@ class TranslatePricesAction
 
                 Notification::make()
                     ->success()
-                    ->title('Preistexte übersetzt')
-                    ->body("Die Texte auf {$targetName} wurden im Formular eingetragen. Bitte prüfen und speichern.")
+                    ->title('Price texts translated')
+                    ->body("The {$targetName} texts were added to the form. Please review and save.")
                     ->send();
             });
     }
