@@ -47,6 +47,36 @@ class AttractionFactory extends Factory
     }
 
     /**
+     * Two seasons with one price row each, in EUR.
+     */
+    public function withPrices(): static
+    {
+        return $this->state(fn (): array => [
+            'price_currency' => 'EUR',
+            'prices' => [
+                [
+                    'name_de' => 'Wintersaison',
+                    'name_en' => 'Winter season',
+                    'start_date' => '11-01',
+                    'end_date' => '02-28',
+                    'rows' => [
+                        ['id' => 'row-winter-adult', 'label_de' => 'Erwachsene', 'label_en' => 'Adults', 'amount' => 6, 'is_free' => false],
+                    ],
+                ],
+                [
+                    'name_de' => 'Sommersaison',
+                    'name_en' => 'Summer season',
+                    'start_date' => '03-01',
+                    'end_date' => '10-31',
+                    'rows' => [
+                        ['id' => 'row-summer-adult', 'label_de' => 'Erwachsene', 'label_en' => 'Adults', 'amount' => 8, 'is_free' => false],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    /**
      * Generate sample opening hours with seasonal structure
      */
     private function generateSampleOpeningHours(): array

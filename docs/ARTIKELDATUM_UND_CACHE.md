@@ -26,6 +26,7 @@ Nullable Timestamp-Spalten an `attractions`, je Widget und Sprache (englisch mit
 | Kontakt | `contact_info_changed_at` | `widget_contact` |
 | Bewertung | `rating_changed_at` | `widget_rating` |
 | Öffnungszeiten | `opening_hours_changed_at` | `widget_opening_hours` |
+| Preise | `prices_changed_at` | `widget_prices` |
 | Barrierefreiheit | `accessibility_changed_at` | `widget_accessibility` |
 | JSON-LD | `structured_data_changed_at` | `json_ld` |
 
@@ -56,7 +57,7 @@ Nach einem erfolgreichen Request setzt der Sync `wp_{lang}_id` und `wp_{lang}_la
 
 `PUT /attractions/{id}` des Plugins erhält zusätzlich optionale Felder:
 
-`widget_contact_changed_at`, `widget_rating_changed_at`, `widget_opening_hours_changed_at`, `widget_accessibility_changed_at`, `json_ld_changed_at`
+`widget_contact_changed_at`, `widget_rating_changed_at`, `widget_opening_hours_changed_at`, `widget_prices_changed_at`, `widget_accessibility_changed_at`, `json_ld_changed_at`
 
 - Format: ISO 8601, UTC (z. B. `2026-10-12T08:30:00+00:00`).
 - Wird nur zusammen mit dem jeweiligen Widget gesendet und nur, wenn das `*_changed_at` in Laravel gesetzt ist.
@@ -94,12 +95,24 @@ Liefert der Generator für ein Widget `null` (Daten entfernt), wird es als leere
 Das JSON-LD enthält u. a. Öffnungszeiten, Bewertung und Kontakt und ändert sich deshalb bei fast jeder Widget-Änderung. Würde es Beiträge datieren, bekäme jeder Beitrag mit irgendeinem Widget der Attraktion ein neues Datum. Deshalb gilt:
 
 - Nur `widget_*_changed_at` setzen `post_modified`, und zwar nur bei Beiträgen mit dem passenden Shortcode.
-- `json_ld_changed_at` leert den Cache aller Beiträge mit irgendeinem der vier Widgets dieser Attraktion, datiert aber nicht. Sonst würde dort veraltetes JSON-LD aus dem Cache ausgeliefert.
+- `json_ld_changed_at` leert den Cache aller Beiträge mit irgendeinem der fünf Widgets dieser Attraktion, datiert aber nicht. Sonst würde dort veraltetes JSON-LD aus dem Cache ausgeliefert.
 - Eine Widget-Änderung leert zusätzlich den Cache der Beiträge mit dem geänderten Widget (diese werden ohnehin datiert).
+
+## Preis-Widget: aktueller Bereich im Browser
+
+Die Widget-HTML entsteht nur beim Speichern oder per `RegenerateLocationWidgets`, nicht täglich. Ein beim Erzeugen gesetztes `open` würde deshalb veralten: Eine Attraktion bliebe nach dem letzten Speichern im Winter auch im Juli auf den Winterpreisen stehen. Automatisches Neuerzeugen zum Saisonwechsel würde dagegen `prices_changed_at` setzen und Artikeldaten verschieben, obwohl sich kein Preis geändert hat.
+
+Deshalb:
+
+- Laravel markiert immer den ersten Bereich mit `open`.
+- Jeder Bereich mit Saison trägt `data-season-start` und `data-season-end`.
+- Das Plugin-JS öffnet beim Laden den Bereich, dessen Saison heute läuft, und schließt den ersten. Trifft keine Saison zu oder ist JS aus, bleibt der erste Bereich offen. Maßgeblich ist das Datum im Browser des Lesers.
+
+Die gecachte HTML ist für alle Leser gleich, deshalb funktioniert das mit WP Rocket.
 
 ## Plugin-Seite
 
-- Betroffene Beiträge: Veröffentlichte Beiträge und Seiten (`post`, `page`, Status `publish`), in deren `post_content` oder `wp_postmeta.meta_value` (alle Meta-Keys) der passende Shortcode (`attraction_contact`, `attraction_rating`, `attraction_hours`, `attraction_accessibility`) mit exakt dieser ID steht (`id="42"`, `id='42'`, `id=42`, auch mit Backslash maskierte Anführungszeichen in JSON/serialisierten Meta-Werten; `id="4"` trifft nicht `42`). Entwürfe und Revisionen werden ignoriert.
+- Betroffene Beiträge: Veröffentlichte Beiträge und Seiten (`post`, `page`, Status `publish`), in deren `post_content` oder `wp_postmeta.meta_value` (alle Meta-Keys) der passende Shortcode (`attraction_contact`, `attraction_rating`, `attraction_hours`, `attraction_prices`, `attraction_accessibility`) mit exakt dieser ID steht (`id="42"`, `id='42'`, `id=42`, auch mit Backslash maskierte Anführungszeichen in JSON/serialisierten Meta-Werten; `id="4"` trifft nicht `42`). Entwürfe und Revisionen werden ignoriert.
 - Datum: `post_modified` und `post_modified_gmt` werden direkt per `$wpdb->update` auf das gesendete `changed_at` gesetzt, nie rückwärts (nur wenn jünger als das bisherige `post_modified_gmt`). Kein `wp_update_post()`, damit keine Revisionen und keine `save_post`-Hooks anderer Plugins ausgelöst werden.
 - Cache: `clean_post_cache()` und, falls vorhanden, `rocket_clean_post()` je betroffenem Beitrag. Ohne WP Rocket kein Fehler.
 - Fehler bei Suche, Datum oder Cache-Leeren lassen das Speichern der Attraktion nicht scheitern (Protokoll per `error_log`). Ungültige Zeitstempel werden ignoriert.
@@ -114,7 +127,7 @@ Am 26.10.2026 lokal gegen `vonortzuort.test` (Multisite mit WP Rocket 3.23, Plug
 
 1. Eine reine Widget-Änderung (z. B. `widget_rating_changed_at`) datiert und leert nur die Beiträge mit diesem Shortcode; Beiträge mit anderen Widgets derselben Attraktion bleiben unverändert.
 2. Ein Shortcode in einem ACF-Feld (Post-Meta) wird gefunden; ein Shortcode mit anderer ID (`id="120"` statt `id="12"`) bleibt unberührt.
-3. Eine reine `json_ld`-Änderung (`json_ld_changed_at`) leert den Cache aller Beiträge der Attraktion mit einem der vier Shortcodes, datiert aber keinen.
+3. Eine reine `json_ld`-Änderung (`json_ld_changed_at`) leert den Cache aller Beiträge der Attraktion mit allen Shortcodes, datiert aber keinen.
 4. Ein wiederholter Request mit demselben oder einem älteren Zeitstempel setzt `post_modified` nicht rückwärts.
 
 Das Skript legt temporäre Test-Beiträge an und räumt sie danach wieder auf. Aufruf und Parameter stehen im Kopf des Skripts. Nicht gegen die Live-Seite laufen lassen, da es Beiträge vorübergehend neu datiert.
