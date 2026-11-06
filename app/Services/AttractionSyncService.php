@@ -68,7 +68,13 @@ class AttractionSyncService
     {
         try {
             $attraction->regenerateWidgetsKeepingChangeDates();
-            $attraction->save();
+            $attraction->timestamps = false;
+
+            try {
+                $attraction->save();
+            } finally {
+                $attraction->timestamps = true;
+            }
 
             return true;
         } catch (\Exception $e) {

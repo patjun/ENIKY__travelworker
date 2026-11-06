@@ -255,6 +255,34 @@ class AttractionInstantSyncTest extends TestCase
         $this->assertFalse((new AttractionSyncService)->needsSync($attraction->fresh(), 'de'));
     }
 
+    public function test_refresh_keeps_the_last_modified_date(): void
+    {
+        $this->fakeWordPress();
+        $attraction = $this->syncedAttraction();
+        $attraction->updateQuietly(['contact_info_html' => '<div class="old">old</div>']);
+        $updatedAtBefore = $attraction->fresh()->updated_at;
+        Carbon::setTestNow('2026-10-12 12:05:00');
+
+        (new AttractionSyncService)->syncToAllLanguages($attraction->fresh(), new AttractionSyncReport, refreshWidgets: true);
+
+        $this->assertStringNotContainsString('class="old"', $attraction->fresh()->contact_info_html);
+        $this->assertTrue($attraction->fresh()->updated_at->equalTo($updatedAtBefore));
+    }
+
+    public function test_failed_refresh_keeps_the_last_modified_date(): void
+    {
+        Http::fake(['wp-*.test/*' => Http::response(['code' => 'server_error'], 500)]);
+        $attraction = $this->syncedAttraction();
+        $attraction->updateQuietly(['contact_info_html' => '<div class="old">old</div>']);
+        $updatedAtBefore = $attraction->fresh()->updated_at;
+        Carbon::setTestNow('2026-10-12 12:05:00');
+
+        (new AttractionSyncService)->syncToAllLanguages($attraction->fresh(), new AttractionSyncReport, refreshWidgets: true);
+
+        $this->assertStringNotContainsString('class="old"', $attraction->fresh()->contact_info_html);
+        $this->assertTrue($attraction->fresh()->updated_at->equalTo($updatedAtBefore));
+    }
+
     public function test_failed_refresh_does_not_date_posts_in_the_nightly_sync_and_can_be_repeated(): void
     {
         Http::fake(['wp-*.test/*' => Http::response(['code' => 'server_error'], 500)]);
