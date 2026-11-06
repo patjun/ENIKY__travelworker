@@ -37,6 +37,13 @@ class Attraction extends Model
         'prices_changed_at', 'en_prices_changed_at',
     ];
 
+    /**
+     * Currencies looked up while formatting prices, keyed by ISO code.
+     *
+     * @var array<string, Currency|null>
+     */
+    private array $priceCurrencyFormats = [];
+
     protected $casts = [
         'task_post_output' => 'array',
         'task_get_output' => 'array',
@@ -84,6 +91,11 @@ class Attraction extends Model
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function currency(): BelongsTo
+    {
+        return $this->belongsTo(Currency::class, 'price_currency', 'code');
     }
 
     public function accessibilityAttributes(): BelongsToMany
@@ -498,15 +510,28 @@ class Attraction extends Model
     {
         $isEnglish = $language === 'en';
         $currency = $this->price_currency ?: 'EUR';
-        $decimals = in_array($currency, ['CZK', 'HUF'], true) ? 0 : 2;
+        $currencyFormat = $this->priceCurrencyFormat($currency);
+        $decimals = $currencyFormat?->decimals ?? 2;
         $number = number_format((float) $amount, $decimals, $isEnglish ? '.' : ',', $isEnglish ? ',' : '.');
-        $symbol = ['EUR' => '€', 'GBP' => '£'][$currency] ?? null;
+        $symbol = $currencyFormat?->symbol ?: null;
 
         if ($symbol !== null) {
             return $isEnglish ? $symbol.$number : $number.' '.$symbol;
         }
 
         return $isEnglish ? "{$currency} {$number}" : "{$number} {$currency}";
+    }
+
+    /**
+     * Symbol and decimals of the given currency, loaded once per attraction and currency.
+     */
+    private function priceCurrencyFormat(string $code): ?Currency
+    {
+        if (! array_key_exists($code, $this->priceCurrencyFormats)) {
+            $this->priceCurrencyFormats[$code] = Currency::query()->where('code', $code)->first();
+        }
+
+        return $this->priceCurrencyFormats[$code];
     }
 
     /**
