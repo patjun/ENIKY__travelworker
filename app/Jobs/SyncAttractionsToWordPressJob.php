@@ -67,7 +67,7 @@ class SyncAttractionsToWordPressJob implements ShouldQueue
         }
 
         $this->notifyUser(
-            'Sync finished',
+            $this->refreshWidgets ? 'Widgets renewed' : 'Sync finished',
             $this->report->summary(),
             $this->report->hasProblems() ? 'warning' : 'success',
         );
@@ -76,7 +76,7 @@ class SyncAttractionsToWordPressJob implements ShouldQueue
     public function failed(?Throwable $exception): void
     {
         $this->notifyUser(
-            'Sync aborted',
+            $this->refreshWidgets ? 'Widget renewal aborted' : 'Sync aborted',
             trim($this->report->summary()."\n".$exception?->getMessage()),
             'danger',
         );
