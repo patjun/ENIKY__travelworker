@@ -11,6 +11,7 @@ use App\Models\AccessibilityAttribute;
 use App\Models\Attraction;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\Currency;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Placeholder;
@@ -21,6 +22,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class AttractionResourceTest extends TestCase
@@ -101,6 +103,36 @@ class AttractionResourceTest extends TestCase
 
         Livewire::test(ListAttractions::class)
             ->assertCanSeeTableRecords($attractions);
+    }
+
+    public function test_last_modified_column_is_visible_by_default(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+        $attraction->forceFill(['updated_at' => '2026-11-03 14:25:00'])->saveQuietly();
+
+        Livewire::test(ListAttractions::class)
+            ->assertTableColumnVisible('updated_at')
+            ->assertTableColumnStateSet('updated_at', '2026-11-03 14:25:00', $attraction)
+            ->assertSee('Last modified')
+            ->assertSee('03.11.2026 15:25');
+    }
+
+    public function test_attractions_can_be_sorted_by_last_modified(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $older = Attraction::factory()->create(['en_name' => 'A Older']);
+        $newer = Attraction::factory()->create(['en_name' => 'B Newer']);
+        $oldest = Attraction::factory()->create(['en_name' => 'C Oldest']);
+        $older->forceFill(['updated_at' => '2026-11-02 10:00:00'])->saveQuietly();
+        $newer->forceFill(['updated_at' => '2026-11-05 10:00:00'])->saveQuietly();
+        $oldest->forceFill(['updated_at' => '2026-10-01 10:00:00'])->saveQuietly();
+
+        Livewire::test(ListAttractions::class)
+            ->sortTable('updated_at', 'desc')
+            ->assertCanSeeTableRecords([$newer, $older, $oldest], inOrder: true)
+            ->sortTable('updated_at', 'asc')
+            ->assertCanSeeTableRecords([$oldest, $older, $newer], inOrder: true);
     }
 
     public function test_can_search_attractions_by_name(): void
@@ -967,6 +999,56 @@ class AttractionResourceTest extends TestCase
             ->assertHasNoFormErrors();
 
         $this->assertSame('CZK', $attraction->fresh()->price_currency);
+    }
+
+    public function test_currency_can_be_added_interactively_and_is_selected(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+
+        Livewire::test(EditAttraction::class, ['record' => $attraction->getRouteKey()])
+            ->fillForm($this->pricesFormData())
+            ->callFormComponentAction('price_currency', 'createOption', [
+                'code' => 'nok',
+                'symbol' => 'kr',
+                'decimals' => 0,
+            ])
+            ->assertHasNoFormComponentActionErrors()
+            ->assertFormSet(['price_currency' => 'NOK'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas(Currency::class, ['code' => 'NOK', 'symbol' => 'kr', 'decimals' => 0]);
+        $this->assertSame('NOK', $attraction->fresh()->price_currency);
+    }
+
+    /**
+     * @return array<string, array{array<string, mixed>, string}>
+     */
+    public static function invalidCurrencyProvider(): array
+    {
+        return [
+            'too short' => [['code' => 'EU', 'decimals' => 2], 'code'],
+            'not only letters' => [['code' => 'E1R', 'decimals' => 2], 'code'],
+            'already exists' => [['code' => 'eur', 'decimals' => 2], 'code'],
+            'too many decimals' => [['code' => 'SEK', 'decimals' => 5], 'decimals'],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    #[DataProvider('invalidCurrencyProvider')]
+    public function test_invalid_currency_cannot_be_added(array $data, string $invalidField): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+
+        Livewire::test(EditAttraction::class, ['record' => $attraction->getRouteKey()])
+            ->callFormComponentAction('price_currency', 'createOption', $data)
+            ->assertHasFormComponentActionErrors([$invalidField]);
+
+        $this->assertSame(6, Currency::query()->count());
     }
 
     public function test_negative_amount_is_rejected(): void

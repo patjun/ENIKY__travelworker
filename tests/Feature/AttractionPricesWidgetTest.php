@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Attraction;
 use App\Models\AttractionBlock;
+use App\Models\Currency;
 use App\Services\AttractionSyncService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
@@ -97,6 +98,37 @@ class AttractionPricesWidgetTest extends TestCase
 
         $this->assertStringContainsString('>12,00 CHF<', $attraction->generatePricesHtml('de'));
         $this->assertStringContainsString('>CHF 12.00<', $attraction->generatePricesHtml('en'));
+    }
+
+    public function test_added_currency_uses_its_stored_symbol_and_decimals(): void
+    {
+        Currency::factory()->create(['code' => 'JPY', 'symbol' => '¥', 'decimals' => 0]);
+        $attraction = $this->makeAttraction([$this->section([$this->row(1500)])], ['price_currency' => 'JPY']);
+
+        $this->assertStringContainsString('>1.500 ¥<', $attraction->generatePricesHtml('de'));
+        $this->assertStringContainsString('>¥1,500<', $attraction->generatePricesHtml('en'));
+    }
+
+    public function test_added_currency_without_symbol_uses_its_iso_code(): void
+    {
+        Currency::factory()->create(['code' => 'DKK', 'symbol' => null, 'decimals' => 2]);
+        $attraction = $this->makeAttraction([$this->section([$this->row(95)])], ['price_currency' => 'DKK']);
+
+        $this->assertStringContainsString('>95,00 DKK<', $attraction->generatePricesHtml('de'));
+        $this->assertStringContainsString('>DKK 95.00<', $attraction->generatePricesHtml('en'));
+    }
+
+    public function test_default_currencies_exist_after_migration(): void
+    {
+        $this->assertSame(
+            ['CHF', 'CZK', 'EUR', 'GBP', 'HUF', 'PLN'],
+            Currency::query()->orderBy('code')->pluck('code')->all()
+        );
+        $this->assertSame('€', Currency::query()->where('code', 'EUR')->value('symbol'));
+        $this->assertSame('£', Currency::query()->where('code', 'GBP')->value('symbol'));
+        $this->assertSame(0, Currency::query()->where('code', 'HUF')->value('decimals'));
+        $this->assertSame(0, Currency::query()->where('code', 'CZK')->value('decimals'));
+        $this->assertSame(2, Currency::query()->where('code', 'PLN')->value('decimals'));
     }
 
     public function test_free_row_shows_gratis_instead_of_amount(): void

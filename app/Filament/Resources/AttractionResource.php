@@ -8,6 +8,7 @@ use App\Filament\Resources\AttractionResource\Pages;
 use App\Jobs\ProcessDataForSeoOrchestrator;
 use App\Models\Attraction;
 use App\Models\Country;
+use App\Models\Currency;
 use Dotswan\MapPicker\Fields\Map;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -561,10 +562,32 @@ class AttractionResource extends Resource
                                         ->schema([
                                             Forms\Components\Select::make('price_currency')
                                                 ->label('Currency')
-                                                ->options(static::getCurrencyOptions())
-                                                ->in(array_keys(static::getCurrencyOptions()))
+                                                ->options(fn (): array => Currency::selectOptions())
+                                                ->exists(Currency::class, 'code')
                                                 ->default('EUR')
                                                 ->required()
+                                                ->createOptionForm([
+                                                    Forms\Components\TextInput::make('code')
+                                                        ->label('ISO code')
+                                                        ->helperText('Three letters according to ISO 4217, e.g. SEK')
+                                                        ->required()
+                                                        ->length(3)
+                                                        ->regex('/^[A-Za-z]{3}$/')
+                                                        ->unique(Currency::class, 'code')
+                                                        ->dehydrateStateUsing(fn (string $state): string => strtoupper($state)),
+                                                    Forms\Components\TextInput::make('symbol')
+                                                        ->label('Symbol')
+                                                        ->helperText('Optional, e.g. kr. Without a symbol, the ISO code is shown.')
+                                                        ->maxLength(5),
+                                                    Forms\Components\TextInput::make('decimals')
+                                                        ->label('Decimal places')
+                                                        ->required()
+                                                        ->integer()
+                                                        ->minValue(0)
+                                                        ->maxValue(3)
+                                                        ->default(2),
+                                                ])
+                                                ->createOptionUsing(fn (array $data): string => Currency::query()->create($data)->code)
                                                 ->columnSpan(1),
                                             Forms\Components\DatePicker::make('price_valid_from')
                                                 ->label('Prices valid from')
@@ -973,23 +996,6 @@ class AttractionResource extends Resource
     }
 
     /**
-     * Currencies that can be selected for the prices widget
-     *
-     * @return array<string, string>
-     */
-    protected static function getCurrencyOptions(): array
-    {
-        return [
-            'EUR' => 'EUR (€)',
-            'CZK' => 'CZK',
-            'CHF' => 'CHF',
-            'GBP' => 'GBP (£)',
-            'PLN' => 'PLN',
-            'HUF' => 'HUF',
-        ];
-    }
-
-    /**
      * Update "{$prefix}_date" from "{$prefix}_month" and "{$prefix}_day", or clear it without a month.
      * Without a day, the season covers the whole month: it starts on the first and ends on the last day.
      */
@@ -1154,9 +1160,10 @@ class AttractionResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Last modified')
+                    ->dateTime('d.m.Y H:i', 'Europe/Berlin')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('city_id')

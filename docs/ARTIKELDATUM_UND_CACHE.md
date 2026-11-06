@@ -59,6 +59,7 @@ Die ersten drei Aktionen folgen den Delta-Regeln wie der nächtliche Sync: Sie s
 „Renew all widgets“ ist für Änderungen an der Widget-Struktur gedacht, zum Beispiel neues Markup oder neue Klassennamen. Die Aktion erzeugt alle Widgets neu und sendet sie vollständig:
 
 - Das Erneuern setzt keine `*_changed_at` (`Attraction::regenerateWidgetsKeepingChangeDates()`), sonst würde der nächtliche Sync alle Beiträge datieren.
+- Es setzt auch kein `updated_at`, damit „Last modified“ in der Attraktionsliste nur echte Änderungen zeigt.
 - Mitgesendet wird nur `json_ld_changed_at`. Das leert nach Variante A den Cache aller Beiträge mit Widgets dieser Attraktion und datiert sie nicht. `--force` leert dagegen keinen Cache.
 - Eine echte Änderung, die noch auf den Sync wartet, behält ihren Zeitstempel, ihre Beiträge werden wie üblich datiert.
 - Schlägt die Übertragung einer Attraktion fehl, bleibt ihr neues HTML in Laravel, und der nächtliche Sync sendet es nicht. Die Aktion lässt sich gefahrlos wiederholen.
