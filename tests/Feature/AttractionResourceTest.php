@@ -105,6 +105,36 @@ class AttractionResourceTest extends TestCase
             ->assertCanSeeTableRecords($attractions);
     }
 
+    public function test_last_modified_column_is_visible_by_default(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $attraction = Attraction::factory()->create();
+        $attraction->forceFill(['updated_at' => '2026-11-03 14:25:00'])->saveQuietly();
+
+        Livewire::test(ListAttractions::class)
+            ->assertTableColumnVisible('updated_at')
+            ->assertTableColumnStateSet('updated_at', '2026-11-03 14:25:00', $attraction)
+            ->assertSee('Last modified')
+            ->assertSee('03.11.2026 15:25');
+    }
+
+    public function test_attractions_can_be_sorted_by_last_modified(): void
+    {
+        $this->actingAs($this->createUserWithRole('admin'));
+        $older = Attraction::factory()->create(['en_name' => 'A Older']);
+        $newer = Attraction::factory()->create(['en_name' => 'B Newer']);
+        $oldest = Attraction::factory()->create(['en_name' => 'C Oldest']);
+        $older->forceFill(['updated_at' => '2026-11-02 10:00:00'])->saveQuietly();
+        $newer->forceFill(['updated_at' => '2026-11-05 10:00:00'])->saveQuietly();
+        $oldest->forceFill(['updated_at' => '2026-10-01 10:00:00'])->saveQuietly();
+
+        Livewire::test(ListAttractions::class)
+            ->sortTable('updated_at', 'desc')
+            ->assertCanSeeTableRecords([$newer, $older, $oldest], inOrder: true)
+            ->sortTable('updated_at', 'asc')
+            ->assertCanSeeTableRecords([$oldest, $older, $newer], inOrder: true);
+    }
+
     public function test_can_search_attractions_by_name(): void
     {
         $this->actingAs($this->createUserWithRole('admin'));
