@@ -599,12 +599,34 @@ class AttractionInstantSyncTest extends TestCase
         $this->actingAs($this->createUserWithRole('admin'));
         Attraction::factory()->create();
 
-        Livewire::test(ListAttractions::class)->callAction('refreshAllWidgets');
+        Livewire::test(ListAttractions::class)
+            ->callAction('refreshAllWidgets')
+            ->assertNotified('Renewing widgets');
 
         Queue::assertPushed(
             SyncAttractionsToWordPressJob::class,
             fn (SyncAttractionsToWordPressJob $job): bool => $job->refreshWidgets === true
         );
+    }
+
+    public function test_renew_job_reports_its_result_as_renewal(): void
+    {
+        $this->fakeWordPress();
+        $user = $this->createUserWithRole('admin');
+        $attraction = $this->syncedAttraction();
+
+        (new SyncAttractionsToWordPressJob([$attraction->id], $user->id, refreshWidgets: true))->handle(new AttractionSyncService);
+
+        $this->assertSame('Widgets renewed', $user->notifications()->sole()->data['title']);
+    }
+
+    public function test_failed_renew_job_reports_an_aborted_renewal(): void
+    {
+        $user = $this->createUserWithRole('admin');
+
+        (new SyncAttractionsToWordPressJob([1], $user->id, refreshWidgets: true))->failed(new \RuntimeException('Worker lost'));
+
+        $this->assertSame('Widget renewal aborted', $user->notifications()->sole()->data['title']);
     }
 
     public function test_sync_all_needs_confirmation(): void

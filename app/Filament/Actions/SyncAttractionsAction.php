@@ -144,6 +144,12 @@ class SyncAttractionsAction
 
         $count = count($attractionIds);
 
+        if ($refreshWidgets) {
+            static::notification('Renewing widgets', "The widgets of {$count} attraction(s) are regenerated and sent to WordPress in the background. The result appears in the notification bell.", 'info')->send();
+
+            return;
+        }
+
         static::notification('Sync started', "{$count} attraction(s) are syncing in the background. The result appears in the notification bell.", 'info')->send();
     }
 
